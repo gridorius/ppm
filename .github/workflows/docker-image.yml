@@ -1,0 +1,60 @@
+name: Docker Image CI
+on:
+  push:
+    tags:
+      - v*
+  pull_request:
+    tags:
+      - v*
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: gridorius/ppm
+          tags: |
+            type=semver,pattern={{version}}
+            type=raw,value=latest
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  release:
+    runs-on: ubuntu-latest
+    if: endsWith(github.event.ref, 'release')
+    steps:
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          ini-values: phar.readonly=Off
+          php-version: '8.3'
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Build release
+        run: |
+          php -f builders/release.php
+      - name: Compact files
+        run: |
+          mkdir dist
+          zip -rj ppm ppm
+          mv ppm.zip dist/
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          tag: ${{ github.ref_name }}
+        run: |
+          gh release create "$tag" ./dist/*.zip \
+              -t="${GITHUB_REPOSITORY#*/} ${tag#v}" \
+              -F changelog.md

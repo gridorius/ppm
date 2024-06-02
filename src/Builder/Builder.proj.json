@@ -1,0 +1,13 @@
+{
+  "name": "Builder",
+  "version": "0.6.0",
+  "projectReferences": [
+    "../Utils/Utils.proj.json"
+  ],
+  "exclude": "templates/*.php",
+  "resources":[
+    {
+      "include": "templates/*.php"
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+php -f "C:\Program Files\ppm\ppm.php" %*

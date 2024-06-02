@@ -1,0 +1,7 @@
+Package: NAME
+Version: VERSION
+Section: misc
+Architecture: all
+Depends: bash
+Maintainer: gridorius <gridorius@yandex.ru>
+Description: phar project manager.

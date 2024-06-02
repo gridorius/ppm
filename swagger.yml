@@ -1,0 +1,219 @@
+openapi: 3.0.3
+info:
+  title: Swagger
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: gridorius@yandex.ru
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.11
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+tags:
+  - name: auth
+    description: Authorization
+    externalDocs:
+      description: Find out more
+      url: http://swagger.io
+  - name: packages
+    description: Packages operations
+    externalDocs:
+      description: Find out more
+      url: http://swagger.io
+paths:
+  /auth:
+    post:
+      tags:
+        - auth
+      summary: Authorization
+      operationId: auth
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserAuth'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /catalog:
+    get:
+      security:
+        - auth: [ ]
+      tags:
+        - packages
+      summary: Package list
+      operationId: catalog
+      responses:
+        '200':
+          description: Packages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '401':
+          $ref: '#/components/responses/error'
+        '403':
+          $ref: '#/components/responses/error'
+  /catalog/upload:
+    post:
+      security:
+        - auth: []
+      tags:
+        - packages
+      summary: Upload package
+      operationId: upload
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                package:
+                  type: string
+                  format: binary
+                name:
+                  type: string
+                version:
+                  type: string
+                depends:
+                  type: object
+      responses:
+        '200':
+          $ref: '#/components/responses/empty'
+        '400':
+          $ref: '#/components/responses/error'
+        '401':
+          $ref: '#/components/responses/error'
+        '403':
+          $ref: '#/components/responses/error'
+  /catalog/find:
+    get:
+      tags:
+        - packages
+      security:
+        - auth: [ ]
+      summary: Find package
+      operationId: download
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: version
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Package'
+        '400':
+          $ref: '#/components/responses/error'
+        '401':
+          $ref: '#/components/responses/error'
+        '403':
+          $ref: '#/components/responses/error'
+        '404':
+          $ref: '#/components/responses/error'
+  /catalog/download:
+    get:
+      tags:
+        - packages
+      security:
+        - auth: []
+      summary: Download package
+      operationId: find
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: version
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/error'
+        '401':
+          $ref: '#/components/responses/error'
+        '403':
+          $ref: '#/components/responses/error'
+        '404':
+          $ref: '#/components/responses/error'
+components:
+  securitySchemes:
+    auth:
+      type: http
+      scheme: bearer
+  schemas:
+    UserAuth:
+      type: object
+      properties:
+        login:
+          type: string
+        password:
+          type: string
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+    Package:
+      type: object
+      properties:
+        source:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+        depends:
+          type: object
+  responses:
+    empty:
+      description: Empty
+    error:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+

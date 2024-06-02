@@ -1,0 +1,8 @@
+{
+  "name": "Packages",
+  "version": "0.6.0",
+  "projectReferences": [
+    "../Builder/Builder.proj.json",
+    "../Utils/Utils.proj.json"
+  ]
+}
