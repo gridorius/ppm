@@ -13,10 +13,7 @@ use PPM\Commands\Restore;
 use PPM\Commands\SourceList;
 use PPM\Commands\UploadPackage;
 use Exception;
-use Packages\PackageManager;
 use Terminal\CommandTree;
-use Terminal\OptionParser;
-use Utils\PathUtils;
 
 class Program
 {

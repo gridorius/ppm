@@ -5,7 +5,6 @@ namespace PPM\Commands;
 use Packages\PackagesController;
 use PPM\Commands\Contracts\CommandBase;
 use Exception;
-use Packages\PackageManager;
 
 class Auth extends CommandBase
 {

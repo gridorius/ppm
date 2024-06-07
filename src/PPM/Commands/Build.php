@@ -6,8 +6,6 @@ use Builder\BuildManager;
 use Builder\Configuration\ConfigurationCollector;
 use Packages\PackagesController;
 use PPM\Commands\Contracts\CommandBase;
-use Exception;
-use Packages\PackageManager;
 use Utils\PathUtils;
 
 class Build extends CommandBase
