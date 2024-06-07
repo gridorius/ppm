@@ -8,7 +8,7 @@ use PPM\Commands\Auth;
 use PPM\Commands\Build;
 use PPM\Commands\DeleteSource;
 use PPM\Commands\Help;
-use PPM\Commands\MakePackage;
+use PPM\Commands\BuildPackage;
 use PPM\Commands\Restore;
 use PPM\Commands\SourceList;
 use PPM\Commands\UploadPackage;
@@ -27,7 +27,7 @@ class Program
         $commands->endPoint(Help::getClosure());
         $commands->awaitCommand('help')->endPoint(Help::getClosure());
         $commands->awaitCommand('build', function ($buildTree) {
-            $buildTree->awaitCommand('package')->endPoint(MakePackage::getClosure());
+            $buildTree->awaitCommand('package')->endPoint(BuildPackage::getClosure());
             $buildTree->endPoint(Build::getClosure());
         });
         $commands->awaitCommand('packages', function ($packages) {

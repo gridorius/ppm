@@ -45,7 +45,7 @@ class PathUtils
 
     public static function findProj(string $path): ?string
     {
-        $result = glob($path . '/*.proj.json');
+        $result = glob($path . '/*proj.json');
         if (count($result) == 0)
             throw new Exception("Configuration *.proj.json not found in directory {$path}");
 
@@ -65,10 +65,5 @@ class PathUtils
             throw new Exception("JSON parse error in {$path}: " . json_last_error_msg());
 
         return $data;
-    }
-
-    public static function getPackageName(string $name, string $version): string
-    {
-        return $name . '_' . $version . '.phar';
     }
 }

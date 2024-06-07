@@ -2,71 +2,71 @@
 
 namespace Builder;
 
+use Builder\Configuration\ConfigurationCollector;
+use Builder\Configuration\Contracts\IConfigurationCollection;
+use Builder\Configuration\Contracts\IConfigurationCollector;
+use Builder\Contracts\IBuildManager;
+use Builder\Contracts\IProjectStructure;
 use Exception;
+use Terminal\ShellStyleParser;
 use Utils\Timer;
 
-class BuildManager
+class BuildManager implements IBuildManager
 {
-    protected RecursiveConfigurationScanner $scanner;
+    protected IConfigurationCollector $collector;
 
-    public function __construct(string $pathToProj)
+    public function __construct()
     {
-        $this->scanner = new RecursiveConfigurationScanner($pathToProj);
+        $this->collector = new ConfigurationCollector();
     }
 
-    public function getScanner(): RecursiveConfigurationScanner{
-        return $this->scanner;
-    }
-
-    public function build(string $outDir): void
+    public function buildFromConfigurationCollection(IConfigurationCollection $configurationCollection, string $outDirectory): void
     {
         try {
             $timer = new Timer();
-            $this->scanner->scan();
-            $scanPassed = $timer->getPassed();
-            echo "Scanning passed in {$scanPassed}s\n";
-            $this->buildProjects($outDir);
+            $configurationCollection->setVersionIfEmpty($configurationCollection->getMainConfiguration()->getVersion());
+            $this->buildProjects($configurationCollection, $outDirectory);
             $passed = $timer->getPassed();
             echo "Build is completed in {$passed}s\n";
-            echo "Output directory: {$outDir}\n";
+            echo "Output directory: {$outDirectory}\n";
         } catch (Exception $exception) {
             echo "Build failed\n";
             echo $exception->getMessage() . "\n";
+            exit(1);
         }
     }
 
-    protected function buildProjectStructures(): array
+    public function build(string $pathToProjectFile, string $outDirectory): void
     {
-        $structures = [];
-        foreach ($this->scanner->getProjects() as $path => $config) {
-            $structure = new ProjectStructureBuilder($path, $config, $this->scanner->getProjectStructure($path));
-            $structures[$path] = $structure->build();
-        }
-        return $structures;
+        $configurationCollection = $this->collector->collect($pathToProjectFile);
+        $this->buildFromConfigurationCollection($configurationCollection, $outDirectory);
     }
 
-    protected function buildProjects(string $outDir): void
+    public function AddAssemblyPhar(string $outDirectory): void
     {
-        foreach ($this->scanner->getProjects() as $path => $config) {
+        copy(\Phar::running() . DIRECTORY_SEPARATOR . 'Assembly.phar', $outDirectory);
+    }
+
+    protected function buildProjects(IConfigurationCollection $configurationCollection, string $outDirectory): void
+    {
+        $projectStructureBuilder = new ProjectStructureBuilder();
+        $projectBuilder = new ProjectBuilder();
+        foreach ($configurationCollection->buildProjectInfos() as $projectInfo) {
             $timer = new Timer();
-            $structure = $this->buildProjectStructure($path, $config);
-            $depends = $this->scanner->getProjectDepends($path);
-            $project = new ProjectBuilder($path, $structure);
-            $project->build($outDir);
-            $passed = $timer->getPassed();
-            echo "\033[1m\033[32m{$structure->manifest['name']}\033[0m:\033[34m{$structure->manifest['version']}\033[0m built in {$passed}s\n";
-            $typeCount = count($structure->manifest['types']);
-            $resourceCount = count($structure->manifest['resources']);
-            $includeCount = count($structure->manifest['includes']);
-            $dependsCount = count($depends);
-            echo "\tTypes: {$typeCount}\tResources: {$resourceCount}\tIncludes: {$includeCount}\tDepends: {$dependsCount}\n";
+            $structure = $projectStructureBuilder->build($projectInfo);
+            $projectBuilder->build($structure, $outDirectory);
+            $this->showBuildLog($timer->getPassed(), $structure);
         }
     }
 
-    protected function buildProjectStructure(string $path, array $config): ProjectStructure{
-        $structureBuilder = new ProjectStructureBuilder(
-            $path, $config, $this->scanner->getProjectStructure($path), $this->scanner->getProjectDepends($path)
-        );
-        return $structureBuilder->build();
+    private function showBuildLog(string $passed, IProjectStructure $projectStructure)
+    {
+        $configuration = $projectStructure->getProjectInfo()->getConfiguration();
+        $manifestInfo = $projectStructure->getManifestInfo();
+        echo ShellStyleParser::style("<b,green>{$configuration->getName()}<e>:<blue>{$configuration->getVersion()}<e> built in {$passed}s\n");
+        echo "\tTypes: {$manifestInfo->getTypeCount()}
+        \tResources: {$manifestInfo->getResourcesCount()}
+        \tIncludes: {$manifestInfo->getIncludesCount()}
+        \tDepends: {$manifestInfo->getDependsCount()}\n";
     }
 }

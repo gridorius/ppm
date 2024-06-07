@@ -2,17 +2,18 @@
 
 namespace PPM\Commands;
 
-use Packages\PackageManager;
+use Packages\PackagesController;
 use PPM\Commands\Contracts\CommandBase;
 
 class SourceList extends CommandBase
 {
     public function execute(array $argv)
     {
-        $manager = new PackageManager();
-        $sources = $manager->getRemote()->getSources();
+        $packageController = new PackagesController();
         echo "Package sources:\n";
-        foreach ($sources as $source)
-            echo "\t{$source}\n";
+        foreach ($packageController->getSources() as $path => $source) {
+            $authorized = $source->hasToken() ? 'true' : 'false';
+            echo "\t{$path}, Authorized: {$authorized}\n";
+        }
     }
 }

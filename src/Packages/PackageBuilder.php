@@ -4,39 +4,44 @@ namespace Packages;
 
 use ArrayIterator;
 use Builder\BuildManager;
+use Builder\Configuration\ConfigurationCollector;
+use Builder\Configuration\Contracts\IConfigurationCollector;
+use Builder\Contracts\IBuildManager;
+use Packages\Contracts\ILocalManager;
+use Packages\Contracts\IPackageBuilder;
 use Phar;
-use Utils\PathUtils;
 
-class PackageBuilder
+class PackageBuilder implements IPackageBuilder
 {
-    protected string $packagesDirectory;
-    protected string $tmpDirectory;
+    private string $tmpDirectory;
 
-    public function __construct(string $packagesDirectory, string $tmpDirectory)
+    private IBuildManager $buildManager;
+    private IConfigurationCollector $configurationCollector;
+    private ILocalManager $localManager;
+
+    public function __construct(ILocalManager $localManager, string $tmpDirectory)
     {
-        $this->packagesDirectory = $packagesDirectory;
         $this->tmpDirectory = $tmpDirectory;
-        if (!is_dir($packagesDirectory))
-            mkdir($packagesDirectory, 0755, true);
+        $this->buildManager = new BuildManager();
+        $this->configurationCollector = new ConfigurationCollector();
+        $this->localManager = $localManager;
+        if (!is_dir($tmpDirectory))
+            mkdir($tmpDirectory, 0755, true);
     }
 
-    public function buildPackage(string $projectPath): string
+    public function build(string $pathToProjectFile): void
     {
         $outDirectory = $this->tmpDirectory . DIRECTORY_SEPARATOR . '_package_' . time();
-        $proj = PathUtils::findProj($projectPath);
-        $director = new BuildManager($proj);
-        $director->build($outDirectory);
-        $scanner = $director->getScanner();
+        $configurationCollection = $this->configurationCollector->collect($pathToProjectFile);
+        $this->buildManager->buildFromConfigurationCollection($configurationCollection, $outDirectory);
+        $configuration = $configurationCollection->getMainConfiguration();
 
-        $configuration = $scanner->getConfiguration();
-        $name = $configuration['name'];
-        $version = $configuration['version'];
-        $packageManifest = [
-            'name' => $name,
-            'version' => $version,
-            'author' => $configuration['author'] ?? null,
-            'description' => $configuration['description'] ?? null,
-            'depends' => $scanner->getPackages(),
+        $packageMetadata = [
+            'name' => $configuration->getName(),
+            'version' => $configuration->getVersion(),
+            'author' => $configuration->getAuthor(),
+            'description' => $configuration->getDescription(),
+            'depends' => $configurationCollection->getPackages(),
             'hashes' => []
         ];
 
@@ -45,22 +50,22 @@ class PackageBuilder
         foreach (glob($outDirectory . DIRECTORY_SEPARATOR . '*') as $path) {
             $localPath = substr($path, $prefixLength);
             $packageFiles[$localPath] = $path;
-            $packageManifest['hashes'][$localPath] = hash_file('sha256', $path);
+            $packageMetadata['hashes'][$localPath] = hash_file('sha256', $path);
         }
-        $packageName = PathUtils::getPackageName($name, $version);
-        $packagePath = $this->packagesDirectory . DIRECTORY_SEPARATOR . $packageName;
+
+        $packagePath = $this->localManager->getLocalPath($configuration->getName(), $configuration->getVersion());
         if (file_exists($packagePath))
             unlink($packagePath);
-        $phar = new Phar($this->packagesDirectory . DIRECTORY_SEPARATOR . $packageName);
+
+        $phar = new Phar($packagePath);
         $phar->startBuffering();
         $phar->buildFromIterator(new ArrayIterator($packageFiles));
-        $phar->setMetadata($packageManifest);
+        $phar->setMetadata($packageMetadata);
         $phar->stopBuffering();
         foreach ($packageFiles as $path) {
             unlink($path);
         }
         rmdir($outDirectory);
-        echo "Package {$packageName} built\n";
-        return $packagePath;
+        echo "Package {$configuration->getName()} built\n";
     }
 }

@@ -2,6 +2,7 @@
 
 namespace PPM\Commands;
 
+use Packages\PackagesController;
 use PPM\Commands\Contracts\CommandBase;
 use Exception;
 use Packages\PackageManager;
@@ -24,7 +25,7 @@ class Auth extends CommandBase
         pclose($f);
         echo "\n";
 
-        $manager = new PackageManager();
-        $manager->getRemote()->auth($source, $login, $password);
+        $packageController = new PackagesController();
+        $packageController->getSources()->authorize($source, $login, $password);
     }
 }

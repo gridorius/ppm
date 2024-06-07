@@ -58,7 +58,7 @@ class EntityFinder
                     $doubleColon = false;
             }
 
-            if ($version >= 8 && in_array($token[0], [T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED]))
+            if ($version >= 8 && in_array($token[0], [T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED]) && $state == 'namespace')
                 $namespace = $token[1];
         }
 

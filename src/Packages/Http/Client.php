@@ -6,11 +6,16 @@ use Closure;
 
 class Client
 {
-    protected Closure $progressFunction;
+    protected ?Closure $progressFunction;
 
     public function setProgressFunction(Closure $function)
     {
         $this->progressFunction = $function;
+    }
+
+    public function resetProgressFunction()
+    {
+        $this->progressFunction = null;
     }
 
     public function get(string $url): QueryBuilder

@@ -1,3 +1,7 @@
 <?php
-Assembly::getInstance()->registerAssembly('PROJECT_NAME');
-__HALT_COMPILER(); ?>
+
+use Assembly\Assembly;
+
+Phar::mapPhar('PROJECT_NAME');
+Assembly::getInstance()->registerAssembly('PROJECT_NAME', __DIR__);
+__HALT_COMPILER();

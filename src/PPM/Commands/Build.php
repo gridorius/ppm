@@ -3,6 +3,8 @@
 namespace PPM\Commands;
 
 use Builder\BuildManager;
+use Builder\Configuration\ConfigurationCollector;
+use Packages\PackagesController;
 use PPM\Commands\Contracts\CommandBase;
 use Exception;
 use Packages\PackageManager;
@@ -12,7 +14,7 @@ class Build extends CommandBase
 {
     public function execute(array $argv)
     {
-        $outDir = $argv[0] ?? getcwd().'/out';
+        $outDir = $argv[0] ?? getcwd() . '/out';
         $buildDir = $argv[1] ?? getcwd();
 
         $currentDir = getcwd();
@@ -23,14 +25,14 @@ class Build extends CommandBase
         }
 
         $outDir = PathUtils::resolveRelativePath($currentDir, $outDir);
-        $projPath = PathUtils::findProj($buildDir);
+        $pathToProjectFile = PathUtils::findProj($buildDir);
+        $packageController = new PackagesController();
+        $buildManager = new BuildManager();
 
-        $packageManager = new PackageManager();
-        $packageManager->restore($projPath);
-        $buildManager = new BuildManager($projPath);
-        $buildManager->build($outDir);
-        $packages = $buildManager->getScanner()->getPackages();
-        $paths = $packageManager->getPackagesRecursive($packages);
-        $packageManager->unpackPackages($paths, $outDir);
+        $configurationCollection = (new ConfigurationCollector())->collect($pathToProjectFile);
+        $packageController->getRemoteManager()->restore($configurationCollection);
+        $buildManager->buildFromConfigurationCollection($configurationCollection, $outDir);
+        $buildManager->AddAssemblyPhar($outDir);
+        $packageController->getLocalManager()->unpackPackagesRecursive($configurationCollection, $outDir);
     }
 }

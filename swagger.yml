@@ -198,8 +198,6 @@ components:
     Package:
       type: object
       properties:
-        source:
-          type: string
         name:
           type: string
         version:
