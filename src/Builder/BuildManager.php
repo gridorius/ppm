@@ -2,6 +2,7 @@
 
 namespace Builder;
 
+use Assembly\Utils;
 use Builder\Configuration\ConfigurationCollector;
 use Builder\Configuration\Contracts\IConfigurationCollection;
 use Builder\Configuration\Contracts\IConfigurationCollector;
@@ -44,7 +45,7 @@ class BuildManager implements IBuildManager
 
     public function AddAssemblyPhar(string $outDirectory): void
     {
-        copy(\Phar::running() . DIRECTORY_SEPARATOR . 'Assembly.phar', $outDirectory);
+        copy(Utils::path('Assembly.phar'), $outDirectory);
     }
 
     protected function buildProjects(IConfigurationCollection $configurationCollection, string $outDirectory): void
@@ -64,9 +65,9 @@ class BuildManager implements IBuildManager
         $configuration = $projectStructure->getProjectInfo()->getConfiguration();
         $manifestInfo = $projectStructure->getManifestInfo();
         echo ShellStyleParser::style("<b,green>{$configuration->getName()}<e>:<blue>{$configuration->getVersion()}<e> built in {$passed}s\n");
-        echo "\tTypes: {$manifestInfo->getTypeCount()}"
-            . "\tResources: {$manifestInfo->getResourcesCount()}"
-            . "\tIncludes: {$manifestInfo->getIncludesCount()}"
-            . "\tDepends: {$manifestInfo->getDependsCount()}\n";
+        echo ShellStyleParser::style("\tTypes: <green>{$manifestInfo->getTypeCount()}<e>"
+            . "\tResources: <green>{$manifestInfo->getResourcesCount()}<e>"
+            . "\tIncludes: <green>{$manifestInfo->getIncludesCount()}<e>"
+            . "\tDepends: <green>{$manifestInfo->getDependsCount()}<e>\n");
     }
 }

@@ -19,9 +19,13 @@ class ShellStyleParser
     {
         return preg_replace_callback("/<(.+?)>/", function ($matches) {
             $styles = explode(',', $matches[1]);
-            return "\033[" . implode(';', array_map(function ($style) {
-                    return static::$replacement[$style];
-                }, $styles)) . "m";
+            if (key_exists($styles[0], static::$replacement)) {
+                return "\033[" . implode(';', array_map(function ($style) {
+                        return static::$replacement[$style];
+                    }, $styles)) . "m";
+            } else {
+                return $matches[0];
+            }
         }, $data);
     }
 }

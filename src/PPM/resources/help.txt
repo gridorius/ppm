@@ -1,19 +1,16 @@
-- build [options] [build directory] - build project
-        build directory, default current directory
-        -o out directory, default current directory/out
+<b,green>ppm<e> <blue><command> [options]<e>
 
-- build package [build directory] - build package
-        build directory, default current directory
-        -p <source> - to auto upload created package
-
-- auth <source> <login> - login to source
-
-- sources [add|delete] <source> - add/delete source
-
-- sources list - show list of sources
-
-- restore [project directory] - restore packages
+commands:
+<b,green>build<e> <blue>[options] [build directory]<e> - build project
+		build directory, default current directory
+		-o out directory, default current directory/out
+<b,green>build package<e> <blue>[build directory]<e> - build package
+		build directory, default current directory
+<b,green>auth<e> <blue><source> <login><e> - login to remote registry
+<b,green>sources add<e> <blue><source><e> - add remote registry
+<b,green>sources delete<e> <blue><source><e> - delete remote registry
+<b,green>sources list<e> - show list of sources
+<b,green>restore<e> <blue>[project directory]<e> - restore packages
 		project directory, default current directory
-
-- packages upload <source> [build directory] - upload package
-        build directory, default current directory
+<b,green>packages upload<e> <blue><source> [build directory]<e> - upload package
+		build directory, default current directory

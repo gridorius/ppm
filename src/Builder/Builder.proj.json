@@ -1,6 +1,7 @@
 {
   "projectReferences": [
-    "../Utils/Utils.proj.json"
+    "../Utils/Utils.proj.json",
+    "../Terminal/Terminal.proj.json"
   ],
   "exclude": "templates/*.php",
   "resources":[
