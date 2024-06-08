@@ -27,7 +27,7 @@ class ProjectStructureBuilder implements IProjectStructureBuilder
         foreach ($files as $path => $relativePath) {
             $foundTypes = EntityFinder::findByTokens($path);
             foreach ($foundTypes as $type) {
-                $localPath = 'types/' . $type . '.php';
+                $localPath = 'types/' . $relativePath;
                 $types[$type] = $localPath;
                 $structure->addPharFile($localPath, $path);
             }
@@ -68,7 +68,7 @@ class ProjectStructureBuilder implements IProjectStructureBuilder
         $includes = [];
         foreach ($includeFiles as $path => $relativePath) {
             $localPath = 'includes/' . $relativePath;
-            $includes[$relativePath] = $localPath;
+            $includes[] = $localPath;
             $structure->addPharFile($localPath, $path);
         }
         $structure->getManifestBuilder()->setIncludes($includes);

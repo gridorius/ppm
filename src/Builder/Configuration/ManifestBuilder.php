@@ -48,9 +48,23 @@ class ManifestBuilder implements IManifestBuilder, IManifestInformation
         $this->manifest['includes'] = $includes;
     }
 
-    public function build(): array
+    public function buildForJson(): array
     {
         return $this->manifest;
+    }
+
+    public function buildForPhp(): array
+    {
+        $phpManifest = $this->manifest;
+        $phpManifest['includes'] = [];
+        $prefix = "phar://{$this->manifest['name']}/";
+        foreach ($this->manifest['types'] as $type => $path)
+            $phpManifest['types'][$type] = $prefix . $path;
+        foreach ($this->manifest['resources'] as $name => $path)
+            $phpManifest['resources'][$name] = $prefix . $path;
+        foreach ($this->manifest['includes'] as $path)
+            $phpManifest['includes'][] = $prefix . $path;
+        return $phpManifest;
     }
 
     public function getTypeCount(): int

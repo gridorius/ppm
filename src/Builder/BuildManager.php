@@ -45,7 +45,7 @@ class BuildManager implements IBuildManager
 
     public function AddAssemblyPhar(string $outDirectory): void
     {
-        copy(Utils::path('Assembly.phar'), $outDirectory);
+        copy(Utils::path('Assembly.phar'), $outDirectory . DIRECTORY_SEPARATOR . 'Assembly.phar');
     }
 
     protected function buildProjects(IConfigurationCollection $configurationCollection, string $outDirectory): void

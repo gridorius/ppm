@@ -70,7 +70,8 @@ class FileStructure
             $offset = strlen($projectDirectory) + 1;
             foreach ($items as $item) {
                 if (fnmatch($projectDirectory . DIRECTORY_SEPARATOR . '*', $item, FNM_NOESCAPE) && !$itemList[$item]) {
-                    $projectsFiles[$projectDirectory][$item] = substr($item, $offset);
+                    $relativePath = preg_replace("/\\\\/", "/", substr($item, $offset));
+                    $projectsFiles[$projectDirectory][$item] = $relativePath;
                     $itemList[$item] = true;
                 }
             }

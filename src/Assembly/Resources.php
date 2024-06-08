@@ -20,7 +20,6 @@ class Resources
 
     public static function get(string $name): Resource
     {
-        $name = preg_replace("/\//", DIRECTORY_SEPARATOR, $name);
         if (!static::has($name))
             throw new Exception("Resource {$name} not found");
 

@@ -27,7 +27,7 @@ class Assembly
         return key_exists($name, $this->phars);
     }
 
-    public function getType(string $name): string
+    public function getTypePath(string $name): string
     {
         return $this->types[$name];
     }
@@ -41,7 +41,7 @@ class Assembly
     {
         spl_autoload_register(function ($entity) {
             if ($this->hasType($entity))
-                require $this->getType($entity);
+                require $this->getTypePath($entity);
         });
     }
 
@@ -60,7 +60,7 @@ class Assembly
 
     public function registerAssembly(string $name, string $directory)
     {
-        if (key_exists($name, $this->phars)) return;
+        if ($this->hasPhar($name)) return;
         $path = "phar://{$name}";
         $this->phars[$name] = $path;
         $manifest = include $path . '/manifest.php';

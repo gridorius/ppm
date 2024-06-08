@@ -75,22 +75,14 @@ class ProjectBuilder implements IProjectBuilder
     {
         $phar->addFromString(
             'manifest.json',
-            json_encode($manifestBuilder->build(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+            json_encode($manifestBuilder->buildForJson(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
         );
     }
 
     protected function makePhpManifest(Phar $phar, IManifestBuilder $manifestBuilder)
     {
-        $phpManifest = $manifest = $manifestBuilder->build();
-        $prefix = "phar://{$manifest['name']}/";
-        foreach ($manifest['types'] as $type => $path)
-            $phpManifest['types'][$type] = $prefix . $path;
-        foreach ($manifest['resources'] as $name => $path)
-            $phpManifest['resources'][$name] = $prefix . $path;
-        foreach ($manifest['includes'] as $path)
-            $phpManifest['includes'][] = $prefix . $path;
-
-        $phar->addFromString('manifest.php', "<?php\n return " . var_export($phpManifest, true) . ";\n");
+        $manifest = $manifestBuilder->buildForPhp();
+        $phar->addFromString('manifest.php', "<?php\n return " . var_export($manifest, true) . ";\n");
     }
 
     protected function createPhar(string $outDirectory, IProjectConfiguration $projectConfiguration): Phar

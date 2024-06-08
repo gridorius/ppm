@@ -16,5 +16,7 @@ interface IManifestBuilder
 
     public function setIncludes(array $includes): void;
 
-    public function build(): array;
+    public function buildForJson(): array;
+
+    public function buildForPhp(): array;
 }
