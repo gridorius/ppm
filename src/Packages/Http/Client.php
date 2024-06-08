@@ -58,7 +58,7 @@ class Client
             if (count($header) == 2) {
                 $responseHeaders[$header[0]] = $header[1];
             } else {
-                [$protocol, $code, $status] = explode(' ', $header, 3);
+                [$protocol, $code, $status] = $header;
                 $responseHeaders['protocol'] = $protocol;
                 $responseHeaders['code'] = $code;
                 $responseHeaders['status'] = $status;
