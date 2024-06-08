@@ -3,6 +3,7 @@
 namespace Builder\Configuration;
 
 use Builder\Configuration\Contracts\IConfigurationFileFilter;
+use Utils\PathUtils;
 
 class ProjectFileFilter implements IConfigurationFileFilter
 {
@@ -11,6 +12,11 @@ class ProjectFileFilter implements IConfigurationFileFilter
     public function __construct(array $filter)
     {
         $this->filter = $filter;
+        if (WIN) {
+            $this->filter['include'] = PathUtils::preparePathForWindows($this->filter['include']);
+            if ($this->hasExclude())
+                $this->filter['exclude'] = PathUtils::preparePathForWindows($this->filter['exclude']);
+        }
     }
 
     public function getExclude(): ?string

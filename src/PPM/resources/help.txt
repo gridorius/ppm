@@ -1,0 +1,19 @@
+- build [options] [build directory] - build project
+        build directory, default current directory
+        -o out directory, default current directory/out
+
+- build package [build directory] - build package
+        build directory, default current directory
+        -p <source> - to auto upload created package
+
+- auth <source> <login> - login to source
+
+- sources [add|delete] <source> - add/delete source
+
+- sources list - show list of sources
+
+- restore [project directory] - restore packages
+		project directory, default current directory
+
+- packages upload <source> [build directory] - upload package
+        build directory, default current directory

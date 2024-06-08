@@ -10,10 +10,17 @@ class SourceList extends CommandBase
     public function execute(array $argv)
     {
         $packageController = new PackagesController();
+        $sources = $packageController->getSources();
+
+        if (count($sources) == 0) {
+            echo "Sources is empty\n";
+            return;
+        }
+
         echo "Package sources:\n";
-        foreach ($packageController->getSources() as $path => $source) {
+        foreach ($sources as $path => $source) {
             $authorized = $source->hasToken() ? 'true' : 'false';
-            echo "\t{$path}, Authorized: {$authorized}\n";
+            echo "\t{$path}, Has token: {$authorized}\n";
         }
     }
 }

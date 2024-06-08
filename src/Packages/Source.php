@@ -29,7 +29,7 @@ class Source implements ISource
         return $this->path;
     }
 
-    public function getToken(): string
+    public function getToken(): ?string
     {
         return $this->token;
     }

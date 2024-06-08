@@ -10,7 +10,7 @@ interface ISource extends JsonSerializable
 
     public function getPath(): string;
 
-    public function getToken(): string;
+    public function getToken(): ?string;
 
     public function hasToken(): bool;
 

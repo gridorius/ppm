@@ -2,12 +2,13 @@
 
 namespace Packages\Contracts;
 
+use Countable;
 use Iterator;
 
 /**
  * Iterato
  */
-interface ISources extends Iterator
+interface ISources extends Iterator, Countable
 {
     public function add(ISource $source): void;
 

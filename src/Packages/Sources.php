@@ -113,4 +113,9 @@ class Sources implements ISources
             json_encode($this->sources, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
         );
     }
+
+    public function count()
+    {
+        return count($this->sources);
+    }
 }

@@ -25,8 +25,8 @@ class ProjectStructureBuilder implements IProjectStructureBuilder
         $files = $structure->getProjectInfo()->filterFiles($configuration);
         $types = [];
         foreach ($files as $path => $relativePath) {
-            $types = EntityFinder::findByTokens($path);
-            foreach ($types as $type) {
+            $foundTypes = EntityFinder::findByTokens($path);
+            foreach ($foundTypes as $type) {
                 $localPath = 'types/' . $type . '.php';
                 $types[$type] = $localPath;
                 $structure->addPharFile($localPath, $path);

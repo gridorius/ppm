@@ -6,20 +6,24 @@ use Builder\BuildManager;
 use Builder\Configuration\ConfigurationCollector;
 use Packages\PackagesController;
 use PPM\Commands\Contracts\CommandBase;
+use Terminal\OptionParser;
 use Utils\PathUtils;
 
 class Build extends CommandBase
 {
+    private array $options = [
+        'o' => true
+    ];
+
     public function execute(array $argv)
     {
-        $outDir = $argv[0] ?? getcwd() . '/out';
-        $buildDir = $argv[1] ?? getcwd();
-
+        $options = OptionParser::parse($argv, $this->options);
+        $outDir = $options['o'] ?? getcwd() . '/out';
         $currentDir = getcwd();
-        if (empty($buildDir)) {
+        if (empty($argv[0])) {
             $buildDir = $currentDir;
         } else {
-            $buildDir = PathUtils::resolveRelativePath($currentDir, $buildDir);
+            $buildDir = PathUtils::resolveRelativePath($currentDir, $argv[0]);
         }
 
         $outDir = PathUtils::resolveRelativePath($currentDir, $outDir);

@@ -4,6 +4,12 @@
   "author": "Nikita Akimov gridorius@yandex.ru",
   "runner": "ppm",
   "entrypoint": "PPM\\Program",
+  "exclude": "resources/*",
+  "resources": [
+    {
+      "include": "resources/*"
+    }
+  ],
   "projectReferences": [
     "../Terminal/Terminal.proj.json",
     "../Utils/Utils.proj.json",

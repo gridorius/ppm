@@ -81,8 +81,7 @@ class ProjectBuilder implements IProjectBuilder
 
     protected function makePhpManifest(Phar $phar, IManifestBuilder $manifestBuilder)
     {
-        $manifest = $manifestBuilder->build();
-        $phpManifest = [];
+        $phpManifest = $manifest = $manifestBuilder->build();
         $prefix = "phar://{$manifest['name']}/";
         foreach ($manifest['types'] as $type => $path)
             $phpManifest['types'][$type] = $prefix . $path;
