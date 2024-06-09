@@ -3,14 +3,14 @@
 namespace PPM\Commands;
 
 use Packages\PackagesController;
-use PPM\Commands\Contracts\CommandBase;
+use Terminal\CommandRouting\CommandBase;
 use Utils\PathUtils;
 
 class BuildPackage extends CommandBase
 {
-    public function execute(array $argv)
+    public function execute(array $parameters, array $options): void
     {
-        $buildDir = $argv[0] ?? getcwd();
+        $buildDir = $parameters['build_directory'];
         $pathToProjectFile = PathUtils::findProj($buildDir);
         $packageController = new PackagesController();
         $packageBuilder = $packageController->getBuilder();

@@ -1,6 +1,7 @@
 {
   "projectReferences": [
     "../Builder/Builder.proj.json",
-    "../Utils/Utils.proj.json"
+    "../Utils/Utils.proj.json",
+    "../PpmRegistry/Registry.proj.json"
   ]
 }

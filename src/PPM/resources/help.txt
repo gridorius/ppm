@@ -1,16 +1,19 @@
-<b,green>ppm<e> <blue><command> [options]<e>
+<s style='b,green'>ppm</s> <s style='blue'><command> [options]</s>
 
-commands:
-<b,green>build<e> <blue>[options] [build directory]<e> - build project
+    <s style='b,green'>build</s> <s style='blue'>[options] [build_directory]</s> - build project
 		build directory, default current directory
 		-o out directory, default current directory/out
-<b,green>build package<e> <blue>[build directory]<e> - build package
+    <s style='b,green'>packages build</s> <s style='blue'>[build_directory]</s> - build package
 		build directory, default current directory
-<b,green>auth<e> <blue><source> <login><e> - login to remote registry
-<b,green>sources add<e> <blue><source><e> - add remote registry
-<b,green>sources delete<e> <blue><source><e> - delete remote registry
-<b,green>sources list<e> - show list of sources
-<b,green>restore<e> <blue>[project directory]<e> - restore packages
+    <s style='b,green'>auth</s> <s style='blue'><source> <login></s> - login to remote registry
+    <s style='b,green'>sources add</s> <s style='blue'><source></s> - add remote registry
+    <s style='b,green'>sources delete</s> <s style='blue'><source></s> - delete remote registry
+    <s style='b,green'>sources list</s> - show list of sources
+    <s style='b,green'>restore</s> <s style='blue'>[restore_directory]</s> - restore packages
 		project directory, default current directory
-<b,green>packages upload<e> <blue><source> [build directory]<e> - upload package
+    <s style='b,green'>packages upload</s> <blue><source> [build_directory]</s> - upload package
 		build directory, default current directory
+    <s style='b,green'>packages list</s> - show list of local packages
+    <s style='b,green'>install</s> - create ppm to PATH directories
+		windows - C:\Windows\ppm.bat
+		linux - /usr/bin/ppm

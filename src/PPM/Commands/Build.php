@@ -5,25 +5,24 @@ namespace PPM\Commands;
 use Builder\BuildManager;
 use Builder\Configuration\ConfigurationCollector;
 use Packages\PackagesController;
-use PPM\Commands\Contracts\CommandBase;
+use Terminal\CommandRouting\CommandBase;
 use Terminal\OptionParser;
 use Utils\PathUtils;
 
 class Build extends CommandBase
 {
-    private array $options = [
+    protected array $options = [
         'o' => true
     ];
 
-    public function execute(array $argv)
+    public function execute(array $parameters, array $options): void
     {
-        $options = OptionParser::parse($argv, $this->options);
         $outDir = $options['o'] ?? getcwd() . '/out';
         $currentDir = getcwd();
-        if (empty($argv[0])) {
+        if (is_null($parameters['build_directory'])) {
             $buildDir = $currentDir;
         } else {
-            $buildDir = PathUtils::resolveRelativePath($currentDir, $argv[0]);
+            $buildDir = PathUtils::resolveRelativePath($currentDir, $parameters['build_directory']);
         }
 
         $outDir = PathUtils::resolveRelativePath($currentDir, $outDir);
@@ -35,6 +34,6 @@ class Build extends CommandBase
         $packageController->getRemoteManager()->restore($configurationCollection);
         $buildManager->buildFromConfigurationCollection($configurationCollection, $outDir);
         $buildManager->AddAssemblyPhar($outDir);
-        $packageController->getLocalManager()->unpackPackagesRecursive($configurationCollection, $outDir);
+        $packageController->unpackPackagesRecursive($configurationCollection, $outDir);
     }
 }

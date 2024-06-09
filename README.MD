@@ -65,32 +65,3 @@
   ]
 }
 ```
-
-### Команды:
-```
-ppm <command> [arguments]
-
-commands:
-- build [out directory] [build directory] - Собирает проект
-        build directory - по умолчанию текущая директория
-        out directory - по умолчанию создает директорию out в текущей
-        
-- build package [build directory] - Собирает пакет
-        build directory - по умолчанию текущая директория
-        -p <source> - Загрузить проект в реестр
-                      source - реестр
-        
-- auth <source> <login> - Авторизироваться в удаленном реестре
-        source - реестр
-        login - Логин
-        
-- sources [add|delete] <source> - add/delete source
-        add - добавить источник source в каталог
-        delete - удалить источник source из каталога
-        
-- restore - Загрузить зависимости проекта в локальный реестр
-
-- packages upload <source> [build directory] - Загружает собраный пакет в реестр
-        build directory - по умолчанию текущая директория
-        source - реестр
-```

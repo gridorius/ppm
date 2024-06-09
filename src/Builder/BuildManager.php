@@ -64,10 +64,10 @@ class BuildManager implements IBuildManager
     {
         $configuration = $projectStructure->getProjectInfo()->getConfiguration();
         $manifestInfo = $projectStructure->getManifestInfo();
-        echo ShellStyleParser::style("<b,green>{$configuration->getName()}<e>:<blue>{$configuration->getVersion()}<e> built in {$passed}s\n");
-        echo ShellStyleParser::style("\tTypes: <green>{$manifestInfo->getTypeCount()}<e>"
-            . "\tResources: <green>{$manifestInfo->getResourcesCount()}<e>"
-            . "\tIncludes: <green>{$manifestInfo->getIncludesCount()}<e>"
-            . "\tDepends: <green>{$manifestInfo->getDependsCount()}<e>\n");
+        echo ShellStyleParser::style("<s style='b,green'>{$configuration->getName()}</s>:<s style='blue'>{$configuration->getVersion()}</s> built in {$passed}s\n");
+        echo ShellStyleParser::style("\tTypes: <s style='green'>{$manifestInfo->getTypeCount()}</s>"
+            . "\tResources: <s style='green'>{$manifestInfo->getResourcesCount()}</s>"
+            . "\tIncludes: <s style='green'>{$manifestInfo->getIncludesCount()}</s>"
+            . "\tDepends: <s style='green'>{$manifestInfo->getDependsCount()}</s>\n");
     }
 }

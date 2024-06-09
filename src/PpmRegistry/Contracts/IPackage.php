@@ -1,6 +1,6 @@
 <?php
 
-namespace Packages\Contracts;
+namespace PpmRegistry\Contracts;
 
 interface IPackage
 {

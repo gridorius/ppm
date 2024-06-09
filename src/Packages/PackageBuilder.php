@@ -7,9 +7,9 @@ use Builder\BuildManager;
 use Builder\Configuration\ConfigurationCollector;
 use Builder\Configuration\Contracts\IConfigurationCollector;
 use Builder\Contracts\IBuildManager;
-use Packages\Contracts\ILocalManager;
 use Packages\Contracts\IPackageBuilder;
 use Phar;
+use PpmRegistry\Contracts\ILocalManager;
 
 class PackageBuilder implements IPackageBuilder
 {

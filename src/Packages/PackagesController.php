@@ -3,10 +3,11 @@
 namespace Packages;
 
 use Assembly\Utils;
-use Packages\Contracts\ILocalManager;
+use Builder\Configuration\Contracts\IConfigurationCollection;
 use Packages\Contracts\IPackageBuilder;
 use Packages\Contracts\IRemoteManager;
 use Packages\Contracts\ISources;
+use PpmRegistry\Contracts\ILocalManager;
 
 class PackagesController
 {
@@ -25,12 +26,12 @@ class PackagesController
         $this->builder = new PackageBuilder($this->localManager, Utils::path('tmp'));
     }
 
-    public function addSource(string $source)
+    public function addSource(string $source): void
     {
         $this->sources->add(new Source($source));
     }
 
-    public function deleteSource(string $source)
+    public function deleteSource(string $source): void
     {
         $this->sources->delete(new Source($source));
     }
@@ -53,5 +54,22 @@ class PackagesController
     public function getBuilder(): IPackageBuilder
     {
         return $this->builder;
+    }
+
+    public function unpackPackagesRecursive(IConfigurationCollection $configurationCollection, string $outDirectory): void
+    {
+        $packages = $configurationCollection->getPackages();
+        $this->unpackPackages($packages, $outDirectory);
+    }
+
+    private function unpackPackages(array $packages, string $outDirectory): void
+    {
+        foreach ($packages as $name => $version) {
+            if (is_null($localPackage = $this->localManager->get($name, $version)))
+                throw new \Exception("Package {$name}:{$version} not found in local registry");
+
+            $localPackage->unpack($outDirectory);
+            $this->unpackPackages($localPackage->getDepends(), $outDirectory);
+        }
     }
 }

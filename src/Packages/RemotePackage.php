@@ -4,15 +4,12 @@ namespace Packages;
 
 use Packages\Contracts\IRemotePackage;
 use Packages\Contracts\ISource;
+use PpmRegistry\Contracts\PackageBase;
 
 class RemotePackage extends PackageBase implements IRemotePackage
 {
 
     private ISource $source;
-
-    /**
-     * @var IRemotePackage[]
-     */
     private array $depends;
 
     /**
@@ -20,13 +17,11 @@ class RemotePackage extends PackageBase implements IRemotePackage
      * @param string $version
      * @param array $depends
      */
-    public function __construct(string $name, string $version, ISource $source, array $depends)
+    public function __construct(string $name, string $version, ISource $source, array $depends = [])
     {
         parent::__construct($name, $version);
         $this->source = $source;
-        $this->depends = [];
-        foreach ($depends as $depend)
-            $this->depends[] = new RemotePackage($depend['name'], $depend['version'], $source, $depend['depends']);
+        $this->depends = $depends;
     }
 
     public function getDepends(): array

@@ -3,11 +3,11 @@
 namespace PPM\Commands;
 
 use Packages\PackagesController;
-use PPM\Commands\Contracts\CommandBase;
+use Terminal\CommandRouting\CommandBase;
 
 class SourceList extends CommandBase
 {
-    public function execute(array $argv)
+    public function execute(array $parameters, array $options): void
     {
         $packageController = new PackagesController();
         $sources = $packageController->getSources();

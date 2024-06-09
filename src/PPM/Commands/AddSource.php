@@ -3,18 +3,16 @@
 namespace PPM\Commands;
 
 use Packages\PackagesController;
-use PPM\Commands\Contracts\CommandBase;
 use Exception;
+use Terminal\CommandRouting\CommandBase;
 
 class AddSource extends CommandBase
 {
 
-    public function execute(array $argv)
+    public function execute(array $parameters, array $options): void
     {
-        if (empty($argv[0]))
-            throw new Exception("Expected parameter source");
         $packageController = new PackagesController();
-        $packageController->addSource($argv[0]);
-        echo "Source {$argv[0]} added\n";
+        $packageController->addSource($parameters['source']);
+        echo "Source {$parameters['source']} added\n";
     }
 }

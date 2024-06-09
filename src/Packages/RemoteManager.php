@@ -5,14 +5,14 @@ namespace Packages;
 use Builder\Configuration\Contracts\IConfigurationCollection;
 use Closure;
 use Exception;
-use Packages\Contracts\ILocalManager;
-use Packages\Contracts\ILocalPackage;
 use Packages\Contracts\IRemoteManager;
 use Packages\Contracts\IRemotePackage;
 use Packages\Contracts\ISource;
 use Packages\Contracts\ISources;
 use Packages\Http\Client;
 use Packages\Http\Response;
+use PpmRegistry\Contracts\ILocalManager;
+use PpmRegistry\Contracts\ILocalPackage;
 
 class RemoteManager implements IRemoteManager
 {
@@ -21,9 +21,6 @@ class RemoteManager implements IRemoteManager
 
     private ILocalManager $localManager;
 
-    /**
-     * @param ISources $sources
-     */
     public function __construct(ISources $sources, ILocalManager $localManager)
     {
         $this->sources = $sources;
@@ -73,7 +70,7 @@ class RemoteManager implements IRemoteManager
             ->awaitCodes([400, 401, 403], $this->getErrorResponseCallback());
     }
 
-    public function download(IRemotePackage $remotePackage): void
+    public function download(IRemotePackage $remotePackage): ILocalPackage
     {
         $this->client->setProgressFunction(function ($percent) use ($remotePackage) {
             echo "Download package {$remotePackage->getName()}:{$remotePackage->getVersion()} - {$percent}%\r";
@@ -88,12 +85,14 @@ class RemoteManager implements IRemoteManager
             ->headers($remotePackage->getSource()->makeAuthHeaders())
             ->execute();
 
+        $localPackage = null;
         $response
-            ->awaitCode(200, function (Response $response) use ($remotePackage) {
-                $this->localManager->save($remotePackage->getName(), $remotePackage->getVersion(), $response['content']);
+            ->awaitCode(200, function (Response $response) use ($remotePackage, &$localPackage) {
+                $localPackage = $this->localManager->save($remotePackage->getName(), $remotePackage->getVersion(), $response['content']);
             })
             ->awaitCodes([400, 401, 403, 404], $this->getErrorResponseCallback());
         $this->client->resetProgressFunction();
+        return $localPackage;
     }
 
     public function restore(IConfigurationCollection $configurationCollection): void
@@ -102,11 +101,10 @@ class RemoteManager implements IRemoteManager
         $this->restorePackages($packages);
     }
 
-    private function restorePackages(array $packages)
+    private function restorePackages(array $packages): void
     {
         foreach ($packages as $name => $version) {
-            if ($this->localManager->exist($name, $version)) {
-                $localPackage = $this->localManager->get($name, $version);
+            if (!is_null($localPackage = $this->localManager->get($name, $version))) {
                 $this->restorePackages($localPackage->getDepends());
             } else {
                 $package = $this->find($name, $version);
@@ -119,12 +117,12 @@ class RemoteManager implements IRemoteManager
         }
     }
 
-    private function restoreRemoteDepends(IRemotePackage $remotePackage)
+    private function restoreRemoteDepends(IRemotePackage $remotePackage): void
     {
-        foreach ($remotePackage->getDepends() as $depend) {
-            if (!$this->localManager->exist($depend->getName(), $depend->getVersion())) {
-                $this->download($depend);
-                $this->restoreRemoteDepends($depend);
+        foreach ($remotePackage->getDepends() as $name => $version) {
+            if (is_null($this->localManager->get($name, $version))) {
+                $localPackage = $this->download(new RemotePackage($name, $version, $remotePackage->getSource()));
+                $this->restorePackages($localPackage->getDepends());
             }
         }
     }

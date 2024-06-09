@@ -3,6 +3,7 @@
 namespace Packages\Contracts;
 
 use Builder\Configuration\Contracts\IConfigurationCollection;
+use PpmRegistry\Contracts\ILocalPackage;
 
 interface IRemoteManager
 {
@@ -15,7 +16,7 @@ interface IRemoteManager
 
     public function upload(ILocalPackage $localPackage, ISource $source): void;
 
-    public function download(IRemotePackage $remotePackage): void;
+    public function download(IRemotePackage $remotePackage): ILocalPackage;
 
     public function restore(IConfigurationCollection $configurationCollection): void;
 }
