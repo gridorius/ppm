@@ -4,11 +4,12 @@ namespace Packages;
 
 use Builder\Configuration\Contracts\IConfigurationCollection;
 use Closure;
-use Exception;
 use Packages\Contracts\IRemoteManager;
 use Packages\Contracts\IRemotePackage;
 use Packages\Contracts\ISource;
 use Packages\Contracts\ISources;
+use Packages\Exceptions\BadRequestException;
+use Packages\Exceptions\PackageNotFoundException;
 use Packages\Http\Client;
 use Packages\Http\Response;
 use PpmRegistry\Contracts\ILocalManager;
@@ -109,7 +110,7 @@ class RemoteManager implements IRemoteManager
             } else {
                 $package = $this->find($name, $version);
                 if (is_null($package))
-                    throw new Exception("Package {$name}:{$version} not found");
+                    throw new PackageNotFoundException("Package {$name}:{$version} not found");
 
                 $this->download($package);
                 $this->restoreRemoteDepends($package);
@@ -130,7 +131,7 @@ class RemoteManager implements IRemoteManager
     private function getErrorResponseCallback(): Closure
     {
         return function (Response $response) {
-            throw new Exception($response->json()['error']);
+            throw new BadRequestException($response->json()['error']);
         };
     }
 }

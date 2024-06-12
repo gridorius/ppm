@@ -13,8 +13,8 @@ class LocalManager extends \PpmRegistry\LocalManager
 
     public function get(string $name, string $findVersion): ?IUnpack
     {
-        if (!key_exists($name, $this->localPackages)) return null;
-        if (is_null($version = $this->findLastVersion($name, $findVersion))) return null;
+        if (!key_exists($name, $this->localPackages) || is_null($version = $this->findLastVersion($name, $findVersion)))
+            return null;
         return $this->localPackages[$name][$version];
     }
 }
