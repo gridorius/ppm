@@ -2,6 +2,7 @@
 
 namespace Packages;
 
+use Exception;
 use Packages\Contracts\ISource;
 use Packages\Contracts\ISources;
 use Packages\Http\Client;
@@ -64,17 +65,17 @@ class Sources implements ISources
         return $this->keys[$this->index];
     }
 
-    public function next()
+    public function next(): void
     {
         ++$this->index;
     }
 
-    public function valid()
+    public function valid(): bool
     {
         return isset($this->keys[$this->index]);
     }
 
-    public function rewind()
+    public function rewind(): void
     {
         $this->index = 0;
     }
@@ -97,7 +98,7 @@ class Sources implements ISources
                 $this->add($source);
             })
             ->awaitCode(400, function () {
-                throw new \Exception('Authorization failed');
+                throw new Exception('Authorization failed');
             });
     }
 
@@ -106,7 +107,7 @@ class Sources implements ISources
         $this->keys = array_keys($this->sources);
     }
 
-    private function updateFile()
+    private function updateFile(): void
     {
         file_put_contents(
             $this->sourcesFilePath,
@@ -114,7 +115,7 @@ class Sources implements ISources
         );
     }
 
-    public function count()
+    public function count(): int
     {
         return count($this->sources);
     }

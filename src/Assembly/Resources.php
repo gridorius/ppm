@@ -6,11 +6,11 @@ use Exception;
 
 class Resources
 {
-    protected static array $resources = [];
+    private static array $resources = [];
 
-    public static function addResource(string $name, string $path)
+    public static function addResource(string $name, string $path): void
     {
-        static::$resources[$name] = new Resource($name, $path);
+        static::$resources[$name] = new Resource($path);
     }
 
     public static function has(string $name): bool

@@ -8,7 +8,7 @@ interface ICommandRoute
 
     public function setDescription(string $description): void;
 
-    public function setOptions(array $options): ICommandRoute;
+    public function setDefinedOptions(array $options): ICommandRoute;
 
     public function handle($argv): void;
 }

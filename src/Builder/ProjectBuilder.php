@@ -30,35 +30,35 @@ class ProjectBuilder implements IProjectBuilder
             $this->makeExecutableFile($outDirectory, $projectConfiguration);
     }
 
-    public function makeStub(Phar $phar, IProjectConfiguration $projectConfiguration)
+    public function makeStub(Phar $phar, IProjectConfiguration $projectConfiguration): void
     {
         $phar->setStub(
             preg_replace(
-                "/PROJECT_NAME/",
+                Constants::PROJECT_NAME_REGEX_PATTERN,
                 $projectConfiguration->getName(),
                 $projectConfiguration->hasStub()
                     ? $projectConfiguration->getStubContent()
-                    : $this->getFileOrResource('templates/stub.php')
+                    : $this->getFileOrResource(Constants::STUB_TEMPLATE_PATH)
             )
         );
     }
 
-    protected function makeExecutableFile(string $outDirectory, IProjectConfiguration $configuration)
+    protected function makeExecutableFile(string $outDirectory, IProjectConfiguration $configuration): void
     {
         $entrypointData = explode('::', $configuration->getEntrypoint());
         $entrypointClass = $entrypointData[0];
-        $entrypointMethod = $entrypointData[1] ?? 'main';
+        $entrypointMethod = $entrypointData[1] ?? Constants::DEFAULT_ENTRYPOINT_METHOD;
         $runnerContent = ReplaceUtils::replace([
-            "PROJECT_NAME",
-            "ENTRYPOINT_CLASS",
-            "ENTRYPOINT_METHOD",
+            Constants::REPLACE_PROJECT_NAME,
+            Constants::REPLACE_ENTRYPOINT_CLASS,
+            Constants::REPLACE_ENTRYPOINT_METHOD,
         ],
             [
                 $configuration->getName(),
                 $entrypointClass,
                 $entrypointMethod,
             ],
-            $this->getFileOrResource('templates/runner.php'));
+            $this->getFileOrResource(Constants::RUNNER_TEMPLATE_PATH));
 
         file_put_contents($outDirectory . DIRECTORY_SEPARATOR . $configuration->getRunner() . '.php', $runnerContent);
     }
@@ -71,18 +71,18 @@ class ProjectBuilder implements IProjectBuilder
             return Resources::get($relativePath)->getContent();
     }
 
-    protected function makeJsonManifest(Phar $phar, IManifestBuilder $manifestBuilder)
+    protected function makeJsonManifest(Phar $phar, IManifestBuilder $manifestBuilder): void
     {
         $phar->addFromString(
-            'manifest.json',
+            Constants::MANIFEST_FILE_NAME_JSON,
             json_encode($manifestBuilder->buildForJson(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
         );
     }
 
-    protected function makePhpManifest(Phar $phar, IManifestBuilder $manifestBuilder)
+    protected function makePhpManifest(Phar $phar, IManifestBuilder $manifestBuilder): void
     {
         $manifest = $manifestBuilder->buildForPhp();
-        $phar->addFromString('manifest.php', "<?php\n return " . var_export($manifest, true) . ";\n");
+        $phar->addFromString(Constants::MANIFEST_FILE_NAME_PHP, "<?php\n return " . var_export($manifest, true) . ";\n");
     }
 
     protected function createPhar(string $outDirectory, IProjectConfiguration $projectConfiguration): Phar

@@ -46,7 +46,7 @@ class Source implements ISource
         ];
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         return [
             'path' => $this->path,
@@ -54,7 +54,7 @@ class Source implements ISource
         ];
     }
 
-    public function setToken(string $token)
+    public function setToken(string $token): void
     {
         $this->token = $token;
     }

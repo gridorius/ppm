@@ -2,6 +2,9 @@
 
 namespace Packages\Http;
 
+use Closure;
+use Exception;
+
 class Response
 {
     protected array $headers;
@@ -17,7 +20,7 @@ class Response
     {
         $data = json_decode($this->body, true);
         if (is_null($data))
-            throw new \Exception("Failed parse json data: " . json_last_error_msg());
+            throw new Exception("Failed parse json data: " . json_last_error_msg());
 
         return $data;
     }
@@ -27,19 +30,19 @@ class Response
         return $this->body;
     }
 
-    public function saveAsFile(string $path)
+    public function saveAsFile(string $path): void
     {
         file_put_contents($path, $this->body);
     }
 
-    public function awaitCode(int $code, \Closure $handler): Response
+    public function awaitCode(int $code, Closure $handler): Response
     {
         if ($this->headers['code'] == $code)
             $handler($this);
         return $this;
     }
 
-    public function awaitCodes(array $codes, \Closure $handler): Response
+    public function awaitCodes(array $codes, Closure $handler): Response
     {
         if (in_array($this->headers['code'], $codes))
             $handler($this);

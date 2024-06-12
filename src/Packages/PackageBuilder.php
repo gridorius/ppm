@@ -32,7 +32,8 @@ class PackageBuilder implements IPackageBuilder
     public function build(string $pathToProjectFile): void
     {
         $outDirectory = $this->tmpDirectory . DIRECTORY_SEPARATOR . '_package_' . time();
-        $configurationCollection = $this->configurationCollector->collect($pathToProjectFile);
+        $configurationCollection = $this->configurationCollector->collectFromProjectFile($pathToProjectFile);
+        $configurationCollection->setVersionIfEmpty($configurationCollection->getMainConfiguration()->getVersion());
         $this->buildManager->buildFromConfigurationCollection($configurationCollection, $outDirectory);
         $configuration = $configurationCollection->getMainConfiguration();
 

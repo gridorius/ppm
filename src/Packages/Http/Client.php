@@ -8,12 +8,12 @@ class Client
 {
     protected ?Closure $progressFunction;
 
-    public function setProgressFunction(Closure $function)
+    public function setProgressFunction(Closure $function): void
     {
         $this->progressFunction = $function;
     }
 
-    public function resetProgressFunction()
+    public function resetProgressFunction(): void
     {
         $this->progressFunction = null;
     }

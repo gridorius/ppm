@@ -8,13 +8,13 @@ use PpmRegistry\Contracts\PackageBase;
 
 class RemotePackage extends PackageBase implements IRemotePackage
 {
-
     private ISource $source;
     private array $depends;
 
     /**
      * @param string $name
      * @param string $version
+     * @param ISource $source
      * @param array $depends
      */
     public function __construct(string $name, string $version, ISource $source, array $depends = [])

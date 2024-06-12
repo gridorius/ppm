@@ -50,7 +50,7 @@ class ProjectStructure implements IProjectStructure
 
     public function addOutFile(string $relativePath, string $realPath): void
     {
-        $this->outerFiles[$realPath] = $realPath;
+        $this->outerFiles[$relativePath] = $realPath;
     }
 
     public function getPharFilesIterator(): ArrayIterator

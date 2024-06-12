@@ -17,7 +17,7 @@ class UploadPackage extends CommandBase
         $projectDir = $parameters['project_directory'] ?? getcwd();
         $pathToProjectFile = PathUtils::findProj($projectDir);
 
-        $configurationCollection = (new ConfigurationCollector())->collect($pathToProjectFile);
+        $configurationCollection = (new ConfigurationCollector())->collectFromProjectFile($pathToProjectFile);
         $mainConfiguration = $configurationCollection->getMainConfiguration();
         $name = $mainConfiguration->getName();
         $version = $mainConfiguration->getVersion();

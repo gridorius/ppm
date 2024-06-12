@@ -25,7 +25,6 @@ class BuildManager implements IBuildManager
     {
         try {
             $timer = new Timer();
-            $configurationCollection->setVersionIfEmpty($configurationCollection->getMainConfiguration()->getVersion());
             $this->buildProjects($configurationCollection, $outDirectory);
             $passed = $timer->getPassed();
             echo "Build is completed in {$passed}s\n";
@@ -39,13 +38,14 @@ class BuildManager implements IBuildManager
 
     public function build(string $pathToProjectFile, string $outDirectory): void
     {
-        $configurationCollection = $this->collector->collect($pathToProjectFile);
+        $configurationCollection = $this->collector->collectFromProjectFile($pathToProjectFile);
+        $configurationCollection->setVersionIfEmpty($configurationCollection->getMainConfiguration()->getVersion());
         $this->buildFromConfigurationCollection($configurationCollection, $outDirectory);
     }
 
     public function AddAssemblyPhar(string $outDirectory): void
     {
-        copy(Utils::path('Assembly.phar'), $outDirectory . DIRECTORY_SEPARATOR . 'Assembly.phar');
+        copy(Utils::path(Constants::ASSEMBLY_PHAR_NAME), $outDirectory . DIRECTORY_SEPARATOR . Constants::ASSEMBLY_PHAR_NAME);
     }
 
     protected function buildProjects(IConfigurationCollection $configurationCollection, string $outDirectory): void
@@ -60,12 +60,12 @@ class BuildManager implements IBuildManager
         }
     }
 
-    private function showBuildLog(string $passed, IProjectStructure $projectStructure)
+    private function showBuildLog(string $passed, IProjectStructure $projectStructure): void
     {
         $configuration = $projectStructure->getProjectInfo()->getConfiguration();
         $manifestInfo = $projectStructure->getManifestInfo();
         echo ShellStyleParser::style("<s style='b,green'>{$configuration->getName()}</s>:<s style='blue'>{$configuration->getVersion()}</s> built in {$passed}s\n");
-        echo ShellStyleParser::style("\tTypes: <s style='green'>{$manifestInfo->getTypeCount()}</s>"
+        echo ShellStyleParser::style("\tTypes: <s style='green'>{$manifestInfo->getTypesCount()}</s>"
             . "\tResources: <s style='green'>{$manifestInfo->getResourcesCount()}</s>"
             . "\tIncludes: <s style='green'>{$manifestInfo->getIncludesCount()}</s>"
             . "\tDepends: <s style='green'>{$manifestInfo->getDependsCount()}</s>\n");

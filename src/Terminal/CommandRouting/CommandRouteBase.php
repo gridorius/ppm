@@ -2,6 +2,7 @@
 
 namespace Terminal\CommandRouting;
 
+use Exception;
 use Terminal\OptionParser;
 
 abstract class CommandRouteBase implements ICommandRoute
@@ -10,7 +11,7 @@ abstract class CommandRouteBase implements ICommandRoute
     private bool $afterOptions;
     private array $required;
     private array $optional;
-    private OptionParser $options;
+    private OptionParser $optionParser;
     private string $pattern;
     private string $description;
 
@@ -21,7 +22,7 @@ abstract class CommandRouteBase implements ICommandRoute
         $this->afterOptions = !empty($matches['after_options']);
         $this->required = $this->prepareRequired($matches);
         $this->optional = $this->prepareOptional($matches);
-        $this->options = new OptionParser();
+        $this->optionParser = new OptionParser();
         $this->description = '';
     }
 
@@ -35,9 +36,9 @@ abstract class CommandRouteBase implements ICommandRoute
         $this->description = $description;
     }
 
-    public function setOptions(array $options): CommandRouteBase
+    public function setDefinedOptions(array $options): CommandRouteBase
     {
-        $this->options->setDefinedOptions($options);
+        $this->optionParser->setDefinedOptions($options);
         return $this;
     }
 
@@ -47,12 +48,12 @@ abstract class CommandRouteBase implements ICommandRoute
         $parameters = [];
         $options = [];
         if ($this->beforeOptions)
-            $options = $this->options->parse($arguments);
+            $options = $this->optionParser->parse($arguments);
 
         foreach ($this->required as $name) {
             $value = array_shift($arguments);
             if (is_null($value))
-                throw new \Exception("Required parameter {$name} not set");
+                throw new Exception("Required parameter {$name} not set");
             $parameters[$name] = $value;
         }
 
@@ -61,7 +62,7 @@ abstract class CommandRouteBase implements ICommandRoute
         }
 
         if ($this->afterOptions)
-            $options = array_merge($options, $this->options->parse($arguments));
+            $options = array_merge($options, $this->optionParser->parse($arguments));
 
         call_user_func($this->getHandler(), $parameters, $options);
     }

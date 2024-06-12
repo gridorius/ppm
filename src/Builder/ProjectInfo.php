@@ -55,7 +55,7 @@ class ProjectInfo implements IProjectInfo
         return $files;
     }
 
-    public function filterByArray(array $filters): array
+    public function filterFilesByFiltersArray(array $filters): array
     {
         $files = [];
         foreach ($filters as $filter)

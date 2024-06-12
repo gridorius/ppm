@@ -3,8 +3,10 @@
     <s style='b,green'>build</s> <s style='blue'>[options] [build_directory]</s> - build project
 		build directory, default current directory
 		-o out directory, default current directory/out
-    <s style='b,green'>packages build</s> <s style='blue'>[build_directory]</s> - build package
+    <s style='b,green'>build package</s> <s style='blue'>[build_directory]</s> - build package
 		build directory, default current directory
+	<s style='b,green'>build solution</s> <s style='blue'>[solution_directory]</s> - build solution
+    		solution_directory, default current directory
     <s style='b,green'>auth</s> <s style='blue'><source> <login></s> - login to remote registry
     <s style='b,green'>sources add</s> <s style='blue'><source></s> - add remote registry
     <s style='b,green'>sources delete</s> <s style='blue'><source></s> - delete remote registry

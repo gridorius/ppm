@@ -17,5 +17,5 @@ interface IProjectInfo
      * @param IConfigurationFileFilter[] $filters
      * @return array
      */
-    public function filterByArray(array $filters): array;
+    public function filterFilesByFiltersArray(array $filters): array;
 }

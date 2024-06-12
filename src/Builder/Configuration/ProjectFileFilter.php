@@ -3,7 +3,7 @@
 namespace Builder\Configuration;
 
 use Builder\Configuration\Contracts\IConfigurationFileFilter;
-use Utils\PathUtils;
+use Common\Exceptions\NullReferenceException;
 
 class ProjectFileFilter implements IConfigurationFileFilter
 {
@@ -11,12 +11,9 @@ class ProjectFileFilter implements IConfigurationFileFilter
 
     public function __construct(array $filter)
     {
+        if (is_null($filter['include']))
+            throw new NullReferenceException("Including mask is null");
         $this->filter = $filter;
-//        if (WIN) {
-//            $this->filter['include'] = PathUtils::preparePathForWindows($this->filter['include']);
-//            if ($this->hasExclude())
-//                $this->filter['exclude'] = PathUtils::preparePathForWindows($this->filter['exclude']);
-//        }
     }
 
     public function getExclude(): ?string

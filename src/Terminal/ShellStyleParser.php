@@ -16,7 +16,7 @@ class ShellStyleParser
 
     private static string $styleRegex = "/<s\s+style='\s*(?<styles>.+?)\s*'\s*>(?<content>.+?)<\/s>/";
 
-    public static function style(string $data)
+    public static function style(string $data): string
     {
         return preg_replace_callback(static::$styleRegex, function ($matches) {
             $styles = explode(',', $matches['styles']);

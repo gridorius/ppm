@@ -40,9 +40,10 @@ class ProjectStructureBuilder implements IProjectStructureBuilder
         $configuration = $structure->getProjectInfo()->getConfiguration();
         if (!$configuration->hasFiles()) return;
 
-        $files = $structure->getProjectInfo()->filterByArray($configuration->getFiles());
-        foreach ($files as $realPath => $relativePath)
+        $files = $structure->getProjectInfo()->filterFilesByFiltersArray($configuration->getFiles());
+        foreach ($files as $realPath => $relativePath) {
             $structure->addOutFile($relativePath, $realPath);
+        }
     }
 
     public function findResources(IProjectStructure $structure): void
@@ -50,7 +51,7 @@ class ProjectStructureBuilder implements IProjectStructureBuilder
         $configuration = $structure->getProjectInfo()->getConfiguration();
         if (!$configuration->hasResources()) return;
 
-        $resourceFiles = $structure->getProjectInfo()->filterByArray($configuration->getResources());
+        $resourceFiles = $structure->getProjectInfo()->filterFilesByFiltersArray($configuration->getResources());
         $resources = [];
         foreach ($resourceFiles as $path => $relativePath) {
             $localPath = 'resources/' . $relativePath;
@@ -64,7 +65,7 @@ class ProjectStructureBuilder implements IProjectStructureBuilder
     {
         $configuration = $structure->getProjectInfo()->getConfiguration();
         if (!$configuration->hasIncludes()) return;
-        $includeFiles = $structure->getProjectInfo()->filterByArray($configuration->getIncludes());
+        $includeFiles = $structure->getProjectInfo()->filterFilesByFiltersArray($configuration->getIncludes());
         $includes = [];
         foreach ($includeFiles as $path => $relativePath) {
             $localPath = 'includes/' . $relativePath;

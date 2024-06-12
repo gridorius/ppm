@@ -2,6 +2,9 @@
 
 namespace Terminal\CommandRouting;
 
+use Closure;
+use Exception;
+
 class CommandsRouter
 {
     private array $commands = [];
@@ -24,17 +27,17 @@ class CommandsRouter
         $this->notFoundHandler = $commandRouteBase;
     }
 
-    public function register(string $pattern, \Closure $handler): CommandRouteBase
+    public function register(string $pattern, Closure $handler): CommandRouteBase
     {
         preg_match($this->commandPattern, $pattern, $matches);
         if ($matches[0] != $pattern)
-            throw new \Exception("Invalid command pattern: {$pattern}");
+            throw new Exception("Invalid command pattern: {$pattern}");
 
         $command = trim($matches['command']);
         $pattern = "/^{$command}/";
 
         $handler = (new CommandRouteClosure($matches, $pattern))->setHandler($handler);
-        $this->commands[$pattern] = new RouteWrapper($handler, count(explode(' ', $command)));;
+        $this->commands[$pattern] = new RouteWrapper($handler, count(explode(' ', $command)));
         return $handler;
     }
 
@@ -42,14 +45,14 @@ class CommandsRouter
     {
         preg_match($this->commandPattern, $pattern, $matches);
         if ($matches[0] != $pattern)
-            throw new \Exception("Invalid command pattern: {$pattern}");
+            throw new Exception("Invalid command pattern: {$pattern}");
 
 
         $command = trim($matches['command']);
         $pattern = "/^{$command}/";
         $handler = (new CommandRouteCommand($matches, $pattern))
             ->setHandler($concreteCommand)
-            ->setOptions($concreteCommand->getOptions());
+            ->setDefinedOptions($concreteCommand->getOptions());
         $this->commands[$pattern] = new RouteWrapper($handler, count(explode(' ', $command)));
         return $handler;
     }

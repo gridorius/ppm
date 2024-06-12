@@ -3,6 +3,7 @@
 namespace Builder\Configuration;
 
 use Builder\Configuration\Contracts\IProjectConfiguration;
+use Exception;
 use Utils\PathUtils;
 
 class ProjectConfiguration implements IProjectConfiguration
@@ -75,7 +76,6 @@ class ProjectConfiguration implements IProjectConfiguration
         return !empty($this->configuration['includes']);
     }
 
-
     public function getVersion(): ?string
     {
         return $this->configuration['version'] ?? null;
@@ -99,7 +99,7 @@ class ProjectConfiguration implements IProjectConfiguration
     public function getStubContent(): string
     {
         if (!$this->hasStub())
-            throw new \Exception("Stub path not configured");
+            throw new Exception("Stub path not configured");
 
         return file_get_contents($this->directory . DIRECTORY_SEPARATOR . $this->getStub());
     }

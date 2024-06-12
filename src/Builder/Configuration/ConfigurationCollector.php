@@ -14,7 +14,7 @@ class ConfigurationCollector implements IConfigurationCollector
      *
      *  Собирает список зависимых конфигураций
      */
-    public function collect(string $pathToProjectFile): IConfigurationCollection
+    public function collectFromProjectFile(string $pathToProjectFile): IConfigurationCollection
     {
         $configurationCollection = new ConfigurationCollection();
         $mainConfiguration = $this->collectReference($pathToProjectFile, $configurationCollection);
@@ -22,28 +22,28 @@ class ConfigurationCollector implements IConfigurationCollector
         return $configurationCollection;
     }
 
-    private function collectReferences(
-        IProjectConfiguration    $projectConfiguration,
-        string                   $projectDirectory,
-        IConfigurationCollection $configurationCollection
-    )
-    {
-        foreach ($projectConfiguration->getProjectReferences() as $referencePath) {
-            $pathToProjectFile = PathUtils::resolveRelativePath($projectDirectory, $referencePath);
-            $dependProject = $this->collectReference($pathToProjectFile, $configurationCollection);
-            $projectConfiguration->addDepend($dependProject->getName());
-        }
-    }
-
-    private function collectReference(string $pathToProjectFile, IConfigurationCollection $configurationCollection): IProjectConfiguration
+    public function collectReference(string $pathToProjectFile, IConfigurationCollection $configurationCollection): IProjectConfiguration
     {
         $projectDir = dirname(PathUtils::preparePathForWindows($pathToProjectFile));
         if ($configurationCollection->hasConfiguration($projectDir))
             return $configurationCollection->getConfiguration($projectDir);
 
         $projectConfiguration = new ProjectConfiguration($pathToProjectFile);
-        $configurationCollection->add($projectDir, $projectConfiguration);
+        $configurationCollection->addConfiguration($projectDir, $projectConfiguration);
         $this->collectReferences($projectConfiguration, $projectDir, $configurationCollection);
         return $projectConfiguration;
+    }
+
+    private function collectReferences(
+        IProjectConfiguration    $projectConfiguration,
+        string                   $projectDirectory,
+        IConfigurationCollection $configurationCollection
+    ): void
+    {
+        foreach ($projectConfiguration->getProjectReferences() as $referencePath) {
+            $pathToProjectFile = PathUtils::resolveRelativePath($projectDirectory, $referencePath);
+            $dependProject = $this->collectReference($pathToProjectFile, $configurationCollection);
+            $projectConfiguration->addDepend($dependProject->getName());
+        }
     }
 }

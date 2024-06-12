@@ -48,11 +48,8 @@ class EntityFinder
                     }
                     break;
                 case T_NS_SEPARATOR:
-                    switch ($state) {
-                        case 'namespace':
-                            $namespace .= '\\';
-                            break;
-                    }
+                    if ($state == 'namespace')
+                        $namespace .= '\\';
                     break;
                 default:
                     $doubleColon = false;

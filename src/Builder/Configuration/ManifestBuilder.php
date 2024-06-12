@@ -67,7 +67,7 @@ class ManifestBuilder implements IManifestBuilder, IManifestInformation
         return $phpManifest;
     }
 
-    public function getTypeCount(): int
+    public function getTypesCount(): int
     {
         return count($this->manifest['types']);
     }

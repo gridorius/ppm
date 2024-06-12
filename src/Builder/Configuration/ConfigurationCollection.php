@@ -16,12 +16,12 @@ class ConfigurationCollection implements IConfigurationCollection
     private array $configurations = [];
     private IProjectConfiguration $main;
 
-    public function add(string $projectDirectory, IProjectConfiguration $configuration): void
+    public function addConfiguration(string $projectDirectory, IProjectConfiguration $configuration): void
     {
         $this->configurations[$projectDirectory] = $configuration;
     }
 
-    public function setMainConfiguration(IProjectConfiguration $configuration)
+    public function setMainConfiguration(IProjectConfiguration $configuration): void
     {
         $this->main = $configuration;
     }
@@ -31,7 +31,7 @@ class ConfigurationCollection implements IConfigurationCollection
         return $this->main;
     }
 
-    public function getAll(): array
+    public function getConfigurationsArray(): array
     {
         return $this->configurations;
     }

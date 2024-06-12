@@ -2,104 +2,90 @@
 
 namespace Assembly;
 
+use Exception;
+
 class Assembly
 {
-    protected static $insntance;
+    private static array $types = [];
+    private static array $phars = [];
+    private static array $includes = [];
 
-    protected array $types = [];
-    protected array $phars = [];
-    protected array $includes = [];
-
-    private function __construct()
+    public static function hasPhar(string $name): bool
     {
+        return key_exists($name, static::$phars);
     }
 
-    public static function getInstance(): Assembly
+    public static function getTypePath(string $name): string
     {
-        if (empty(static::$insntance))
-            static::$insntance = new static();
-
-        return static::$insntance;
+        return static::$types[$name];
     }
 
-    public function hasPhar(string $name): bool
+    public static function hasType(string $name): bool
     {
-        return key_exists($name, $this->phars);
+        return key_exists($name, static::$types);
     }
 
-    public function getTypePath(string $name): string
-    {
-        return $this->types[$name];
-    }
-
-    public function hasType(string $name): bool
-    {
-        return key_exists($name, $this->types);
-    }
-
-    public function registerAutoloader()
+    public static function registerAutoloader(): void
     {
         spl_autoload_register(function ($entity) {
-            if ($this->hasType($entity))
-                require $this->getTypePath($entity);
+            if (static::hasType($entity))
+                require static::getTypePath($entity);
         });
     }
 
-    public function preloadTypes()
+    public static function preloadTypes(): void
     {
-        foreach ($this->types as $type => $path) {
+        foreach (static::$types as $type => $path)
             class_exists($type);
-        }
     }
 
-    public function includeScripts()
+    public static function includeScripts(): void
     {
-        foreach ($this->includes as $path)
+        foreach (static::$includes as $path)
             require $path;
     }
 
-    public function registerAssembly(string $name, string $directory)
+    public static function registerAssembly(string $name, string $directory): void
     {
-        if ($this->hasPhar($name)) return;
+        if (static::hasPhar($name)) return;
         $path = "phar://{$name}";
-        $this->phars[$name] = $path;
+        static::$phars[$name] = $path;
         $manifest = include $path . '/manifest.php';
-        $this->registerPharFiles($manifest);
-        $this->includeDepends($manifest['depends'], $directory);
+        static::registerPharFiles($manifest);
+        static::includeDepends($manifest['depends'], $directory);
     }
 
-    public function includePhar(string $path)
+    public static function includePhar(string $path): void
     {
         if (!file_exists($path))
-            throw new \Exception("Dependency {$path} not found");
+            throw new Exception("Dependency {$path} not found");
         require $path;
     }
 
-    public function entrypoint($entrypoint, $argv = [])
+    public static function entrypoint($entrypoint, $argv = []): void
     {
-        $this->registerAutoloader();
-        $this->preloadTypes();
-        $this->includeScripts();
+        static::registerAutoloader();
+        static::preloadTypes();
+        static::includeScripts();
         $entrypoint($argv);
     }
 
-    private function registerPharFiles(array $manifest)
+    private static function registerPharFiles(array $manifest): void
     {
         foreach ($manifest['types'] as $type => $path)
-            $this->types[$type] = $path;
+            static::$types[$type] = $path;
 
-        foreach ($manifest['resources'] as $name => $path) {
+        foreach ($manifest['resources'] as $name => $path)
             Resources::addResource($name, $path);
-        }
 
         foreach ($manifest['includes'] as $path)
-            $this->includes[] = $path;
+            static::$includes[] = $path;
     }
 
-    private function includeDepends(array $depends, string $directory)
+    private static function includeDepends(array $depends, string $directory): void
     {
         foreach ($depends as $name)
-            if (!$this->hasPhar($name))
-                $this->includePhar($directory . DIRECTORY_SEPARATOR . $name . '.phar');
+            if (!static::hasPhar($name))
+                static::includePhar($directory . DIRECTORY_SEPARATOR . $name . '.phar');
     }
 }

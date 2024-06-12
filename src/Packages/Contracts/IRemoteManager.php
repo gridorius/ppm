@@ -10,7 +10,7 @@ interface IRemoteManager
     /**
      * @param string $name
      * @param string $version
-     * @return IRemotePackage[]
+     * @return IRemotePackage|null
      */
     public function find(string $name, string $version): ?IRemotePackage;
 

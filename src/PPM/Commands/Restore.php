@@ -16,7 +16,7 @@ class Restore extends CommandBase
         $restoreDir = $parameters['restore_directory'] ?? getcwd();
         $packageController = new PackagesController();
         $pathToProjectFile = PathUtils::findProj($restoreDir);
-        $configurationCollection = (new ConfigurationCollector())->collect($pathToProjectFile);
+        $configurationCollection = (new ConfigurationCollector())->collectFromProjectFile($pathToProjectFile);
         $packageController->getRemoteManager()->restore($configurationCollection);
     }
 }

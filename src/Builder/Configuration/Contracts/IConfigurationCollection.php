@@ -10,7 +10,7 @@ interface IConfigurationCollection
 
     public function getMainConfiguration(): IProjectConfiguration;
 
-    public function add(string $projectDirectory, IProjectConfiguration $configuration): void;
+    public function addConfiguration(string $projectDirectory, IProjectConfiguration $configuration): void;
 
     public function hasConfiguration(string $projectDirectory): bool;
 
@@ -21,7 +21,7 @@ interface IConfigurationCollection
     /**
      * @return IProjectConfiguration[]
      */
-    public function getAll(): array;
+    public function getConfigurationsArray(): array;
 
     public function getPackages(): array;
 

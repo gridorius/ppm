@@ -17,15 +17,14 @@ class Install extends CommandBase
                 $path,
                 preg_replace("/PPM_PATH/", $pathToPPM, Resources::get('resources/ppm.bat')->getContent())
             );
-            $this->handleResult($result, $path);
         } else {
             $path = '/usr/bin/ppm';
             $result = file_put_contents(
                 $path,
                 preg_replace("/PPM_PATH/", $pathToPPM, Resources::get('resources/ppm.sh')->getContent())
             );
-            $this->handleResult($result, $path);
         }
+        $this->handleResult($result, $path);
     }
 
     private function handleResult($result, string $path): void

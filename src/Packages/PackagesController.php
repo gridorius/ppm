@@ -4,6 +4,7 @@ namespace Packages;
 
 use Assembly\Utils;
 use Builder\Configuration\Contracts\IConfigurationCollection;
+use Exception;
 use Packages\Contracts\IPackageBuilder;
 use Packages\Contracts\IRemoteManager;
 use Packages\Contracts\ISources;
@@ -66,7 +67,7 @@ class PackagesController
     {
         foreach ($packages as $name => $version) {
             if (is_null($localPackage = $this->localManager->get($name, $version)))
-                throw new \Exception("Package {$name}:{$version} not found in local registry");
+                throw new Exception("Package {$name}:{$version} not found in local registry");
 
             $localPackage->unpack($outDirectory);
             $this->unpackPackages($localPackage->getDepends(), $outDirectory);
