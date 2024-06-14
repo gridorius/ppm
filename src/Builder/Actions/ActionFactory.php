@@ -13,6 +13,8 @@ class ActionFactory
                 return new DeleteAction($arguments['file'] ?? null, $arguments['directory'] ?? null);
             case 'shell':
                 return new ShellAction($arguments['command']);
+            default:
+                throw new \Exception("Unexpected action type {$arguments['type']}");
         }
     }
 }
