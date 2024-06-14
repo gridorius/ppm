@@ -10,13 +10,18 @@ use Builder\Contracts\IProjectBuilder;
 use Builder\Contracts\IProjectStructure;
 use Phar;
 use Utils\FileUtils;
+use Utils\PathUtils;
 use Utils\ReplaceUtils;
 
 class ProjectBuilder implements IProjectBuilder
 {
     public function build(IProjectStructure $projectStructure, string $outDirectory): void
     {
+        PathUtils::createDirectoryIfNotExists($outDirectory);
         $projectConfiguration = $projectStructure->getProjectInfo()->getConfiguration();
+        $actions = $projectConfiguration->getActions();
+        $actions->runBeforeBuild($projectConfiguration->getDirectory(), $outDirectory);
+
         $phar = $this->createPhar($outDirectory, $projectConfiguration);
         $phar->startBuffering();
         $phar->buildFromIterator(new ArrayIterator($projectStructure->getPharFilesIterator()));
@@ -28,6 +33,8 @@ class ProjectBuilder implements IProjectBuilder
 
         if (!empty($projectConfiguration->hasEntrypoint()))
             $this->makeExecutableFile($outDirectory, $projectConfiguration);
+
+        $actions->runAfterBuild($projectConfiguration->getDirectory(), $outDirectory);
     }
 
     public function makeStub(Phar $phar, IProjectConfiguration $projectConfiguration): void
@@ -87,9 +94,6 @@ class ProjectBuilder implements IProjectBuilder
 
     protected function createPhar(string $outDirectory, IProjectConfiguration $projectConfiguration): Phar
     {
-        if (!is_dir($outDirectory))
-            mkdir($outDirectory, 0755, true);
-
         return new Phar($outDirectory . DIRECTORY_SEPARATOR . $projectConfiguration->getName() . '.phar');
     }
 }
