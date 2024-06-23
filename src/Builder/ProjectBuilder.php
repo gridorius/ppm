@@ -3,68 +3,64 @@
 namespace Builder;
 
 use ArrayIterator;
+use Assembly\Resources;
+use Builder\Configuration\Contracts\IManifestBuilder;
+use Builder\Configuration\Contracts\IProjectConfiguration;
+use Builder\Contracts\IProjectBuilder;
+use Builder\Contracts\IProjectStructure;
 use Phar;
-use Resources;
 use Utils\FileUtils;
 use Utils\ReplaceUtils;
 
-class ProjectBuilder
+class ProjectBuilder implements IProjectBuilder
 {
-    protected string $projectDir;
-    protected ProjectStructure $structure;
-
-    protected array $manifest;
-
-    public function __construct(string $projectDir, ProjectStructure $structure)
+    public function build(IProjectStructure $projectStructure, string $outDirectory): void
     {
-        $this->projectDir = $projectDir;
-        $this->structure = $structure;
-        $this->manifest = $structure->manifest;
-    }
-
-    public function build(string $outDirectory)
-    {
-        $phar = $this->createPhar($outDirectory);
+        $projectConfiguration = $projectStructure->getProjectInfo()->getConfiguration();
+        $phar = $this->createPhar($outDirectory, $projectConfiguration);
         $phar->startBuffering();
-        $phar->buildFromIterator(new ArrayIterator($this->structure->innerMove));
-        FileUtils::moveFiles($this->structure->outerMove, $outDirectory);
-        $this->makeManifest($phar);
-        $this->makeStub($phar);
+        $phar->buildFromIterator(new ArrayIterator($projectStructure->getPharFilesIterator()));
+        FileUtils::moveFiles($projectStructure->getOuterFiles(), $outDirectory);
+        $this->makeJsonManifest($phar, $projectStructure->getManifestBuilder());
+        $this->makePhpManifest($phar, $projectStructure->getManifestBuilder());
+        $this->makeStub($phar, $projectConfiguration);
         $phar->stopBuffering();
 
-        if (!empty($this->structure->entrypoint))
-            $this->makeExecutableFile($outDirectory);
+        if (!empty($projectConfiguration->hasEntrypoint()))
+            $this->makeExecutableFile($outDirectory, $projectConfiguration);
     }
 
-    public function makeStub(Phar $phar)
+    public function makeStub(Phar $phar, IProjectConfiguration $projectConfiguration): void
     {
         $phar->setStub(
             preg_replace(
-                "/PROJECT_NAME/",
-                $this->manifest['name'],
-                $this->getFileOrResource('templates/stub.php')
+                Constants::PROJECT_NAME_REGEX_PATTERN,
+                $projectConfiguration->getName(),
+                $projectConfiguration->hasStub()
+                    ? $projectConfiguration->getStubContent()
+                    : $this->getFileOrResource(Constants::STUB_TEMPLATE_PATH)
             )
         );
     }
 
-    protected function makeExecutableFile(string $outDirectory)
+    protected function makeExecutableFile(string $outDirectory, IProjectConfiguration $configuration): void
     {
-        $entrypointData = explode('::', $this->structure->entrypoint);
+        $entrypointData = explode('::', $configuration->getEntrypoint());
         $entrypointClass = $entrypointData[0];
-        $entrypointMethod = $entrypointData[1] ?? 'main';
-        $executorContent = ReplaceUtils::replace([
-            "PROJECT_NAME",
-            "ENTRYPOINT_CLASS",
-            "ENTRYPOINT_METHOD",
+        $entrypointMethod = $entrypointData[1] ?? Constants::DEFAULT_ENTRYPOINT_METHOD;
+        $runnerContent = ReplaceUtils::replace([
+            Constants::REPLACE_PROJECT_NAME,
+            Constants::REPLACE_ENTRYPOINT_CLASS,
+            Constants::REPLACE_ENTRYPOINT_METHOD,
         ],
             [
-                $this->manifest['name'],
+                $configuration->getName(),
                 $entrypointClass,
                 $entrypointMethod,
             ],
-            $this->getFileOrResource('templates/executor.php'));
+            $this->getFileOrResource(Constants::RUNNER_TEMPLATE_PATH));
 
-        file_put_contents($outDirectory . DIRECTORY_SEPARATOR . $this->structure->runner . '.php', $executorContent);
+        file_put_contents($outDirectory . DIRECTORY_SEPARATOR . $configuration->getRunner() . '.php', $runnerContent);
     }
 
     protected function getFileOrResource(string $relativePath): string
@@ -75,19 +71,25 @@ class ProjectBuilder
             return Resources::get($relativePath)->getContent();
     }
 
-    protected function makeManifest(Phar $phar)
+    protected function makeJsonManifest(Phar $phar, IManifestBuilder $manifestBuilder): void
     {
         $phar->addFromString(
-            'manifest.json',
-            json_encode($this->manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+            Constants::MANIFEST_FILE_NAME_JSON,
+            json_encode($manifestBuilder->buildForJson(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
         );
     }
 
-    protected function createPhar(string $outDirectory): Phar
+    protected function makePhpManifest(Phar $phar, IManifestBuilder $manifestBuilder): void
+    {
+        $manifest = $manifestBuilder->buildForPhp();
+        $phar->addFromString(Constants::MANIFEST_FILE_NAME_PHP, "<?php\n return " . var_export($manifest, true) . ";\n");
+    }
+
+    protected function createPhar(string $outDirectory, IProjectConfiguration $projectConfiguration): Phar
     {
         if (!is_dir($outDirectory))
             mkdir($outDirectory, 0755, true);
 
-        return new Phar($outDirectory . DIRECTORY_SEPARATOR . $this->manifest['name'] . '.phar');
+        return new Phar($outDirectory . DIRECTORY_SEPARATOR . $projectConfiguration->getName() . '.phar');
     }
 }

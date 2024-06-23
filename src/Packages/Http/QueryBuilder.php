@@ -11,7 +11,7 @@ class QueryBuilder
 
     protected array $query = [];
 
-    protected $body = null;
+    protected string|array|null $body = null;
 
     public function __construct(string $url, string $method, Client $client)
     {
@@ -38,7 +38,8 @@ class QueryBuilder
         return $this;
     }
 
-    public function execute(): Response{
+    public function execute(): Response
+    {
         return $this->client->executeQuery($this->url, $this->method, $this->headers, $this->query, $this->body);
     }
 }

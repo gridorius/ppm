@@ -48,17 +48,14 @@ class EntityFinder
                     }
                     break;
                 case T_NS_SEPARATOR:
-                    switch ($state) {
-                        case 'namespace':
-                            $namespace .= '\\';
-                            break;
-                    }
+                    if ($state == 'namespace')
+                        $namespace .= '\\';
                     break;
                 default:
                     $doubleColon = false;
             }
 
-            if ($version >= 8 && in_array($token[0], [T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED]))
+            if ($version >= 8 && in_array($token[0], [T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED]) && $state == 'namespace')
                 $namespace = $token[1];
         }
 

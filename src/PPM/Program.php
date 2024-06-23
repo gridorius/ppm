@@ -6,44 +6,42 @@ use Builder\BuildManager;
 use PPM\Commands\AddSource;
 use PPM\Commands\Auth;
 use PPM\Commands\Build;
+use PPM\Commands\BuildSolution;
 use PPM\Commands\DeleteSource;
 use PPM\Commands\Help;
-use PPM\Commands\MakePackage;
+use PPM\Commands\BuildPackage;
+use PPM\Commands\Install;
+use PPM\Commands\PackageList;
 use PPM\Commands\Restore;
 use PPM\Commands\SourceList;
 use PPM\Commands\UploadPackage;
 use Exception;
-use Packages\PackageManager;
-use Terminal\CommandTree;
-use Terminal\OptionParser;
-use Utils\PathUtils;
+use Terminal\CommandRouting\CommandRouteCommand;
+use Terminal\CommandRouting\CommandsRouter;
 
 class Program
 {
-    public static function main(array $argv = [])
+    public static function main(array $argv = []): void
     {
         define('WIN', strtoupper(substr(PHP_OS, 0, 3)) === 'WIN');
-        $commands = new CommandTree();
-        $commands->endPoint(Help::getClosure());
-        $commands->awaitCommand('help')->endPoint(Help::getClosure());
-        $commands->awaitCommand('build', function ($buildTree) {
-            $buildTree->awaitCommand('package')->endPoint(MakePackage::getClosure());
-            $buildTree->endPoint(Build::getClosure());
-        });
-        $commands->awaitCommand('packages', function ($packages) {
-            $packages->awaitCommand('upload')->endPoint(UploadPackage::getClosure());
-        });
-        $commands->awaitCommand('sources', function ($sources) {
-            $sources->awaitCommand('add')->endPoint(AddSource::getClosure());
-            $sources->awaitCommand('delete')->endPoint(DeleteSource::getClosure());
-            $sources->awaitCommand('list')->endPoint(SourceList::getClosure());
-        });
 
-        $commands->awaitCommand('auth')->endPoint(Auth::getClosure());
-        $commands->awaitCommand('restore')->endPoint(Restore::getClosure());
+        $commands = new CommandsRouter();
+        $commands->registerCommand("build package [build_directory]", new BuildPackage());
+        $commands->registerCommand("build solution [build_directory]", new BuildSolution());
+        $commands->registerCommand("build - [build_directory] -", new Build());
+        $commands->registerCommand("sources list", new SourceList());
+        $commands->registerCommand("sources add <source>", new AddSource());
+        $commands->registerCommand("sources delete <source>", new DeleteSource());
+        $commands->registerCommand("packages upload <source> [build_directory]", new UploadPackage());
+        $commands->registerCommand("packages list", new PackageList());
+        $commands->registerCommand("auth <source> <login>", new Auth());
+        $commands->registerCommand("restore [restore_directory]", new Restore());
+        $commands->registerCommand("install", new Install());
+        $commands->registerCommand("help", new Help());
+        $commands->setNotFoundHandler((new CommandRouteCommand([], ''))->setHandler(new Help()));
 
         try {
-            $commands->step($argv);
+            $commands->handle($argv);
         } catch (Exception $exception) {
             echo $exception->getMessage() . PHP_EOL;
             exit(1);

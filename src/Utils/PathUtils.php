@@ -6,7 +6,7 @@ use Exception;
 
 class PathUtils
 {
-    public static function resolveRelativePath(string $currentPath, string $relativePath)
+    public static function resolveRelativePath(string $currentPath, string $relativePath): string
     {
         if (WIN) {
             $currentPath = static::preparePathForWindows($currentPath);
@@ -15,7 +15,7 @@ class PathUtils
             if (substr($relativePath, 1, 1) == ':')
                 return $relativePath;
         } else {
-            if (substr($relativePath, 0, 1) == '/')
+            if (str_starts_with($relativePath, '/'))
                 return $relativePath;
         }
 
@@ -28,7 +28,7 @@ class PathUtils
             return $prefix . DIRECTORY_SEPARATOR . $postfix;
         }
 
-        if (substr($relativePath, 0, 1) == '.') {
+        if (str_starts_with($relativePath, '.')) {
             if (strlen($relativePath) == 1)
                 return $currentPath;
 
@@ -38,16 +38,28 @@ class PathUtils
         return $currentPath . DIRECTORY_SEPARATOR . $relativePath;
     }
 
-    public static function preparePathForWindows(string $path)
+    public static function preparePathForWindows(string $path): string
     {
         return preg_replace("/\//", DIRECTORY_SEPARATOR, $path);
     }
 
     public static function findProj(string $path): ?string
     {
-        $result = glob($path . '/*.proj.json');
+        $result = glob($path . '/*proj.json');
         if (count($result) == 0)
             throw new Exception("Configuration *.proj.json not found in directory {$path}");
+
+        if (count($result) > 1)
+            throw new Exception("There should not be more than 1 project files: {$path}");
+
+        return $result[0] ?? null;
+    }
+
+    public static function findSln(string $path): ?string
+    {
+        $result = glob($path . '/*sln.json');
+        if (count($result) == 0)
+            throw new Exception("Configuration *.sln.json not found in directory {$path}");
 
         if (count($result) > 1)
             throw new Exception("There should not be more than 1 project files: {$path}");
@@ -65,10 +77,5 @@ class PathUtils
             throw new Exception("JSON parse error in {$path}: " . json_last_error_msg());
 
         return $data;
-    }
-
-    public static function getPackageName(string $name, string $version): string
-    {
-        return $name . '_' . $version . '.phar';
     }
 }

@@ -6,11 +6,16 @@ use Closure;
 
 class Client
 {
-    protected Closure $progressFunction;
+    protected ?Closure $progressFunction;
 
-    public function setProgressFunction(Closure $function)
+    public function setProgressFunction(Closure $function): void
     {
         $this->progressFunction = $function;
+    }
+
+    public function resetProgressFunction(): void
+    {
+        $this->progressFunction = null;
     }
 
     public function get(string $url): QueryBuilder
@@ -53,7 +58,7 @@ class Client
             if (count($header) == 2) {
                 $responseHeaders[$header[0]] = $header[1];
             } else {
-                [$protocol, $code, $status] = explode(' ', $header, 3);
+                [$protocol, $code, $status] = explode(' ', $header_line, 3);
                 $responseHeaders['protocol'] = $protocol;
                 $responseHeaders['code'] = $code;
                 $responseHeaders['status'] = $status;

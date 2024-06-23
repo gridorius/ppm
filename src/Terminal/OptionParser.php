@@ -6,75 +6,83 @@ use Exception;
 
 class OptionParser
 {
-    public static function parse(array &$argv, array $options)
+    private array $definedOptions;
+
+    public function __construct(array $definedOptions = [])
     {
-        $optionValues = [];
-        $end = false;
-        while (!$end) {
-            if (count($argv) == 0) {
-                $end = true;
-                continue;
-            }
+        $this->definedOptions = $definedOptions;
+    }
 
-            $arg = $argv[0];
-            if (substr($arg, 0, 2) == '--') {
-                $option = substr($arg, 2);
-                static::handleOption($option, $options, $argv, $optionValues);
-            } else if (substr($arg, 0, 1) == '-') {
-                $option = substr($arg, 1);
-                if (strlen($option) > 1 && !preg_match("/=/", $option)) {
-                    foreach (str_split($option) as $chainOption) {
-                        if (!key_exists($chainOption, $options))
-                            static::throwOptionException($option);
+    public function setDefinedOptions(array $definedOptions): void{
+        $this->definedOptions = $definedOptions;
+    }
 
-                        $optionValues[$chainOption] = empty($optionValues[$chainOption]) ? 1 : $optionValues[$chainOption] + 1;
-                    }
-                    array_shift($argv);
-                } else {
-                    static::handleOption($option, $options, $argv, $optionValues);
-                }
+    public function parse(&$arguments): array
+    {
+        $optionBuilder = new OptionsBuilder($this->definedOptions);
+        while (true) {
+            if (empty($arguments)) break;
+
+            $argument = $arguments[0];
+            if (str_starts_with($argument, '--')) {
+                $optionValue = explode('=', substr($argument, 2));
+                array_shift($arguments);
+                $this->parseLongOption($optionBuilder, $arguments, $optionValue[0], $optionValue[1] ?? null);
+            } else if (str_starts_with($argument, '-')) {
+                $optionValue = explode('=', substr($argument, 1));
+                array_shift($arguments);
+                $this->parseShortOption($optionBuilder, $arguments, $optionValue[0], $optionValue[1] ?? null);
             } else {
-                $end = true;
+                break;
             }
         }
-        return $optionValues;
+        return $optionBuilder->build();
     }
 
-    protected static function handleOption(string $option, array $options, array &$argv, array &$optionValues)
+    private function parseLongOption(OptionsBuilder $optionsBuilder, array &$arguments, string $option, ?string $value): void
     {
-        $value = null;
-        if (preg_match("/=/", $option)) {
-            [$option, $value] = explode('=', $option);
-        }
-
-        if (!key_exists($option, $options))
-            static::throwOptionException($option);
-
-        if ($options[$option] && empty($value)) {
-            static::fillOption($optionValues, $option, $argv[1]);
-            array_shift($argv);
-            array_shift($argv);
-        } else if ($options[$option]) {
-            static::fillOption($optionValues, $option, $value);
-            array_shift($argv);
+        $this->throwIfInvalid($option);
+        if ($this->definedOptions[$option]) {
+            $optionsBuilder->setValue(
+                $option,
+                $this->getOptionValue($option, $arguments, $value)
+            );
         } else {
-            $optionValues[$option] = empty($optionValues[$option]) ? 1 : $optionValues[$option] + 1;
-            array_shift($argv);
+            $optionsBuilder->incrementOption($value);
         }
     }
 
-    protected static function fillOption(array &$optionValues, string $option, string $value)
+    private function parseShortOption(OptionsBuilder $optionsBuilder, array &$arguments, string $option, ?string $value): void
     {
-        if (empty($optionValues[$option]))
-            $optionValues[$option] = $value;
-        else if (is_array($optionValues[$option]))
-            $optionValues[$option][] = $value;
-        else
-            $optionValues[$option] = [$optionValues[$option], $value];
+        if (!is_null($value) && strlen($option) > 1) {
+            throw new Exception("Invalid short option -{$option}");
+        } else if (strlen($option) > 1) {
+            foreach (str_split($option) as $chainOption) {
+                $this->throwIfInvalid($chainOption);
+                if ($this->definedOptions[$chainOption])
+                    throw new Exception("Unexpected option -{$option}");
+                $optionsBuilder->incrementOption($chainOption);
+            }
+        } else {
+            if ($this->definedOptions[$option]) {
+                $optionsBuilder->setValue(
+                    $option,
+                    $this->getOptionValue($option, $arguments, $value)
+                );
+            } else {
+                $optionsBuilder->incrementOption($option);
+            }
+        }
     }
 
-    protected static function throwOptionException(string $option)
+    private function getOptionValue(string $option, array &$arguments, ?string $value = null)
     {
-        throw new Exception("Unexpected option {$option}");
+        return is_null($value) ? array_shift($arguments) : $value;
+    }
+
+    private function throwIfInvalid(string $option): void
+    {
+        if (!key_exists($option, $this->definedOptions))
+            throw new Exception("Unexpected option -{$option}");
     }
 }

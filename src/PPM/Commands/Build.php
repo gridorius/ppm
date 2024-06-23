@@ -3,34 +3,38 @@
 namespace PPM\Commands;
 
 use Builder\BuildManager;
-use PPM\Commands\Contracts\CommandBase;
-use Exception;
-use Packages\PackageManager;
+use Builder\Configuration\ConfigurationCollector;
+use Packages\PackagesController;
+use Terminal\CommandRouting\CommandBase;
+use Terminal\OptionParser;
 use Utils\PathUtils;
 
 class Build extends CommandBase
 {
-    public function execute(array $argv)
-    {
-        $outDir = $argv[0] ?? getcwd().'/out';
-        $buildDir = $argv[1] ?? getcwd();
+    protected array $options = [
+        'o' => true
+    ];
 
+    public function execute(array $parameters, array $options): void
+    {
+        $outDir = $options['o'] ?? getcwd() . '/out';
         $currentDir = getcwd();
-        if (empty($buildDir)) {
+        if (is_null($parameters['build_directory'])) {
             $buildDir = $currentDir;
         } else {
-            $buildDir = PathUtils::resolveRelativePath($currentDir, $buildDir);
+            $buildDir = PathUtils::resolveRelativePath($currentDir, $parameters['build_directory']);
         }
 
         $outDir = PathUtils::resolveRelativePath($currentDir, $outDir);
-        $projPath = PathUtils::findProj($buildDir);
+        $pathToProjectFile = PathUtils::findProj($buildDir);
+        $packageController = new PackagesController();
+        $buildManager = new BuildManager();
 
-        $packageManager = new PackageManager();
-        $packageManager->restore($projPath);
-        $buildManager = new BuildManager($projPath);
-        $buildManager->build($outDir);
-        $packages = $buildManager->getScanner()->getPackages();
-        $paths = $packageManager->getPackagesRecursive($packages);
-        $packageManager->unpackPackages($paths, $outDir);
+        $configurationCollection = (new ConfigurationCollector())->collectFromProjectFile($pathToProjectFile);
+        $packageController->getRemoteManager()->restore($configurationCollection);
+        $configurationCollection->setVersionIfEmpty($configurationCollection->getMainConfiguration()->getVersion());
+        $buildManager->buildFromConfigurationCollection($configurationCollection, $outDir);
+        $buildManager->AddAssemblyPhar($outDir);
+        $packageController->unpackPackagesRecursive($configurationCollection, $outDir);
     }
 }

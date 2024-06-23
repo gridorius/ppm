@@ -2,29 +2,20 @@
 
 namespace PPM\Commands;
 
-use PPM\Commands\Contracts\CommandBase;
-use Exception;
-use Packages\PackageManager;
+use Packages\PackagesController;
+use Terminal\CommandRouting\CommandBase;
 
 class Auth extends CommandBase
 {
-
-    public function execute(array $argv)
+    public function execute(array $parameters, array $options): void
     {
-        if (empty($argv[0]))
-            throw new Exception("Expected parameter source");
-        if (empty($argv[1]))
-            throw new Exception("Expected parameter login");
-        $source = $argv[0];
-        $login = $argv[1];
-
         echo 'Password:';
-        $f = popen("/bin/bash -c 'read -s password; echo \$password'","r");
-        $password = trim(fgets($f,100));
+        $f = popen("/bin/bash -c 'read -s password; echo \$password'", "r");
+        $password = trim(fgets($f, 100));
         pclose($f);
         echo "\n";
 
-        $manager = new PackageManager();
-        $manager->getRemote()->auth($source, $login, $password);
+        $packageController = new PackagesController();
+        $packageController->getSources()->authorize($parameters['source'], $parameters['login'], $password);
     }
 }

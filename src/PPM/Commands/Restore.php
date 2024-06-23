@@ -2,23 +2,21 @@
 
 namespace PPM\Commands;
 
-use PPM\Commands\Contracts\CommandBase;
+use Builder\Configuration\ConfigurationCollector;
+use Packages\PackagesController;
 use Exception;
-use Packages\PackageManager;
+use Terminal\CommandRouting\CommandBase;
 use Utils\PathUtils;
 
 class Restore extends CommandBase
 {
 
-    public function execute(array $argv)
+    public function execute(array $parameters, array $options): void
     {
-        $restoreDir = $argv[0] ?? getcwd();
-
-        if (empty($restoreDir))
-            throw new Exception("Expected parameter build directory");
-
-        $projPath = PathUtils::findProj($restoreDir);
-        $packageManager = new PackageManager();
-        $packageManager->restore($projPath);
+        $restoreDir = $parameters['restore_directory'] ?? getcwd();
+        $packageController = new PackagesController();
+        $pathToProjectFile = PathUtils::findProj($restoreDir);
+        $configurationCollection = (new ConfigurationCollector())->collectFromProjectFile($pathToProjectFile);
+        $packageController->getRemoteManager()->restore($configurationCollection);
     }
 }

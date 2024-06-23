@@ -1,27 +1,23 @@
 openapi: 3.0.3
 info:
   title: Swagger
-  termsOfService: http://swagger.io/terms/
   contact:
     email: gridorius@yandex.ru
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
   version: 1.0.11
 externalDocs:
   description: Find out more about Swagger
-  url: http://swagger.io
+  url: https://swagger.io
 tags:
   - name: auth
     description: Authorization
     externalDocs:
       description: Find out more
-      url: http://swagger.io
+      url: https://swagger.io
   - name: packages
     description: Packages operations
     externalDocs:
       description: Find out more
-      url: http://swagger.io
+      url: https://swagger.io
 paths:
   /auth:
     post:
@@ -198,8 +194,6 @@ components:
     Package:
       type: object
       properties:
-        source:
-          type: string
         name:
           type: string
         version:
