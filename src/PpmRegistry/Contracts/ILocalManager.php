@@ -14,5 +14,7 @@ interface ILocalManager
 
     public function save(string $name, string $version, string $content): ILocalPackage;
 
+    public function scanPackageVersions(string $packageName): void;
+
     public function toArray(): array;
 }

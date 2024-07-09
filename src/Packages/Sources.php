@@ -85,7 +85,7 @@ class Sources implements ISources
         $client = new Client();
         $source = $this->has($source) ? $this->get($source) : new Source($source);
         $response = $client
-            ->post($source->makeRequestPath('/download'))
+            ->post($source->makeRequestPath('auth'))
             ->body([
                 'login' => $login,
                 'password' => $password
@@ -94,7 +94,7 @@ class Sources implements ISources
 
         $response
             ->awaitCode(200, function (Response $response) use ($source) {
-                $source->setToken($response['content']);
+                $source->setToken($response->json()['token']);
                 $this->add($source);
             })
             ->awaitCode(400, function () {

@@ -18,6 +18,9 @@ class ShellAction implements IAction
 
     public function run(): void
     {
-        echo shell_exec($this->command);
+        proc_open($this->command, [
+            1 => STDOUT,
+            2 => STDERR,
+        ], $pipes);
     }
 }

@@ -4,8 +4,8 @@ namespace Builder\Actions;
 
 class ActionReplaceUtils
 {
-    const BUILD_DIRECTORY = "/\$\(buildDirectory\)/";
-    const OUT_DIRECTORY = "/\$\(outDirectory\)/";
+    const BUILD_DIRECTORY = "/\\$\(buildDirectory\)/";
+    const OUT_DIRECTORY = "/\\$\(outDirectory\)/";
 
     public static function replacePaths(string $buildDirectory, string $outDirectory, string $value): string
     {

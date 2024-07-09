@@ -42,7 +42,7 @@ class Source implements ISource
     public function makeAuthHeaders(): array
     {
         return [
-            'Authorization: bearer ' . $this->token
+            'Authorization' => 'bearer ' . $this->token
         ];
     }
 

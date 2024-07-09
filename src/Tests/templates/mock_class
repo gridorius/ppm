@@ -1,0 +1,13 @@
+class %s %s %s{
+	private array $setup;
+
+	public function __construct(array $setup){
+		$this->setup = $setup;
+	}
+
+%s	private function tryExecuteSetupMethod(string $method, array $args){
+		return key_exists($method, $this->setup)
+			? call_user_func_array($this->setup[$method], $args)
+			: throw new Exception("Method {$method} not mocked");
+	}
+}

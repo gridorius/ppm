@@ -7,7 +7,7 @@ class EntityFinder
     public static function findByTokens(string $path): array
     {
         $content = file_get_contents($path);
-        $tokens = token_get_all($content);
+        $tokens = token_get_all($content, TOKEN_PARSE);
         $entities = [];
         $version = phpversion();
 

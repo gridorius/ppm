@@ -28,6 +28,11 @@ class Client
         return new QueryBuilder($url, 'POST', $this);
     }
 
+    public function put(string $url): QueryBuilder
+    {
+        return new QueryBuilder($url, 'PUT', $this);
+    }
+
     public function executeQuery(string $url, string $method, array $headers = [], array $query = [], $data = null): Response
     {
         if (!empty($query))
@@ -49,7 +54,7 @@ class Client
             foreach ($headers as $header => $content) {
                 $preparedHeaders[] = $header . ': ' . $content;
             }
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $preparedHeaders);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $preparedHeaders);
         }
 
         $responseHeaders = [];
@@ -57,8 +62,8 @@ class Client
             $header = explode(':', $header_line, 2);
             if (count($header) == 2) {
                 $responseHeaders[$header[0]] = $header[1];
-            } else {
-                [$protocol, $code, $status] = explode(' ', $header_line, 3);
+            } else if (!empty(trim($header_line))) {
+                [$protocol, $code, $status] = explode(' ', trim($header_line), 3);
                 $responseHeaders['protocol'] = $protocol;
                 $responseHeaders['code'] = $code;
                 $responseHeaders['status'] = $status;

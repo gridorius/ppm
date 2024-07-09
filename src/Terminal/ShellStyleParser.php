@@ -14,7 +14,7 @@ class ShellStyleParser
         'gray' => 37
     ];
 
-    private static string $styleRegex = "/<s\s+style='\s*(?<styles>.+?)\s*'\s*>(?<content>.+?)<\/s>/";
+    private static string $styleRegex = "/<s\s+style='\s*(?<styles>.+?)\s*'\s*>(?<content>.+?)<\/s>/s";
 
     public static function style(string $data): string
     {
