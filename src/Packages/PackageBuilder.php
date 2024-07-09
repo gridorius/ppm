@@ -67,6 +67,6 @@ class PackageBuilder implements IPackageBuilder
             unlink($path);
         }
         rmdir($outDirectory);
-        echo "Package {$configuration->getName()} built\n";
+        echo "Package {$configuration->getName()}:{$configuration->getVersion()} built\n";
     }
 }

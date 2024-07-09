@@ -33,9 +33,9 @@ class Sources implements ISources
         $this->updateKeys();
     }
 
-    public function add(ISource $source): void
+    public function add(ISource $source, ?string $alias = null): void
     {
-        $this->sources[$source->getPath()] = $source;
+        $this->sources[$alias ?? $source->getPath()] = $source;
         $this->updateFile();
     }
 

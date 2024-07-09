@@ -10,7 +10,7 @@ use Iterator;
  */
 interface ISources extends Iterator, Countable
 {
-    public function add(ISource $source): void;
+    public function add(ISource $source, ?string $alias = null): void;
 
     public function delete(ISource $source): void;
 

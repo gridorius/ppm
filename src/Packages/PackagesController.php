@@ -27,9 +27,9 @@ class PackagesController
         $this->builder = new PackageBuilder($this->localManager, Utils::path('tmp'));
     }
 
-    public function addSource(string $source): void
+    public function addSource(string $source, ?string $alias = null): void
     {
-        $this->sources->add(new Source($source));
+        $this->sources->add(new Source($source), $alias);
     }
 
     public function deleteSource(string $source): void

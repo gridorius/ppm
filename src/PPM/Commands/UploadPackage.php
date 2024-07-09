@@ -14,13 +14,9 @@ class UploadPackage extends CommandBase
     public function execute(array $parameters, array $options): void
     {
         $sourcePath = $parameters['source'];
-        $projectDir = $parameters['project_directory'] ?? getcwd();
-        $pathToProjectFile = PathUtils::findProj($projectDir);
+        $name = $parameters['name'];
+        $version = $parameters['version'];
 
-        $configurationCollection = (new ConfigurationCollector())->collectFromProjectFile($pathToProjectFile);
-        $mainConfiguration = $configurationCollection->getMainConfiguration();
-        $name = $mainConfiguration->getName();
-        $version = $mainConfiguration->getVersion();
         $packageController = new PackagesController();
         $remoteManager = $packageController->getRemoteManager();
         $localManager = $packageController->getLocalManager();

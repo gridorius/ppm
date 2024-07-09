@@ -33,7 +33,7 @@ class Program
         $commands->registerCommand("sources list", new SourceList());
         $commands->registerCommand("sources add <source>", new AddSource());
         $commands->registerCommand("sources delete <source>", new DeleteSource());
-        $commands->registerCommand("packages upload <source> [project_directory]", new UploadPackage());
+        $commands->registerCommand("packages upload <source> <name> <version>", new UploadPackage());
         $commands->registerCommand("packages list", new PackageList());
         $commands->registerCommand("auth <source> <login>", new Auth());
         $commands->registerCommand("restore [restore_directory]", new Restore());
