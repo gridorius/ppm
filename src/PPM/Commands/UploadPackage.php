@@ -24,7 +24,7 @@ class UploadPackage extends CommandBase
         if (is_null($localPackage = $localManager->get($name, $version)))
             throw new Exception("Package {$name}:{$version} not found in local registry");
 
-        $source = $sources->has($sourcePath) ? $sources->get($sourcePath) : new Source($sourcePath);
+        $source = $sources->has($sourcePath) ? $sources->get($sourcePath) : $sources->createSource($sourcePath);
         $remoteManager->upload($localPackage, $source);
     }
 }

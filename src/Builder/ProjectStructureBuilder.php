@@ -27,7 +27,7 @@ class ProjectStructureBuilder implements IProjectStructureBuilder
         foreach ($files as $path => $relativePath) {
             $foundTypes = EntityFinder::findByTokens($path);
             foreach ($foundTypes as $type) {
-                $localPath = 'types/' . $relativePath;
+                $localPath = $this->makeInnerPath($path);
                 $types[$type] = $localPath;
                 $structure->addPharFile($localPath, $path);
             }
@@ -54,7 +54,7 @@ class ProjectStructureBuilder implements IProjectStructureBuilder
         $resourceFiles = $structure->getProjectInfo()->filterFilesByFiltersArray($configuration->getResources());
         $resources = [];
         foreach ($resourceFiles as $path => $relativePath) {
-            $localPath = 'resources/' . $relativePath;
+            $localPath = $this->makeInnerPath($path);
             $resources[$relativePath] = $localPath;
             $structure->addPharFile($localPath, $path);
         }
@@ -68,10 +68,15 @@ class ProjectStructureBuilder implements IProjectStructureBuilder
         $includeFiles = $structure->getProjectInfo()->filterFilesByFiltersArray($configuration->getIncludes());
         $includes = [];
         foreach ($includeFiles as $path => $relativePath) {
-            $localPath = 'includes/' . $relativePath;
+            $localPath = $this->makeInnerPath($path);
             $includes[] = $localPath;
             $structure->addPharFile($localPath, $path);
         }
         $structure->getManifestBuilder()->setIncludes($includes);
+    }
+
+    private function makeInnerPath(string $path): string
+    {
+        return hash_file('sha256', $path) . '.' . pathinfo($path, PATHINFO_EXTENSION);
     }
 }

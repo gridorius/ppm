@@ -7,7 +7,7 @@ use Exception;
 class Resources
 {
     /**
-     * @var array<string, Resource> $resources
+     * @var Resource[] $resources
      */
     private static array $resources = [];
 
@@ -39,12 +39,12 @@ class Resources
         return $result;
     }
 
-    public static function findPaths(string $pattern): array
+    public static function findPaths(string $pattern, int $nameOffset = 0): array
     {
         $result = [];
         foreach (static::$resources as $name => $resource)
             if (fnmatch($pattern, $name))
-                $result[$name] = $resource->getPath();
+                $result[substr($name, $nameOffset)] = $resource->getPath();
 
         return $result;
     }

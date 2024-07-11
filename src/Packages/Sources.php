@@ -39,9 +39,9 @@ class Sources implements ISources
         $this->updateFile();
     }
 
-    public function delete(ISource $source): void
+    public function delete(string $source): void
     {
-        unset($this->sources[$source->getPath()]);
+        unset($this->sources[$source]);
         $this->updateFile();
     }
 
@@ -80,10 +80,10 @@ class Sources implements ISources
         $this->index = 0;
     }
 
-    public function authorize(string $source, string $login, string $password): void
+    public function authorize(string $source, string $login, string $password, ?string $alias = null): void
     {
         $client = new Client();
-        $source = $this->has($source) ? $this->get($source) : new Source($source);
+        $source = $this->has($source) ? $this->get($source) : $this->createSource($source, $alias);
         $response = $client
             ->post($source->makeRequestPath('auth'))
             ->body([
@@ -95,7 +95,8 @@ class Sources implements ISources
         $response
             ->awaitCode(200, function (Response $response) use ($source) {
                 $source->setToken($response->json()['token']);
-                $this->add($source);
+                $this->updateFile();
+                echo "Successful authorization\n";
             })
             ->awaitCode(400, function () {
                 throw new Exception('Authorization failed');
@@ -118,5 +119,10 @@ class Sources implements ISources
     public function count(): int
     {
         return count($this->sources);
+    }
+
+    public function createSource(string $path, ?string $alias = null): ISource
+    {
+        return $this->sources[$alias ?? $path] = new Source($path);
     }
 }

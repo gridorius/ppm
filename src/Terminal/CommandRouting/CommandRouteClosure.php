@@ -8,10 +8,10 @@ class CommandRouteClosure extends CommandRouteBase
 {
     private Closure $handler;
 
-    public function setHandler(Closure $handler): CommandRouteBase
+    public function __construct(array $matches, string $pattern, Closure $handler)
     {
+        parent::__construct($matches, $pattern);
         $this->handler = $handler;
-        return $this;
     }
 
     protected function getHandler(): Closure

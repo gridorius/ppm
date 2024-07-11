@@ -12,7 +12,7 @@ use PpmRegistry\Contracts\ILocalManager;
 
 class PackagesController
 {
-    private ILocalManager $localManager;
+    private LocalManager $localManager;
     private IRemoteManager $remoteManager;
 
     private ISources $sources;
@@ -34,10 +34,10 @@ class PackagesController
 
     public function deleteSource(string $source): void
     {
-        $this->sources->delete(new Source($source));
+        $this->sources->delete($source);
     }
 
-    public function getLocalManager(): ILocalManager
+    public function getLocalManager(): LocalManager
     {
         return $this->localManager;
     }

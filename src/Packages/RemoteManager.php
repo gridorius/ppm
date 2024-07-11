@@ -35,7 +35,7 @@ class RemoteManager implements IRemoteManager
         foreach ($this->sources as $source) {
             $response = $this
                 ->client
-                ->get($source->makeRequestPath("/catalog/{$name}/{$version}/info/"))
+                ->get($source->makeRequestPath("catalog/{$name}/{$version}/info/"))
                 ->headers($source->makeAuthHeaders())
                 ->execute();
 
@@ -53,7 +53,7 @@ class RemoteManager implements IRemoteManager
     public function upload(ILocalPackage $localPackage, ISource $source): void
     {
         $response = $this->client
-            ->put($source->makeRequestPath("/catalog/{$localPackage->getName()}/{$localPackage->getVersion()}/"))
+            ->put($source->makeRequestPath("catalog/{$localPackage->getName()}/{$localPackage->getVersion()}/"))
             ->body([
                 'package' => curl_file_create($localPackage->getPath())
             ])
@@ -74,7 +74,7 @@ class RemoteManager implements IRemoteManager
         });
         echo "\n";
         $response = $this->client
-            ->get($remotePackage->getSource()->makeRequestPath("/catalog/{$remotePackage->getName()}/{$remotePackage->getVersion()}/"))
+            ->get($remotePackage->getSource()->makeRequestPath("catalog/{$remotePackage->getName()}/{$remotePackage->getVersion()}/"))
             ->query([
                 'package' => $remotePackage->getName(),
                 'version' => $remotePackage->getVersion()

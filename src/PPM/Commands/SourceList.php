@@ -20,7 +20,7 @@ class SourceList extends CommandBase
         echo "Package sources:\n";
         foreach ($sources as $alias => $source) {
             $authorized = $source->hasToken() ? 'true' : 'false';
-            echo "\t{$alias} - {$source['path']}, Has token: {$authorized}\n";
+            echo "\t{$alias} - {$source->getPath()}, Has token: {$authorized}\n";
         }
     }
 }

@@ -20,6 +20,11 @@ class Auth extends CommandBase
         echo "\n";
 
         $packageController = new PackagesController();
-        $packageController->getSources()->authorize($parameters['source'], $parameters['login'], $password);
+        $packageController->getSources()->authorize($parameters['source'], $parameters['login'], $password, $parameters['alias']);
+    }
+
+    public function getDescription(): string
+    {
+        return 'auth to source';
     }
 }
