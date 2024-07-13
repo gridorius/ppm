@@ -7,27 +7,27 @@ use ReflectionClass;
 use ReflectionMethod;
 use Terminal\ShellStyleParser;
 
-class Tester
+class TestRunner
 {
     /**
      * @var ITestCase[]
      */
-    private array $testObjects;
+    private array $testCases;
 
     public function __construct()
     {
-        $this->testObjects = [];
+        $this->testCases = [];
         foreach (get_declared_classes() as $class)
             if (is_subclass_of($class, ITestCase::class)) {
                 $reflectionClass = new ReflectionClass($class);
                 if (!$reflectionClass->isAbstract() && !$reflectionClass->isInterface())
-                    $this->testObjects[] = new $class();
+                    $this->testCases[] = new $class();
             }
     }
 
     public function run(): void
     {
-        foreach ($this->testObjects as $testObject) {
+        foreach ($this->testCases as $testObject) {
             $reflectionClass = new ReflectionClass($testObject);
             echo $reflectionClass->getName() . ':' . PHP_EOL;
             $testObject->setUp();

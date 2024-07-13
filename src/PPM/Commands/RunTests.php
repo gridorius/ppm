@@ -4,7 +4,7 @@ namespace PPM\Commands;
 
 use Assembly\Assembly;
 use Terminal\CommandRouting\CommandBase;
-use Tests\Tester;
+use Tests\TestRunner;
 use Utils\PathUtils;
 
 class RunTests extends CommandBase
@@ -16,7 +16,7 @@ class RunTests extends CommandBase
         Assembly::includePhar($pathToPhar);
         Assembly::preloadTypes();
         Assembly::includeScripts();
-        $tester = new Tester();
+        $tester = new TestRunner();
         $tester->run();
     }
 }

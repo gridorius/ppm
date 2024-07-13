@@ -7,7 +7,6 @@ class Assert
     const EXPECTED_ACTUAL_TEMPLATE = "%s\n    Expected: %s\n    Actual  : %s";
     private static string $source;
     private static array $assertsResults = [];
-
     private static bool $failed = false;
 
     public static function setSource(string $source): void
@@ -24,7 +23,6 @@ class Assert
 
     public static function isFalse(bool $actual, ?string $message = null): void
     {
-
         $actual
             ? static::addFailure($message ?? sprintf(static::EXPECTED_ACTUAL_TEMPLATE, 'isFalse', 'false', 'true'))
             : static::addSuccess();
@@ -32,7 +30,6 @@ class Assert
 
     public static function isNull($actual, ?string $message = null): void
     {
-
         is_null($actual)
             ? static::addSuccess()
             : static::addFailure($message ?? sprintf(static::EXPECTED_ACTUAL_TEMPLATE, 'isNull', 'null', static::prepareOutput($actual)));
