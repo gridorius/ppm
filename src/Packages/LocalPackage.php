@@ -8,6 +8,6 @@ class LocalPackage extends \PpmRegistry\LocalPackage implements IUnpack
 {
     public function unpack(string $outDirectory): void
     {
-        $this->phar->extractTo($outDirectory);
+        $this->phar->extractTo($outDirectory, null, true);
     }
 }

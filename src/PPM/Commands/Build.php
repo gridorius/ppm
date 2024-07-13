@@ -37,4 +37,9 @@ class Build extends CommandBase
         $buildManager->AddAssemblyPhar($outDir);
         $packageController->unpackPackagesRecursive($configurationCollection, $outDir);
     }
+
+    public function getDescription(): string
+    {
+        return "build project\n    o - out directory";
+    }
 }

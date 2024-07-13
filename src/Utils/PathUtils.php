@@ -6,6 +6,12 @@ use Exception;
 
 class PathUtils
 {
+    public static function createDirectoryIfNotExists($directory): void
+    {
+        if (!is_dir($directory))
+            mkdir($directory, 0755, true);
+    }
+
     public static function resolveRelativePath(string $currentPath, string $relativePath): string
     {
         if (WIN) {

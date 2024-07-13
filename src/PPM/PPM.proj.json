@@ -1,6 +1,6 @@
 {
   "name": "PPM",
-  "version": "0.6.11",
+  "version": "1.0.0",
   "author": "Nikita Akimov gridorius@yandex.ru",
   "runner": "ppm",
   "entrypoint": "PPM\\Program",
@@ -14,6 +14,7 @@
     "../Terminal/Terminal.proj.json",
     "../Utils/Utils.proj.json",
     "../Builder/Builder.proj.json",
-    "../Packages/Packages.proj.json"
+    "../Packages/Packages.proj.json",
+    "../Tests/Tests.proj.json"
   ]
 }

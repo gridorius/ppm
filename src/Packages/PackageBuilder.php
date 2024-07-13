@@ -7,9 +7,11 @@ use Builder\BuildManager;
 use Builder\Configuration\ConfigurationCollector;
 use Builder\Configuration\Contracts\IConfigurationCollector;
 use Builder\Contracts\IBuildManager;
+use Builder\FileScanner;
 use Packages\Contracts\IPackageBuilder;
 use Phar;
 use PpmRegistry\Contracts\ILocalManager;
+use Utils\PathUtils;
 
 class PackageBuilder implements IPackageBuilder
 {
@@ -63,10 +65,36 @@ class PackageBuilder implements IPackageBuilder
         $phar->buildFromIterator(new ArrayIterator($packageFiles));
         $phar->setMetadata($packageMetadata);
         $phar->stopBuffering();
-        foreach ($packageFiles as $path) {
+        foreach ($packageFiles as $path)
             unlink($path);
-        }
         rmdir($outDirectory);
-        echo "Package {$configuration->getName()} built\n";
+        echo "Package {$configuration->getName()}:{$configuration->getVersion()} built\n";
+    }
+
+    public function buildResourcesPackage(string $buildDirectory): void
+    {
+        $pathToProjectFile = PathUtils::findProj($buildDirectory);
+        $projName = pathinfo($pathToProjectFile, PATHINFO_BASENAME);
+        $info = PathUtils::getJson($pathToProjectFile);
+        $name = $info['name'];
+        $version = $info['version'];
+        $packageMetadata = [
+            'name' => $name,
+            'version' => $version,
+            'author' => $info['author'] ?? '',
+            'description' => $info['description'] ?? '',
+            'depends' => [],
+            'hashes' => []
+        ];
+        $packagePath = $this->localManager->getLocalPath($name, $version);
+        if(file_exists($packagePath))
+            unlink($packagePath);
+        $phar = new Phar($packagePath);
+        $phar->startBuffering();
+        $phar->buildFromDirectory($buildDirectory);
+        $phar->delete($projName);
+        $phar->setMetadata($packageMetadata);
+        $phar->stopBuffering();
+        echo "Package {$name}:{$version} built\n";
     }
 }

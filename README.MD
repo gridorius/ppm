@@ -72,6 +72,23 @@
       "include": "path/*",
       "exclude": "path/*.css;path/*.csv"
     }
+  ],
+  "actions": [
+    {
+      "on": "BeforeBuild|AfterBuild",
+      "type": "copy",
+      "from": "$(buildDirectory)/path/from/*",
+      "to": "$(outDirectory)/path/to"
+    },
+    {
+      "type": "shell",
+      "command": "php $(buildDirectory)run.php"
+    },
+    {
+      "type": "delete",
+      "file": "$(outDirectory)/path/to/file.ext",
+      "directory": "$(outDirectory)/path/to/directory"
+    }
   ]
 }
 ```

@@ -8,11 +8,11 @@ use RecursiveIteratorIterator;
 
 class FileStructure
 {
-    protected array $structure = [];
+    private array $structure = [];
 
     public function scanDirectory(string $path): void
     {
-        $files = $this->getDirectoryFiles($path);
+        $files = FileScanner::scanDirectory($path);
         $projects = $this->splitProjects($files);
         foreach ($projects as $projectDirectory => $files)
             $this->structure[$projectDirectory] = $files;
@@ -26,21 +26,6 @@ class FileStructure
     public function hasProject(string $projectDirectory): bool
     {
         return key_exists($projectDirectory, $this->structure);
-    }
-
-    protected function getDirectoryFiles(string $path): array
-    {
-        $dirIterator = new RecursiveDirectoryIterator($path,
-            FilesystemIterator::CURRENT_AS_PATHNAME
-            | FilesystemIterator::KEY_AS_PATHNAME
-            | FilesystemIterator::SKIP_DOTS
-        );
-        $iterator = new RecursiveIteratorIterator($dirIterator);
-        $files = [];
-        foreach ($iterator as $path) {
-            $files[] = $path;
-        }
-        return $files;
     }
 
     protected function splitProjects($items): array

@@ -1,6 +1,6 @@
 {
   "name": "PpmRegistry",
-  "version": "0.6.0",
+  "version": "1.0.0",
   "author": "Nikita Akimov gridorius@yandex.ru",
   "description": "Набор классов и интерфейсов для работы с локальным реестром пакетов"
 }

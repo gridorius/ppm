@@ -7,19 +7,29 @@ use Exception;
 
 class CommandsRouter
 {
+    /**
+     * @var RouteWrapper[] $commands
+     */
     private array $commands = [];
 
-    private string $commandPattern = "/^(?<command>[^-\[\]<>]+)\s*(?<before_options>-)?\s*"
-    . "(?<required>(<.+?>\s*)+)?(?<optional>(\[.+?\]\s*)+)?(?<after_options>-)?/";
+    private string $commandPattern = "/^(?<command>[^-\[\]<>]+)\s*(?<args>(?<before_options>-)?\s*"
+    . "(?<required>(<.+?>\s*)+)?(?<optional>(\[.+?\]\s*)+)?(?<after_options>-)?)/";
 
     private CommandRouteBase $notFoundHandler;
 
     public function __construct()
     {
-        $this->notFoundHandler = (new CommandRouteClosure([], ''))->setHandler(function () {
-            echo "Command not found\n";
-            exit(1);
+        $this->notFoundHandler = new CommandRouteClosure([], '', function () {
+            $this->showHelp();
         });
+    }
+
+    public function showHelp(): void
+    {
+        foreach ($this->commands as $command) {
+            $handler = $command->getHandler();
+            echo $handler->getDescription();
+        }
     }
 
     public function setNotFoundHandler(CommandRouteBase $commandRouteBase): void
@@ -29,31 +39,19 @@ class CommandsRouter
 
     public function register(string $pattern, Closure $handler): CommandRouteBase
     {
-        preg_match($this->commandPattern, $pattern, $matches);
-        if ($matches[0] != $pattern)
-            throw new Exception("Invalid command pattern: {$pattern}");
-
-        $command = trim($matches['command']);
-        $pattern = "/^{$command}/";
-
-        $handler = (new CommandRouteClosure($matches, $pattern))->setHandler($handler);
-        $this->commands[$pattern] = new RouteWrapper($handler, count(explode(' ', $command)));
+        $matches = $this->getMatches($pattern);
+        $handler = new CommandRouteClosure($matches, $pattern, $handler);
+        $this->setPatternHandler($matches, $handler);
         return $handler;
     }
 
     public function registerCommand(string $pattern, CommandBase $concreteCommand): CommandRouteBase
     {
-        preg_match($this->commandPattern, $pattern, $matches);
-        if ($matches[0] != $pattern)
-            throw new Exception("Invalid command pattern: {$pattern}");
-
-
-        $command = trim($matches['command']);
-        $pattern = "/^{$command}/";
-        $handler = (new CommandRouteCommand($matches, $pattern))
-            ->setHandler($concreteCommand)
+        $matches = $this->getMatches($pattern);
+        $handler = (new CommandRouteCommand($matches, $pattern, $concreteCommand))
+            ->setDescription($concreteCommand->getDescription())
             ->setDefinedOptions($concreteCommand->getOptions());
-        $this->commands[$pattern] = new RouteWrapper($handler, count(explode(' ', $command)));
+        $this->setPatternHandler($matches, $handler);
         return $handler;
     }
 
@@ -68,5 +66,20 @@ class CommandsRouter
             }
 
         $this->notFoundHandler->handle($argv);
+    }
+
+    private function getMatches(string $pattern): array
+    {
+        preg_match($this->commandPattern, $pattern, $matches);
+        if ($matches[0] != $pattern)
+            throw new Exception("Invalid command pattern: {$pattern}");
+        return $matches;
+    }
+
+    private function setPatternHandler(array $matches, CommandRouteBase $handler): void
+    {
+        $command = trim($matches['command']);
+        $pattern = "/^{$command}/";
+        $this->commands[$pattern] = new RouteWrapper($handler, count(explode(' ', $command)));
     }
 }

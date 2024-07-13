@@ -4,6 +4,7 @@ namespace Terminal\CommandRouting;
 
 use Exception;
 use Terminal\OptionParser;
+use Terminal\ShellStyleParser;
 
 abstract class CommandRouteBase implements ICommandRoute
 {
@@ -12,12 +13,12 @@ abstract class CommandRouteBase implements ICommandRoute
     private array $required;
     private array $optional;
     private OptionParser $optionParser;
-    private string $pattern;
+    private array $matches;
     private string $description;
 
     public function __construct(array $matches, string $pattern)
     {
-        $this->pattern = $pattern;
+        $this->matches = $matches;
         $this->beforeOptions = !empty($matches['before_options']);
         $this->afterOptions = !empty($matches['after_options']);
         $this->required = $this->prepareRequired($matches);
@@ -28,12 +29,15 @@ abstract class CommandRouteBase implements ICommandRoute
 
     public function getDescription(): string
     {
-        return $this->pattern . PHP_EOL . $this->description;
+        return ShellStyleParser::style(
+                "<s style='b,green'>{$this->matches['command']}</s> <s style='blue'>{$this->matches['args']}</s>"
+            ) .' '. $this->description . PHP_EOL;
     }
 
-    public function setDescription(string $description): void
+    public function setDescription(string $description): CommandRouteBase
     {
         $this->description = $description;
+        return $this;
     }
 
     public function setDefinedOptions(array $options): CommandRouteBase

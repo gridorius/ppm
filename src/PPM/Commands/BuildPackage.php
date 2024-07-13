@@ -10,10 +10,14 @@ class BuildPackage extends CommandBase
 {
     public function execute(array $parameters, array $options): void
     {
-        $buildDir = $parameters['build_directory'];
-        $pathToProjectFile = PathUtils::findProj($buildDir);
+        $buildDir = $parameters['build_directory'] ?? getcwd();
         $packageController = new PackagesController();
         $packageBuilder = $packageController->getBuilder();
-        $packageBuilder->build($pathToProjectFile);
+        if (empty($options['r'])) {
+            $pathToProjectFile = PathUtils::findProj($buildDir);
+            $packageBuilder->build($pathToProjectFile);
+        } else {
+            $packageBuilder->buildResourcesPackage($buildDir);
+        }
     }
 }

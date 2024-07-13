@@ -10,6 +10,9 @@ class Assembly
     private static array $phars = [];
     private static array $includes = [];
 
+    private static array $loadedTypes = [];
+    private static array $includedScripts = [];
+
     public static function hasPhar(string $name): bool
     {
         return key_exists($name, static::$phars);
@@ -35,14 +38,20 @@ class Assembly
 
     public static function preloadTypes(): void
     {
-        foreach (static::$types as $type => $path)
+        foreach (static::$types as $type => $path) {
+            if (key_exists($type, static::$loadedTypes)) continue;
             class_exists($type);
+            static::$loadedTypes[$type] = true;
+        }
     }
 
     public static function includeScripts(): void
     {
-        foreach (static::$includes as $path)
+        foreach (static::$includes as $path) {
+            if (key_exists($path, static::$includedScripts)) continue;
             require $path;
+            static::$includedScripts[$path] = true;
+        }
     }
 
     public static function registerAssembly(string $name, string $directory): void
@@ -58,7 +67,7 @@ class Assembly
     public static function includePhar(string $path): void
     {
         if (!file_exists($path))
-            throw new Exception("Dependency {$path} not found");
+            throw new Exception("File {$path} not found");
         require $path;
     }
 

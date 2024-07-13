@@ -6,7 +6,7 @@ interface ICommandRoute
 {
     public function getDescription(): string;
 
-    public function setDescription(string $description): void;
+    public function setDescription(string $description): ICommandRoute;
 
     public function setDefinedOptions(array $options): ICommandRoute;
 

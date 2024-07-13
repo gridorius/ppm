@@ -51,6 +51,17 @@ class LocalManager implements ILocalManager
             );
     }
 
+    public function scanPackageVersions(string $packageName): void
+    {
+        foreach (glob($this->packagesDirectory . DIRECTORY_SEPARATOR . $packageName . '*.phar') as $packagePath) {
+            [$name, $version] = explode('_', pathinfo($packagePath, PATHINFO_FILENAME));
+            if (empty($this->localPackages[$name]))
+                $this->localPackages[$name] = [];
+            if (empty($this->localPackages[$name][$version]))
+                $this->localPackages[$name][$version] = $this->createLocalPackage($packagePath, $name, $version);
+        }
+    }
+
     public function toArray(): array
     {
         return $this->localPackages;

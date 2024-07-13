@@ -6,6 +6,9 @@ use Exception;
 
 class Resources
 {
+    /**
+     * @var Resource[] $resources
+     */
     private static array $resources = [];
 
     public static function addResource(string $name, string $path): void
@@ -32,6 +35,16 @@ class Resources
         foreach (static::$resources as $name => $resource)
             if (fnmatch($pattern, $name))
                 $result[$name] = $resource;
+
+        return $result;
+    }
+
+    public static function findPaths(string $pattern, int $nameOffset = 0): array
+    {
+        $result = [];
+        foreach (static::$resources as $name => $resource)
+            if (fnmatch($pattern, $name))
+                $result[substr($name, $nameOffset)] = $resource->getPath();
 
         return $result;
     }

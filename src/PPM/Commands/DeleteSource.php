@@ -8,7 +8,6 @@ use Terminal\CommandRouting\CommandBase;
 
 class DeleteSource extends CommandBase
 {
-
     public function execute(array $parameters, array $options): void
     {
         $packageController = new PackagesController();

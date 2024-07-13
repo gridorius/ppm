@@ -12,11 +12,14 @@ class ProjectConfiguration implements IProjectConfiguration
 
     private string $directory;
 
+    private Actions $actions;
+
     public function __construct(string $pathToProjectFile)
     {
         $this->configuration = PathUtils::getJson($pathToProjectFile);
         $this->directory = dirname($pathToProjectFile);
         $this->configuration['depends'] = [];
+        $this->actions = new Actions($this->configuration['actions'] ?? []);
         if (empty($this->configuration['name']))
             $this->configuration['name'] = pathinfo(dirname($pathToProjectFile), PATHINFO_BASENAME);
     }
@@ -158,5 +161,10 @@ class ProjectConfiguration implements IProjectConfiguration
     public function getDepends(): array
     {
         return [...$this->configuration['depends'], ...array_keys($this->getPackageReferences())];
+    }
+
+    public function getActions(): Actions
+    {
+        return $this->actions;
     }
 }

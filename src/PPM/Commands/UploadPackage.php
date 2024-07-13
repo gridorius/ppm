@@ -14,13 +14,9 @@ class UploadPackage extends CommandBase
     public function execute(array $parameters, array $options): void
     {
         $sourcePath = $parameters['source'];
-        $projectDir = $parameters['project_directory'] ?? getcwd();
-        $pathToProjectFile = PathUtils::findProj($projectDir);
+        $name = $parameters['name'];
+        $version = $parameters['version'];
 
-        $configurationCollection = (new ConfigurationCollector())->collectFromProjectFile($pathToProjectFile);
-        $mainConfiguration = $configurationCollection->getMainConfiguration();
-        $name = $mainConfiguration->getName();
-        $version = $mainConfiguration->getVersion();
         $packageController = new PackagesController();
         $remoteManager = $packageController->getRemoteManager();
         $localManager = $packageController->getLocalManager();
@@ -28,7 +24,7 @@ class UploadPackage extends CommandBase
         if (is_null($localPackage = $localManager->get($name, $version)))
             throw new Exception("Package {$name}:{$version} not found in local registry");
 
-        $source = $sources->has($sourcePath) ? $sources->get($sourcePath) : new Source($sourcePath);
+        $source = $sources->has($sourcePath) ? $sources->get($sourcePath) : $sources->createSource($sourcePath);
         $remoteManager->upload($localPackage, $source);
     }
 }

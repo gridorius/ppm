@@ -6,10 +6,10 @@ class CommandRouteCommand extends CommandRouteBase
 {
     private CommandBase $handler;
 
-    public function setHandler(CommandBase $handler): CommandRouteBase
+    public function __construct(array $matches, string $pattern, CommandBase $handler)
     {
+        parent::__construct($matches, $pattern);
         $this->handler = $handler;
-        return $this;
     }
 
     protected function getHandler(): array

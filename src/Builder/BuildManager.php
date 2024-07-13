@@ -32,6 +32,7 @@ class BuildManager implements IBuildManager
         } catch (Exception $exception) {
             echo "Build failed\n";
             echo $exception->getMessage() . "\n";
+            echo $exception->getTraceAsString() . "\n";
             exit(1);
         }
     }

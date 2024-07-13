@@ -17,6 +17,11 @@ class RouteWrapper
         $this->removeArgs = $removeArgs;
     }
 
+    public function getHandler(): CommandRouteBase
+    {
+        return $this->commandRouteBase;
+    }
+
     public function handle(array $argv): void
     {
         array_splice($argv, 0, $this->removeArgs);

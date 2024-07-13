@@ -2,6 +2,8 @@
 
 namespace Builder\Configuration\Contracts;
 
+use Builder\Configuration\Actions;
+
 interface IProjectConfiguration extends IConfigurationFileFilter
 {
     public function getName(): string;
@@ -58,4 +60,6 @@ interface IProjectConfiguration extends IConfigurationFileFilter
     public function addDepend(string $depend): void;
 
     public function getDepends(): array;
+
+    public function getActions(): Actions;
 }
