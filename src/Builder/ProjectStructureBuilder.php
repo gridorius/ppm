@@ -27,7 +27,7 @@ class ProjectStructureBuilder implements IProjectStructureBuilder
         foreach ($files as $path => $relativePath) {
             $foundTypes = EntityFinder::findByTokens($path);
             foreach ($foundTypes as $type) {
-                $localPath = $this->makeInnerPath($path);
+                $localPath = $type;
                 $types[$type] = $localPath;
                 $structure->addPharFile($localPath, $path);
             }
@@ -54,7 +54,7 @@ class ProjectStructureBuilder implements IProjectStructureBuilder
         $resourceFiles = $structure->getProjectInfo()->filterFilesByFiltersArray($configuration->getResources());
         $resources = [];
         foreach ($resourceFiles as $path => $relativePath) {
-            $localPath = $this->makeInnerPath($path);
+            $localPath = $relativePath;
             $resources[$relativePath] = $localPath;
             $structure->addPharFile($localPath, $path);
         }

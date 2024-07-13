@@ -94,6 +94,9 @@ class ProjectBuilder implements IProjectBuilder
 
     protected function createPhar(string $outDirectory, IProjectConfiguration $projectConfiguration): Phar
     {
-        return new Phar($outDirectory . DIRECTORY_SEPARATOR . $projectConfiguration->getName() . '.phar');
+        $path = $outDirectory . DIRECTORY_SEPARATOR . $projectConfiguration->getName() . '.phar';
+        if (file_exists($path))
+            unlink($path);
+        return new Phar($path);
     }
 }
