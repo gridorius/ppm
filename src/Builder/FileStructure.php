@@ -2,9 +2,7 @@
 
 namespace Builder;
 
-use FilesystemIterator;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
+use Assembly\FileScanner;
 
 class FileStructure
 {

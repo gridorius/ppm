@@ -71,7 +71,7 @@ class ConfigurationCollection implements IConfigurationCollection
         return $projectInfoList;
     }
 
-    public function getPackages(): array
+    public function getDepends(): array
     {
         $packages = [];
         foreach ($this->configurations as $configurationWrapper)

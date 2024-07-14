@@ -2,12 +2,40 @@
 
 namespace Packages;
 
-use Packages\Contracts\IUnpack;
+use Packages\Contracts\ILocalPackage;
+use Packages\Contracts\PackageBase;
 
-class LocalPackage extends \PpmRegistry\LocalPackage implements IUnpack
+class LocalPackage extends PackageBase implements ILocalPackage
 {
-    public function unpack(string $outDirectory): void
+    protected string $path;
+    protected array $depends;
+    protected array $metadata;
+
+    public function __construct(string $packagePath, string $name, string $version)
     {
-        $this->phar->extractTo($outDirectory, null, true);
+        parent::__construct($name, $version);
+        $this->path = $packagePath;
+        $this->metadata = include $packagePath . DIRECTORY_SEPARATOR . Metadata::METADATA_FILE_NAME;
+        $this->depends = $this->metadata['depends'];
+    }
+
+    public function getPath(): string
+    {
+        return $this->path;
+    }
+
+    public function getProjectPharPath(): string
+    {
+        return $this->getPath() . DIRECTORY_SEPARATOR . $this->getName() . '.phar';
+    }
+
+    public function getDepends(): array
+    {
+        return $this->depends;
+    }
+
+    public function getMetadata(): array
+    {
+        return $this->metadata;
     }
 }

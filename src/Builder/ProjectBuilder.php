@@ -17,7 +17,7 @@ class ProjectBuilder implements IProjectBuilder
 {
     public function build(IProjectStructure $projectStructure, string $outDirectory): void
     {
-        PathUtils::createDirectoryIfNotExists($outDirectory);
+        PathUtils::createDirectory($outDirectory);
         $projectConfiguration = $projectStructure->getProjectInfo()->getConfiguration();
         $actions = $projectConfiguration->getActions();
         $actions->runBeforeBuild($projectConfiguration->getDirectory(), $outDirectory);

@@ -13,11 +13,7 @@ class BuildPackage extends CommandBase
         $buildDir = $parameters['build_directory'] ?? getcwd();
         $packageController = new PackagesController();
         $packageBuilder = $packageController->getBuilder();
-        if (empty($options['r'])) {
-            $pathToProjectFile = PathUtils::findProj($buildDir);
-            $packageBuilder->build($pathToProjectFile);
-        } else {
-            $packageBuilder->buildResourcesPackage($buildDir);
-        }
+        $pathToProjectFile = PathUtils::getProjOrThrow($buildDir);
+        $packageBuilder->build($pathToProjectFile);
     }
 }

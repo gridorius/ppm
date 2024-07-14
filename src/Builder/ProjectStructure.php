@@ -24,6 +24,7 @@ class ProjectStructure implements IProjectStructure
         $manifestBuilder = $this->manifestBuilder = new ManifestBuilder();
         $configuration = $this->projectInfo->getConfiguration();
         $manifestBuilder->setName($configuration->getName());
+        $manifestBuilder->setCommands($configuration->getCommands());
         $manifestBuilder->setVersion($configuration->getVersion());
         $manifestBuilder->setDepends($configuration->getDepends());
     }

@@ -29,8 +29,10 @@ abstract class CommandRouteBase implements ICommandRoute
 
     public function getDescription(): string
     {
+        $command = trim($this->matches['command']);
+        $args = trim($this->matches['args']);
         return ShellStyleParser::style(
-                "<s style='b,green'>{$this->matches['command']}</s> <s style='blue'>{$this->matches['args']}</s>"
+                "<s style='b,green'>{$command}</s> <s style='blue'>{$args}</s>"
             ) .' '. $this->description . PHP_EOL;
     }
 

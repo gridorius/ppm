@@ -82,7 +82,7 @@ class TestRunner
             Assert::addFailure(sprintf("Unexpected: %s(%s, %s)\n%s", get_class($exception),
                 $exception->getMessage(),
                 $exception->getCode(),
-                $exception->getTraceAsString()
+                \Assembly\Exception::prepareTraceAsString($exception->getTrace())
             ), $exception->getLine());
         } finally {
             $this->log($source, $showLine);

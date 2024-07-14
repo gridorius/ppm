@@ -1,6 +1,6 @@
 <?php
 
-namespace PpmRegistry\Contracts;
+namespace Packages\Contracts;
 
 abstract class PackageBase implements IPackage
 {

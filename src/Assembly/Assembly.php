@@ -73,10 +73,14 @@ class Assembly
 
     public static function entrypoint($entrypoint, $argv = []): void
     {
-        static::registerAutoloader();
-        static::preloadTypes();
-        static::includeScripts();
-        $entrypoint($argv);
+        try {
+            static::registerAutoloader();
+            static::preloadTypes();
+            static::includeScripts();
+            $entrypoint($argv);
+        } catch (Exception $exception) {
+            throw new \Assembly\Exception($exception);
+        }
     }
 
     private static function registerPharFiles(array $manifest): void

@@ -1,6 +1,6 @@
 <?php
 
-namespace PpmRegistry\Contracts;
+namespace Packages\Contracts;
 
 interface ILocalManager
 {

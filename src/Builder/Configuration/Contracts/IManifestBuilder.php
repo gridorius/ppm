@@ -6,6 +6,8 @@ interface IManifestBuilder
 {
     public function setName(string $name): void;
 
+    public function setCommands(array $commands): void;
+
     public function setVersion(string $version): void;
 
     public function setDepends(array $depends): void;

@@ -8,11 +8,10 @@ use Exception;
 use Packages\Contracts\IPackageBuilder;
 use Packages\Contracts\IRemoteManager;
 use Packages\Contracts\ISources;
-use PpmRegistry\Contracts\ILocalManager;
 
 class PackagesController
 {
-    private LocalManager $localManager;
+    private UnpackLocalManager $localManager;
     private IRemoteManager $remoteManager;
 
     private ISources $sources;
@@ -21,10 +20,11 @@ class PackagesController
 
     public function __construct()
     {
-        $this->localManager = new LocalManager(Utils::path('packages'));
+        $tmpDirectory = TMP_DIRECTORY;
+        $this->localManager = new UnpackLocalManager(Utils::path('packages'), $tmpDirectory);
         $this->sources = new Sources(Utils::path('sources.json'));
-        $this->remoteManager = new RemoteManager($this->sources, $this->localManager);
-        $this->builder = new PackageBuilder($this->localManager, Utils::path('tmp'));
+        $this->remoteManager = new RemoteManager($this->sources, $this->localManager, $tmpDirectory);
+        $this->builder = new PackageBuilder($this->localManager);
     }
 
     public function addSource(string $source, ?string $alias = null): void
@@ -37,7 +37,7 @@ class PackagesController
         $this->sources->delete($source);
     }
 
-    public function getLocalManager(): LocalManager
+    public function getLocalManager(): UnpackLocalManager
     {
         return $this->localManager;
     }
@@ -59,7 +59,7 @@ class PackagesController
 
     public function unpackPackagesRecursive(IConfigurationCollection $configurationCollection, string $outDirectory): void
     {
-        $packages = $configurationCollection->getPackages();
+        $packages = $configurationCollection->getDepends();
         $this->unpackPackages($packages, $outDirectory);
     }
 

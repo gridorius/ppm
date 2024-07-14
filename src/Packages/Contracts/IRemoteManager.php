@@ -3,7 +3,6 @@
 namespace Packages\Contracts;
 
 use Builder\Configuration\Contracts\IConfigurationCollection;
-use PpmRegistry\Contracts\ILocalPackage;
 
 interface IRemoteManager
 {

@@ -1,0 +1,7 @@
+{
+  "projectReferences": [
+    "../Utils/Utils.proj.json",
+    "../Packages/Packages.proj.json",
+    "../Builder/Builder.proj.json"
+  ]
+}

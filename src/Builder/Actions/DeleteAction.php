@@ -2,7 +2,7 @@
 
 namespace Builder\Actions;
 
-use Builder\FileScanner;
+use Assembly\FileScanner;
 
 class DeleteAction implements IAction
 {

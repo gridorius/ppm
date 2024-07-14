@@ -4,6 +4,8 @@ namespace Packages;
 
 use Builder\Configuration\Contracts\IConfigurationCollection;
 use Closure;
+use Packages\Contracts\ILocalManager;
+use Packages\Contracts\ILocalPackage;
 use Packages\Contracts\IRemoteManager;
 use Packages\Contracts\IRemotePackage;
 use Packages\Contracts\ISource;
@@ -12,21 +14,22 @@ use Packages\Exceptions\BadRequestException;
 use Packages\Exceptions\PackageNotFoundException;
 use Packages\Http\Client;
 use Packages\Http\Response;
-use PpmRegistry\Contracts\ILocalManager;
-use PpmRegistry\Contracts\ILocalPackage;
+use Phar;
+use Utils\PathUtils;
 
 class RemoteManager implements IRemoteManager
 {
     private ISources $sources;
     private Client $client;
-
     private ILocalManager $localManager;
+    private string $tmpDirectory;
 
-    public function __construct(ISources $sources, ILocalManager $localManager)
+    public function __construct(ISources $sources, ILocalManager $localManager, string $tmpDirectory)
     {
         $this->sources = $sources;
         $this->localManager = $localManager;
         $this->client = new Client();
+        $this->tmpDirectory = PathUtils::createDirectory($tmpDirectory);
     }
 
     public function find(string $name, string $version): ?IRemotePackage
@@ -42,7 +45,7 @@ class RemoteManager implements IRemoteManager
             $response
                 ->awaitCode(200, function (Response $response) use (&$foundPackage, $source) {
                     $data = $response->json();
-                    $foundPackage = new RemotePackage($data['name'], $data['verion'], $source, $data['depends']);
+                    $foundPackage = new RemotePackage($data['name'], $data['version'], $source, $data['depends']);
                 })
                 ->awaitCodes([400, 401, 403, 404], $this->getErrorResponseCallback());
         }
@@ -52,10 +55,11 @@ class RemoteManager implements IRemoteManager
 
     public function upload(ILocalPackage $localPackage, ISource $source): void
     {
+        $localPath = $this->compactLocalPackage($localPackage);
         $response = $this->client
             ->put($source->makeRequestPath("catalog/{$localPackage->getName()}/{$localPackage->getVersion()}/"))
             ->body([
-                'package' => curl_file_create($localPackage->getPath())
+                'package' => curl_file_create($localPath)
             ])
             ->headers($source->makeAuthHeaders())
             ->execute();
@@ -65,6 +69,8 @@ class RemoteManager implements IRemoteManager
                 echo "Successful upload package\n";
             })
             ->awaitCodes([400, 401, 403], $this->getErrorResponseCallback());
+
+        unlink($localPath);
     }
 
     public function download(IRemotePackage $remotePackage): ILocalPackage
@@ -85,7 +91,7 @@ class RemoteManager implements IRemoteManager
         $localPackage = null;
         $response
             ->awaitCode(200, function (Response $response) use ($remotePackage, &$localPackage) {
-                $localPackage = $this->localManager->save($remotePackage->getName(), $remotePackage->getVersion(), $response['content']);
+                $localPackage = $this->localManager->save($remotePackage->getName(), $remotePackage->getVersion(), $response->text());
             })
             ->awaitCodes([400, 401, 403, 404], $this->getErrorResponseCallback());
         $this->client->resetProgressFunction();
@@ -94,7 +100,7 @@ class RemoteManager implements IRemoteManager
 
     public function restore(IConfigurationCollection $configurationCollection): void
     {
-        $packages = $configurationCollection->getPackages();
+        $packages = $configurationCollection->getDepends();
         $this->restorePackages($packages);
     }
 
@@ -129,5 +135,16 @@ class RemoteManager implements IRemoteManager
         return function (Response $response) {
             throw new BadRequestException($response->json()['error']);
         };
+    }
+
+    private function compactLocalPackage(ILocalPackage $package): string
+    {
+        $path = $this->tmpDirectory . DIRECTORY_SEPARATOR . microtime() . '.phar';
+        $phar = new Phar($path);
+        $phar->startBuffering();
+        $phar->buildFromDirectory($package->getPath());
+        $phar->setMetadata($package->getMetadata());
+        $phar->stopBuffering();
+        return $path;
     }
 }

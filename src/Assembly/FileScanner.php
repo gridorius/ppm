@@ -1,6 +1,6 @@
 <?php
 
-namespace Builder;
+namespace Assembly;
 
 use FilesystemIterator;
 use RecursiveDirectoryIterator;

@@ -2,7 +2,7 @@
 
 namespace Builder\Actions;
 
-use Builder\FileScanner;
+use Assembly\FileScanner;
 use Utils\PathUtils;
 
 class CopyAction implements IAction
@@ -25,11 +25,11 @@ class CopyAction implements IAction
     public function run(): void
     {
         if (is_file($this->from)) {
-            PathUtils::createDirectoryIfNotExists(dirname($this->to));
+            PathUtils::createDirectory(dirname($this->to));
             copy($this->from, $this->to);
             $this->log($this->from, $this->to);
         } elseif (is_dir($this->from)) {
-            PathUtils::createDirectoryIfNotExists($this->to);
+            PathUtils::createDirectory($this->to);
             $offset = strlen($this->from) + 1;
             $files = FileScanner::scanDirectory($this->from);
             foreach ($files as $path)
@@ -55,7 +55,7 @@ class CopyAction implements IAction
         $relativePath = substr($path, $offset);
         $toPath = $to . DIRECTORY_SEPARATOR . $relativePath;
         $directory = dirname($toPath);
-        PathUtils::createDirectoryIfNotExists($directory);
+        PathUtils::createDirectory($directory);
         copy($path, $toPath);
         $this->log($path, $toPath);
     }

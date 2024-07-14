@@ -2,7 +2,10 @@
 
 namespace PPM;
 
-use Builder\BuildManager;
+use Assembly\Assembly;
+use Assembly\Utils;
+use Builder\Configuration\ConfigurationCollector;
+use Packages\PackagesController;
 use PPM\Commands\AddSource;
 use PPM\Commands\Auth;
 use PPM\Commands\Build;
@@ -14,18 +17,18 @@ use PPM\Commands\BuildPackage;
 use PPM\Commands\Install;
 use PPM\Commands\PackageList;
 use PPM\Commands\Restore;
-use PPM\Commands\RunTests;
 use PPM\Commands\SourceList;
 use PPM\Commands\UploadPackage;
 use Exception;
-use Terminal\CommandRouting\CommandRouteCommand;
 use Terminal\CommandRouting\CommandsRouter;
+use Utils\PathUtils;
 
 class Program
 {
     public static function main(array $argv = []): void
     {
         define('WIN', strtoupper(substr(PHP_OS, 0, 3)) === 'WIN');
+        define('TMP_DIRECTORY', Utils::path('tmp'));
 
         $commands = new CommandsRouter();
         try {
@@ -48,12 +51,37 @@ class Program
             $commands->registerCommand("auth <source> <login> [alias]", new Auth());
             $commands->registerCommand("restore [restore_directory]", new Restore());
             $commands->registerCommand("install", new Install());
-            $commands->registerCommand("test <test_project_phar>", new RunTests());
+//            $commands->registerCommand("test <test_project_phar>", new RunTests());
+
+            if ($projectFile = PathUtils::findProj(getcwd()))
+                static::includeProjectCommands($projectFile, $commands);
 
             $commands->handle($argv);
         } catch (Exception $exception) {
             echo $exception->getMessage() . PHP_EOL;
             exit(1);
         }
+    }
+
+    private static function includeProjectCommands(string $projectFile, CommandsRouter $commands): void
+    {
+        $packageController = new PackagesController();
+        $localManager = $packageController->getLocalManager();
+        $configurations = (new ConfigurationCollector())->collectFromProjectFile($projectFile);
+        foreach ($configurations->getDepends() as $package => $version)
+            if ($localPackage = $localManager->get($package, $version)) {
+                Assembly::includePhar($localPackage->getProjectPharPath());
+                foreach ($localPackage->getMetadata()['commands'] as $pattern => $parameters) {
+                    $handler = explode('::', $parameters['handler']);
+                    $commands
+                        ->register('run ' . $pattern, function (array $arguments, array $options) use ($handler) {
+                            call_user_func($handler, $arguments, $options);
+                        })
+                        ->setDescription($parameters['description'] ?? '')
+                        ->setDefinedOptions($parameters['definedOptions'] ?? []);
+                }
+            }
+        Assembly::preloadTypes();
+        Assembly::includeScripts();
     }
 }

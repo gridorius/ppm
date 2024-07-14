@@ -62,4 +62,6 @@ interface IProjectConfiguration extends IConfigurationFileFilter
     public function getDepends(): array;
 
     public function getActions(): Actions;
+
+    public function getCommands(): array;
 }

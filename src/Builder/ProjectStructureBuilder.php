@@ -2,6 +2,7 @@
 
 namespace Builder;
 
+use Builder\Configuration\ProjectFileFilter;
 use Builder\Contracts\IProjectInfo;
 use Builder\Contracts\IProjectStructure;
 use Builder\Contracts\IProjectStructureBuilder;
@@ -22,7 +23,19 @@ class ProjectStructureBuilder implements IProjectStructureBuilder
     {
         $configuration = $structure->getProjectInfo()->getConfiguration();
         $manifestBuilder = $structure->getManifestBuilder();
-        $files = $structure->getProjectInfo()->filterFiles($configuration);
+
+        $excludes = [];
+        if(!is_null($exclude = $configuration->getExclude()))
+            $excludes[] = $exclude;
+        foreach ($configuration->getResources() as $resource)
+                $excludes[] = $resource->getInclude();
+
+        $filter = new ProjectFileFilter([
+                'include' => $configuration->getInclude(),
+                'exclude' => implode(';', $excludes)
+        ]);
+
+        $files = $structure->getProjectInfo()->filterFiles($filter);
         $types = [];
         foreach ($files as $path => $relativePath) {
             $foundTypes = EntityFinder::findByTokens($path);

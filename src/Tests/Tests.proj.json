@@ -1,7 +1,15 @@
 {
+  "name": "PPM.Tests",
+  "version": "0.8.0",
   "resources": [
     {
       "include": "templates/*"
     }
-  ]
+  ],
+  "commands": {
+    "tests": {
+      "handler": "Tests\\Commands::runTests",
+      "description": "run tests"
+    }
+  }
 }

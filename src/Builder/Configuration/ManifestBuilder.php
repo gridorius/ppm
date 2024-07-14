@@ -15,12 +15,18 @@ class ManifestBuilder implements IManifestBuilder, IManifestInformation
             'types' => [],
             'resources' => [],
             'includes' => [],
+            'commands' => [],
         ];
     }
 
     public function setName(string $name): void
     {
         $this->manifest['name'] = $name;
+    }
+
+    public function setCommands(array $commands): void
+    {
+        $this->manifest['commands'] = $commands;
     }
 
     public function setVersion(string $version): void

@@ -63,10 +63,10 @@ class Client
             if (count($header) == 2) {
                 $responseHeaders[$header[0]] = $header[1];
             } else if (!empty(trim($header_line))) {
-                [$protocol, $code, $status] = explode(' ', trim($header_line), 3);
-                $responseHeaders['protocol'] = $protocol;
-                $responseHeaders['code'] = $code;
-                $responseHeaders['status'] = $status;
+                $first = explode(' ', trim($header_line), 3);
+                $responseHeaders['protocol'] = $first[0];
+                $responseHeaders['code'] = $first[1];
+                $responseHeaders['status'] = $first[2] ?? '';
             }
             return strlen($header_line);
         });

@@ -9,14 +9,12 @@ use Utils\PathUtils;
 class ProjectConfiguration implements IProjectConfiguration
 {
     private array $configuration;
-
     private string $directory;
-
     private Actions $actions;
 
     public function __construct(string $pathToProjectFile)
     {
-        $this->configuration = PathUtils::getJson($pathToProjectFile);
+        $this->configuration = PathUtils::getJson($pathToProjectFile, true);
         $this->directory = dirname($pathToProjectFile);
         $this->configuration['depends'] = [];
         $this->actions = new Actions($this->configuration['actions'] ?? []);
@@ -166,5 +164,10 @@ class ProjectConfiguration implements IProjectConfiguration
     public function getActions(): Actions
     {
         return $this->actions;
+    }
+
+    public function getCommands(): array
+    {
+        return $this->configuration['commands'] ?? [];
     }
 }

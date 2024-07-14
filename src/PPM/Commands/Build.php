@@ -5,6 +5,7 @@ namespace PPM\Commands;
 use Builder\BuildManager;
 use Builder\Configuration\ConfigurationCollector;
 use Packages\PackagesController;
+use Services\BuildService;
 use Terminal\CommandRouting\CommandBase;
 use Terminal\OptionParser;
 use Utils\PathUtils;
@@ -26,16 +27,8 @@ class Build extends CommandBase
         }
 
         $outDir = PathUtils::resolveRelativePath($currentDir, $outDir);
-        $pathToProjectFile = PathUtils::findProj($buildDir);
-        $packageController = new PackagesController();
-        $buildManager = new BuildManager();
-
-        $configurationCollection = (new ConfigurationCollector())->collectFromProjectFile($pathToProjectFile);
-        $packageController->getRemoteManager()->restore($configurationCollection);
-        $configurationCollection->setVersionIfEmpty($configurationCollection->getMainConfiguration()->getVersion());
-        $buildManager->buildFromConfigurationCollection($configurationCollection, $outDir);
-        $buildManager->AddAssemblyPhar($outDir);
-        $packageController->unpackPackagesRecursive($configurationCollection, $outDir);
+        $buildService = new BuildService();
+        $buildService->buildProject($buildDir, $outDir);
     }
 
     public function getDescription(): string

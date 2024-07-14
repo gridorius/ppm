@@ -6,10 +6,11 @@ use Exception;
 
 class PathUtils
 {
-    public static function createDirectoryIfNotExists($directory): void
+    public static function createDirectory($directory): string
     {
         if (!is_dir($directory))
             mkdir($directory, 0755, true);
+        return $directory;
     }
 
     public static function resolveRelativePath(string $currentPath, string $relativePath): string
@@ -49,7 +50,7 @@ class PathUtils
         return preg_replace("/\//", DIRECTORY_SEPARATOR, $path);
     }
 
-    public static function findProj(string $path): ?string
+    public static function getProjOrThrow(string $path): string
     {
         $result = glob($path . '/*proj.json');
         if (count($result) == 0)
@@ -58,6 +59,12 @@ class PathUtils
         if (count($result) > 1)
             throw new Exception("There should not be more than 1 project files: {$path}");
 
+        return static::findProj($path);
+    }
+
+    public static function findProj(string $path): ?string
+    {
+        $result = glob($path . '/*proj.json');
         return $result[0] ?? null;
     }
 
@@ -73,12 +80,18 @@ class PathUtils
         return $result[0] ?? null;
     }
 
-    public static function getJson(string $path)
+    public static function getJson(string $path, bool $useEnv = false)
     {
         if (!file_exists($path))
             throw new Exception("File {$path} not exists");
 
-        $data = json_decode(file_get_contents($path), true);
+        $content = file_get_contents($path);
+        if ($useEnv)
+            $content = preg_replace_callback("/\\$\{(?<var>[^\}]+?)\}/", function ($matches) {
+                return getenv($matches['var']);
+            }, $content);
+
+        $data = json_decode($content, true);
         if (is_null($data))
             throw new Exception("JSON parse error in {$path}: " . json_last_error_msg());
 

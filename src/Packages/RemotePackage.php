@@ -4,7 +4,7 @@ namespace Packages;
 
 use Packages\Contracts\IRemotePackage;
 use Packages\Contracts\ISource;
-use PpmRegistry\Contracts\PackageBase;
+use Packages\Contracts\PackageBase;
 
 class RemotePackage extends PackageBase implements IRemotePackage
 {

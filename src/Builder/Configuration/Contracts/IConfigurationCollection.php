@@ -23,7 +23,7 @@ interface IConfigurationCollection
      */
     public function getConfigurationsArray(): array;
 
-    public function getPackages(): array;
+    public function getDepends(): array;
 
     /**
      * @return IProjectInfo[]
