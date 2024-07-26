@@ -86,6 +86,11 @@ class Sources implements ISources
         $source = $this->has($source) ? $this->get($source) : $this->createSource($source, $alias);
         $response = $client
             ->post($source->makeRequestPath('auth'))
+            ->disableSsl()
+            ->headers([
+                'Content-Type' => 'multipart/form-data',
+                'Client' => 'ppm client'
+            ])
             ->body([
                 'login' => $login,
                 'password' => $password

@@ -10,6 +10,7 @@ use PPM\Commands\AddSource;
 use PPM\Commands\Auth;
 use PPM\Commands\Build;
 use PPM\Commands\BuildSolution;
+use PPM\Commands\CompactPackage;
 use PPM\Commands\DeleteSource;
 use PPM\Commands\DownloadPackage;
 use PPM\Commands\ExtractPackage;
@@ -17,6 +18,7 @@ use PPM\Commands\BuildPackage;
 use PPM\Commands\Install;
 use PPM\Commands\PackageList;
 use PPM\Commands\Restore;
+use PPM\Commands\Run;
 use PPM\Commands\SourceList;
 use PPM\Commands\UploadPackage;
 use Exception;
@@ -41,9 +43,11 @@ class Program
                 ->setDefinedOptions([
                     'o' => true
                 ]);
+            $commands->registerCommand("run [build_directory]", new Run());
             $commands->registerCommand("sources list", new SourceList());
             $commands->registerCommand("sources add <source> [alias]", new AddSource());
             $commands->registerCommand("sources delete <source>", new DeleteSource());
+            $commands->registerCommand("packages compact <name> <version>", new CompactPackage());
             $commands->registerCommand("packages download <name> <version>", new DownloadPackage());
             $commands->registerCommand("packages upload <source> <name> <version>", new UploadPackage());
             $commands->registerCommand("packages extract <name> <version> [out_directory]", new ExtractPackage());

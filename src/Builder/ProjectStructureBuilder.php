@@ -40,7 +40,7 @@ class ProjectStructureBuilder implements IProjectStructureBuilder
         foreach ($files as $path => $relativePath) {
             $foundTypes = EntityFinder::findByTokens($path);
             foreach ($foundTypes as $type) {
-                $localPath = preg_replace("/\\\\/", '.', $type);
+                $localPath = preg_replace("/\\\\/", '.', $type).'.php';
                 $types[$type] = $localPath;
                 $structure->addPharFile($localPath, $path);
             }

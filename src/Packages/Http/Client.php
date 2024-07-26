@@ -2,6 +2,7 @@
 
 namespace Packages\Http;
 
+use Assembly\Exception;
 use Closure;
 
 class Client
@@ -33,21 +34,25 @@ class Client
         return new QueryBuilder($url, 'PUT', $this);
     }
 
-    public function executeQuery(string $url, string $method, array $headers = [], array $query = [], $data = null): Response
+    public function executeQuery(string $url, string $method, array $headers = [], array $query = [], $data = null, $useSsl = true): Response
     {
         if (!empty($query))
             $url .= '?' . http_build_query($query);
+        $responseHeaders = [];
         $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $useSsl);
+        curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-        if (!empty($data)) {
+        if (!empty($data))
             curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        }
         if (!empty($this->progressFunction)) {
-            curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, function ($resource, $download_size, $downloaded) {
-                $percent = ($downloaded / $download_size) * 100;
-                call_user_func_array($this->progressFunction, [$percent, $downloaded, $download_size]);
-            });
+            curl_setopt($ch,
+                CURLOPT_PROGRESSFUNCTION,
+                function ($resource, $download_size = 0, $downloaded = 0, $upload_size = 0, $uploaded = 0) use (&$responseHeaders) {
+                    call_user_func($this->progressFunction, $responseHeaders, $downloaded, $uploaded);
+                });
+            curl_setopt($ch, CURLOPT_NOPROGRESS, false);
         }
         if (!empty($headers)) {
             $preparedHeaders = [];
@@ -57,11 +62,10 @@ class Client
             curl_setopt($ch, CURLOPT_HTTPHEADER, $preparedHeaders);
         }
 
-        $responseHeaders = [];
         curl_setopt($ch, CURLOPT_HEADERFUNCTION, function ($curl, $header_line) use (&$responseHeaders) {
             $header = explode(':', $header_line, 2);
             if (count($header) == 2) {
-                $responseHeaders[$header[0]] = $header[1];
+                $responseHeaders[$header[0]] = trim($header[1]);
             } else if (!empty(trim($header_line))) {
                 $first = explode(' ', trim($header_line), 3);
                 $responseHeaders['protocol'] = $first[0];
@@ -72,6 +76,8 @@ class Client
         });
 
         $result = curl_exec($ch);
+        if ($error = curl_error($ch))
+            throw new Exception($error);
         curl_close($ch);
 
         return new Response($responseHeaders, $result);
