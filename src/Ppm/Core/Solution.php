@@ -7,6 +7,7 @@ use Ppm\Builder\Configuration\Configuration;
 use Ppm\Builder\Constants;
 use Ppm\Builder\ProjectFile;
 use Ppm\Framework\Filesystem\Directory;
+use Ppm\Framework\Filesystem\Path;
 use Ppm\Framework\Filesystem\PathUtils;
 use Ppm\Packages\PackagesManager;
 
@@ -41,17 +42,22 @@ class Solution
         $storage = $manager->getStorage();
         $projects = $this->getData()['projects'];
 
-        $packages = [Constants::FRAMEWORK_PHAR_NAME];
-        foreach ($projects as $project) {
-            $configuration = new Configuration($this->getProjectPath($project));
+        $packages = [];
+        foreach ($projects as $name => $relativePath) {
+            $configuration = new Configuration($this->getProjectPath($name));
             foreach ($configuration->buildConfigurationCollection()->getPackages() as $package)
                 $packages[] = $package;
         }
+
 
         $this->getPackagesDirectory()->clear();
         $packages = array_unique($packages);
         $packagesDirectory = $this->getPackagesDirectory();
         $packagesTree = $storage->getDependencyTreeBuilder()->buildPackagesTree($packages);
+        copy(Path::assemblyCombine(
+            Constants::FRAMEWORK_PHAR_NAME),
+            $packagesDirectory->getPath() . DIRECTORY_SEPARATOR . Constants::FRAMEWORK_PHAR_NAME
+        );
         foreach ($packagesTree->getFound() as $name => $version)
             $storage->get($name, $version)->extractTo($packagesDirectory);
     }
