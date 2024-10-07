@@ -1,6 +1,6 @@
 <?php
 
-namespace Ppm\Exceptions;
+namespace Ppm\Framework\Exceptions;
 
 use Exception;
 

@@ -2,6 +2,7 @@
 
 namespace Ppm\Framework\System\Proc;
 
+use Closure;
 use Ppm\Framework\Stream\ResourceStream;
 
 class Worker
@@ -17,7 +18,7 @@ class Worker
         $this->stderr = new ResourceStream(STDERR);
     }
 
-    public function while(\Closure $iteration, ...$args): void
+    public function while(Closure $iteration, ...$args): void
     {
         while (true)
             $iteration($this, ...$args);

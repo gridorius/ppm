@@ -11,32 +11,28 @@ use Ppm\Framework\Terminal\ShellStyleParser;
 class CommandsRouter
 {
     /**
-     * @var RouteWrapper[] $commands
+     * @var CommandRouteBase[] $commands
      */
     private array $commands = [];
 
-    private CommandRouteBase $notFoundHandler;
+    private ?CommandRouteBase $notFoundHandler;
     private string $descriptionHeader = '';
 
     public function __construct()
     {
-        $this->notFoundHandler = new CommandRouteClosure([], '', function () {
-            $this->showDescription();
-        });
+        $this->notFoundHandler = null;
     }
 
-    public function setDescriptionHeader(string $descriptionHeader): void
+    public function setDescriptionHeader(string $name, string $postfix = ''): void
     {
-        $this->descriptionHeader = ShellStyleParser::style("<s style='b,green'>{$descriptionHeader}</s>");
+        $this->descriptionHeader = ShellStyleParser::style("<s style='b,green'>{$name}</s> <s style='blue'>{$postfix}</s>");
     }
 
     public function showDescription(): void
     {
         echo $this->descriptionHeader . PHP_EOL;
-        foreach ($this->commands as $command) {
-            $handler = $command->getHandler();
+        foreach ($this->commands as $handler)
             echo $handler->getDescription();
-        }
     }
 
     public function setNotFoundHandler(CommandRouteBase $commandRouteBase): void
@@ -78,7 +74,10 @@ class CommandsRouter
                 return;
             }
 
-        $this->notFoundHandler->handle($argv);
+        if (!is_null($this->notFoundHandler))
+            $this->notFoundHandler->handle($argv);
+        else
+            $this->showDescription();
     }
 
     private function registerRoute(Pattern $pattern, CommandRouteBase $handler): void

@@ -5,8 +5,13 @@ namespace Ppm\Core\Commands\Sources;
 use Ppm\Framework\Terminal\CommandRouting\Contracts\CommandBase;
 use Ppm\Packages\PackagesManager;
 
-class DeleteSource extends CommandBase
+class DeleteSourceCommand extends CommandBase
 {
+    public function getDescription(): string
+    {
+        return "Delete source";
+    }
+
     public function execute(array $parameters, array $options): void
     {
         $packageController = new PackagesManager();

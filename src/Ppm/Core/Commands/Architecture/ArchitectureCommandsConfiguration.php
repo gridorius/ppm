@@ -9,10 +9,10 @@ class ArchitectureCommandsConfiguration extends CommandsConfigurationBase
 {
     public function configure(CommandsRouter $router): void
     {
-        $router->registerCommand("init <name>", new Initialize())
+        $router->registerCommand("init <name>", new InitializeCommand())
             ->setDescription("Initialize a PPM project");
 
-        $router->registerCommand("create project <name>", new CreateProject())
+        $router->registerCommand("create project <name>", new CreateProjectCommand())
             ->setDescription("Initialize a PPM project");
     }
 }

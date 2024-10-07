@@ -5,8 +5,13 @@ namespace Ppm\Core\Commands\Architecture;
 use Ppm\Core\Solution;
 use Ppm\Framework\Terminal\CommandRouting\Contracts\CommandBase;
 
-class CreateProject extends CommandBase
+class CreateProjectCommand extends CommandBase
 {
+    public function getDescription(): string
+    {
+        return "Create project directory in this solution";
+    }
+
     public function execute(array $parameters, array $options): void
     {
         $solution = Solution::getSolutionOrThrow();

@@ -10,9 +10,9 @@ class SourcesCommandsConfiguration extends CommandsConfigurationBase
 {
     public function configure(CommandsRouter $router): void
     {
-        $router->registerCommand("sources list", new SourceList());
-        $router->registerCommand("sources add <source> [alias]", new AddSource());
-        $router->registerCommand("sources delete <source>", new DeleteSource());
-        $router->registerCommand("auth <source> <login> [alias]", new Auth());
+        $router->registerCommand("sources list", new SourceListCommand());
+        $router->registerCommand("sources add <source> [alias]", new AddSourceCommand());
+        $router->registerCommand("sources delete <source>", new DeleteSourceCommand());
+        $router->registerCommand("auth <source> <login> [alias]", new AuthCommand());
     }
 }

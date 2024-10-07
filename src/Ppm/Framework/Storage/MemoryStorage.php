@@ -33,7 +33,7 @@ class MemoryStorage
 
     public static function getArray(string $storageKey): StorageArray
     {
-        if (is_null(static::$data[$storageKey]))
+        if (!self::keyExists($storageKey))
             static::$data[$storageKey] = [];
         return new StorageArray(static::$data[$storageKey]);
     }

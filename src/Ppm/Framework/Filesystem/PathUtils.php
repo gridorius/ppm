@@ -27,8 +27,10 @@ class PathUtils
 
     public static function resolveRelativePath(string $current, string $additional): string
     {
-        if (str_starts_with($additional, '/') || preg_match("/^[a-zA-Z]/", $additional))
+        if (str_starts_with($additional, '/') || preg_match("/^[a-zA-Z]:/", $additional))
             return $additional;
+
+        $prefix = str_starts_with('/', $current) ? '/' : (preg_match("/^[a-zA-Z]:/", $additional) ? substr($current, 3) : '/');
 
         $regex = '/[\\\\\/]/';
         $parts = array_merge(preg_split($regex, $current), preg_split($regex, $additional));
@@ -50,7 +52,7 @@ class PathUtils
                 }
             }
         }
-        return implode('/', $result);
+        return $prefix . implode('/', $result);
     }
 
     public static function parseJson(string $path, bool $useEnv = false)

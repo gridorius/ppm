@@ -6,8 +6,13 @@ use Ppm\Framework\Filesystem\Path;
 use Ppm\Framework\Resources\Resources;
 use Ppm\Framework\Terminal\CommandRouting\Contracts\CommandBase;
 
-class Install extends CommandBase
+class InstallCommand extends CommandBase
 {
+    public function getDescription(): string
+    {
+        return 'Create link on this project in executable directory';
+    }
+
     public function execute(array $parameters, array $options): void
     {
         $pathToPPM = Path::assemblyCombine('ppm.php');

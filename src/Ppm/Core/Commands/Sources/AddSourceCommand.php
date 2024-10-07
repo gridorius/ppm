@@ -5,7 +5,7 @@ namespace Ppm\Core\Commands\Sources;
 use Ppm\Framework\Terminal\CommandRouting\Contracts\CommandBase;
 use Ppm\Packages\PackagesManager;
 
-class AddSource extends CommandBase
+class AddSourceCommand extends CommandBase
 {
     public function execute(array $parameters, array $options): void
     {
@@ -16,6 +16,6 @@ class AddSource extends CommandBase
 
     public function getDescription(): string
     {
-        return 'add source to local registry';
+        return 'Add source to local registry';
     }
 }

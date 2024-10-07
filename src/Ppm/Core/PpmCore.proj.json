@@ -3,17 +3,14 @@
   "version": "1.5.2",
   "author": "Nikita Akimov gridorius@yandex.ru",
   "runner": "ppm",
-  "entrypoint": "PPM\\Program",
+  "entrypoint": "Ppm\\Core\\Program",
   "resources": [
     {
       "include": "resources/*"
     }
   ],
   "projects": [
-    "../../Terminal",
-    "../../Utils",
-    "../../Builder",
-    "../../Packages",
-    "../../Services"
+    "../Builder",
+    "../Packages"
   ]
 }

@@ -2,7 +2,7 @@
 
 namespace Ppm\Framework\Terminal\CommandRouting;
 
-use Ppm\Framework\Terminal\Options\OptionParser;
+use Exception;
 use Ppm\Framework\Terminal\ShellStyleParser;
 
 class Pattern
@@ -28,6 +28,11 @@ class Pattern
         $this->after = !empty($matches['after_options']);
         $this->required = $this->prepareRequired($matches);
         $this->optional = $this->prepareOptional($matches);
+    }
+
+    public function getCommandLength(): int
+    {
+        return count(explode(' ', $this->command));
     }
 
     public function getRoute(): string

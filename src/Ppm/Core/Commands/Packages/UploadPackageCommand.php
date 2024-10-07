@@ -2,14 +2,18 @@
 
 namespace Ppm\Core\Commands\Packages;
 
-use Builder\Configuration\ConfigurationCollector;
 use Exception;
 use Ppm\Framework\Terminal\CommandRouting\Contracts\CommandBase;
 use Ppm\Packages\PackagesManager;
 use Ppm\Packages\PackageUtils;
 
-class UploadPackage extends CommandBase
+class UploadPackageCommand extends CommandBase
 {
+    public function getDescription(): string
+    {
+        return "Upload package to source";
+    }
+
     public function execute(array $parameters, array $options): void
     {
         $sourcePath = $parameters['source'];
@@ -17,14 +21,13 @@ class UploadPackage extends CommandBase
         $version = $parameters['version'];
 
         $manager = new PackagesManager();
-        $globalPackages = $manager->getStorage();
+        $storage = $manager->getStorage();
         $remoteManager = $manager->getRemoteManager();
         $sources = $manager->getSources();
-        $package = PackageUtils::makePackageName($name, $version);
-        if (!$globalPackages->exists($package))
+        if (!($package = $storage->get($name, $version)))
             throw new Exception("Package {$name}:{$version} not found in local registry");
 
         $source = $sources->has($sourcePath) ? $sources->get($sourcePath) : $sources->createSource($sourcePath);
-        $remoteManager->upload($globalPackages->get($package), $source);
+        $remoteManager->upload($package->getPath(), $source);
     }
 }

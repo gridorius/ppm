@@ -5,13 +5,14 @@ namespace Ppm\Packages\Storage;
 class DependencyTreeBuilderLocal extends DependencyTreeBuilderBase
 {
     protected array $dependencies = [];
+
     public function __construct(PackagesStorage $storage)
     {
         $this->storage = $storage;
         $this->rebuild();
     }
 
-    public function rebuild(): static
+    public function rebuild(): void
     {
         $packages = $this->storage->getPackages();
         foreach ($packages as $name => $versions) {

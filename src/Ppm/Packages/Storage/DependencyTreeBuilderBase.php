@@ -20,6 +20,7 @@ abstract class DependencyTreeBuilderBase
             } else
                 $tree->addNotFound($name, $version);
         }
+        return $tree;
     }
 
     abstract protected function getDepends(string $name, string $version): ?array;

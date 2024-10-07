@@ -94,6 +94,6 @@ class Directory extends FromPath
         foreach ($files as $path)
             unlink($path);
 
-        unlink($this->path);
+        rmdir($this->path);
     }
 }

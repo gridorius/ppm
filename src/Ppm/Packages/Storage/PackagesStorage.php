@@ -18,7 +18,7 @@ class PackagesStorage extends PackageStorageBase
         $this->scan();
     }
 
-    public function scan(): array
+    public function scan(): void
     {
         $this->packages = [];
         foreach ($this->directory->glob(DIRECTORY_SEPARATOR . '*') as $packagePath) {
@@ -33,6 +33,11 @@ class PackagesStorage extends PackageStorageBase
     }
 
     public function get(string $name, string $version): ?Package
+    {
+        return $this->packages[$name][$version];
+    }
+
+    public function find(string $name, string $version): ?Package
     {
         $version = $this->findLastVersion($name, $version);
         if (is_null($version))
@@ -59,7 +64,7 @@ class PackagesStorage extends PackageStorageBase
         $metadata = MetadataUtil::getPackageMetadata($path);
         $this
             ->directory
-            ->copyFileFrom($path, PackageUtils::makePackagePharName($metadata['name'], $metadata['version']));
+            ->copyFileFrom($path, PackageUtils::makePackagePharName($metadata->getName(), $metadata->getVersion()));
     }
 
     public function getDependencyTreeBuilder(): DependencyTreeBuilderLocal

@@ -5,7 +5,7 @@ namespace Ppm\Core\Commands\Sources;
 use Ppm\Framework\Terminal\CommandRouting\Contracts\CommandBase;
 use Ppm\Packages\PackagesManager;
 
-class Auth extends CommandBase
+class AuthCommand extends CommandBase
 {
     public function execute(array $parameters, array $options): void
     {
@@ -25,6 +25,6 @@ class Auth extends CommandBase
 
     public function getDescription(): string
     {
-        return 'auth to source';
+        return 'Auth to source';
     }
 }

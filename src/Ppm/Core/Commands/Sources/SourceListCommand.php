@@ -5,8 +5,13 @@ namespace Ppm\Core\Commands\Sources;
 use Ppm\Framework\Terminal\CommandRouting\Contracts\CommandBase;
 use Ppm\Packages\PackagesManager;
 
-class SourceList extends CommandBase
+class SourceListCommand extends CommandBase
 {
+    public function getDescription(): string
+    {
+        return "Show source list";
+    }
+
     public function execute(array $parameters, array $options): void
     {
         $packageController = new PackagesManager();

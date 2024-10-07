@@ -34,7 +34,6 @@ class PackageBuilder
         $packed = $this->pack($tmpDirectory, $metadata);
         $this->packages->import($packed->getPath());
         $tmpDirectory->delete();
-        $packed->delete();
 
         echo "Package {$mainConfiguration->getName()}:{$mainConfiguration->getVersion()} built\n";
     }

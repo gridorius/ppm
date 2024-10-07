@@ -2,6 +2,7 @@
 
 namespace Ppm\Framework\Network\Client;
 
+use Generator;
 use Ppm\Framework\Stream\IStream;
 
 class ResponseDataParser
@@ -29,7 +30,7 @@ class ResponseDataParser
         return $this->response;
     }
 
-    public function getGenerator(): \Generator
+    public function getGenerator(): Generator
     {
         $unread = 0;
         while (true) {

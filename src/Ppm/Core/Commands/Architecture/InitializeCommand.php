@@ -4,8 +4,14 @@ namespace Ppm\Core\Commands\Architecture;
 
 use Ppm\Framework\Terminal\CommandRouting\Contracts\CommandBase;
 
-class Initialize extends CommandBase
+class InitializeCommand extends CommandBase
 {
+
+    public function getDescription(): string
+    {
+        return "Create solution";
+    }
+
     public function execute(array $parameters, array $options): void
     {
         $name = $parameters['name'];

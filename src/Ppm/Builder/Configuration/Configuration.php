@@ -203,8 +203,8 @@ class Configuration extends FileFilter
     {
         $this->projects = [];
         foreach ($projects as $relativePath) {
-            $fullPath = realpath($this->directory . DIRECTORY_SEPARATOR . $relativePath);
-            $projectFile = ProjectFile::getPathOrNull($fullPath);
+            $fullPath = PathUtils::resolveRelativePath($this->directory, $relativePath);
+            $projectFile = ProjectFile::getPathOrThrow($fullPath);
 
             if (!empty(static::$projectsCache[$projectFile]))
                 $configuration = $this->projects[] = static::$projectsCache[$projectFile];

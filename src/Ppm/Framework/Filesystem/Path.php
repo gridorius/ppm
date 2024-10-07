@@ -8,7 +8,8 @@ class Path
 {
     public static function assemblyCombine(string ...$pathPairs): string
     {
-        return static::combine(dirname(Phar::running(false)), DIRECTORY_SEPARATOR, ...$pathPairs);
+        $assemblyDirectory = dirname(Phar::running(false));
+        return empty($pathPairs) ? $assemblyDirectory : static::combine($assemblyDirectory, ...$pathPairs);
     }
 
     public static function combine(string ...$parts): string

@@ -2,8 +2,7 @@
 
 namespace Ppm\Builder\Configuration;
 
-use Builder\Configuration\Contracts\IConfigurationFileFilter;
-use Ppm\Exceptions\NullReferenceException;
+use Ppm\Framework\Exceptions\NullReferenceException;
 
 class FileFilter
 {

@@ -1,13 +1,14 @@
 <?php
 
-namespace Ppm\Core\Commands\Builders;
+namespace Ppm\Core\Commands\Build;
 
 use Ppm\Core\Services\BuildService;
 use Ppm\Core\Solution;
+use Ppm\Framework\Filesystem\Directory;
 use Ppm\Framework\Filesystem\PathUtils;
 use Ppm\Framework\Terminal\CommandRouting\Contracts\CommandBase;
 
-class Build extends CommandBase
+class BuildCommand extends CommandBase
 {
     protected array $options = [
         'values' => [
@@ -17,10 +18,16 @@ class Build extends CommandBase
 
     public function execute(array $parameters, array $options): void
     {
-        $outDir = PathUtils::resolveRelativePath(getcwd(), $options['o'] ?? getcwd() . '/out');
         $project = $parameters['project'];
         $solution = Solution::getSolutionOrThrow();
+
+        if (!empty($options['o']))
+            $outDir = PathUtils::resolveRelativePath(getcwd(), $options['o']);
+        else
+            $outDir = $solution->getDirectory() . DIRECTORY_SEPARATOR . '/Build/' . $project;
+
         $solution->checkProject($project);
+        Directory::createDirectory($outDir);
         $buildService = new BuildService();
         $buildService->buildProject($solution->getProjectPath($project), $outDir);
     }

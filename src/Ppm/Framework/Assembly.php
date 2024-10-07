@@ -18,9 +18,11 @@ class Assembly
     public static function registerAutoloader(): void
     {
         $types = MemoryStorage::getArray(static::TYPES_MEMORY_KEY);
-        spl_autoload_register(function ($entity) use ($types) {
-            if ($types->has($entity))
-                require $types->get($entity);
+        spl_autoload_register(function ($type) use ($types) {
+            if ($types->has($type))
+                require $types->get($type);
+            else
+                throw new Exception("Type {$type} not found");
         });
     }
 
@@ -65,16 +67,17 @@ class Assembly
 
     public static function registerTypes(array $types): void
     {
-        $types = MemoryStorage::getArray(static::TYPES_MEMORY_KEY);
-        foreach ($types as $type => $path)
-            $types->set($type, $path);
+        $typesStorage = MemoryStorage::getArray(static::TYPES_MEMORY_KEY);
+        foreach ($types as $type => $path) {
+            $typesStorage->set($type, $path);
+        }
     }
 
     public static function registerIncludes(array $includes): void
     {
-        $includes = MemoryStorage::getArray(static::INCLUDES_MEMORY_KEY);
+        $includesStorage = MemoryStorage::getArray(static::INCLUDES_MEMORY_KEY);
         foreach ($includes as $path)
-            $includes->add($path);
+            $includesStorage->add($path);
     }
 
     public static function registerResources(array $resources): void

@@ -21,7 +21,7 @@ abstract class CommandRouteBase
 
     public function getDescription(): string
     {
-        return $this->pattern->getStyledPattern() . $this->description . PHP_EOL;
+        return $this->pattern->getStyledPattern() . ' ' . $this->description . PHP_EOL;
     }
 
     public function setDescription(string $description): static
@@ -36,11 +36,11 @@ abstract class CommandRouteBase
         return $this;
     }
 
-    public function handle($argv): void
+    public function handle(array $arguments): void
     {
-        $arguments = $argv;
         $parameters = [];
         $options = [];
+        array_splice($arguments, 0, $this->pattern->getCommandLength());
         if ($this->pattern->isBefore())
             $options = $this->optionParser->parse($arguments);
 

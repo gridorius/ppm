@@ -37,7 +37,7 @@ class Solution
     public function unpackPackages(): void
     {
         $manager = new PackagesManager();
-        $globalPackages = $manager->getStorage();
+        $storage = $manager->getStorage();
         $projects = $this->getData()['projects'];
 
         $packages = [];
@@ -47,9 +47,17 @@ class Solution
                 $packages[] = $package;
         }
 
+        if (empty($packages)) {
+            echo "Projects have no packages!\n";
+            return;
+        }
+
         $this->getPackagesDirectory()->clear();
         $packages = array_unique($packages);
-        $globalPackages->unpackPackages($packages, $this->getPackagesDirectory());
+        $packagesDirectory = $this->getPackagesDirectory();
+        $packagesTree = $storage->getDependencyTreeBuilder()->buildPackagesTree($packages);
+        foreach ($packagesTree->getFound() as $name => $version)
+            $storage->get($name, $version)->extractTo($packagesDirectory);
     }
 
     public function getData(): array

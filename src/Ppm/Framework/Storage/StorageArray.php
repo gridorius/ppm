@@ -14,7 +14,12 @@ class StorageArray implements Iterator, ArrayAccess
      */
     public function __construct(array &$data)
     {
-        $this->data = $data;
+        $this->data = &$data;
+    }
+
+    public function toArray(): array
+    {
+        return $this->data;
     }
 
     public function get(string $key)

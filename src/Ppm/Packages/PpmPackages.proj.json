@@ -1,0 +1,6 @@
+{
+  "name": "Ppm.Packages",
+  "projects": [
+    "../Builder"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Ppm.Builder",
+  "resources": [
+    {
+      "include": "templates/*.php"
+    }
+  ]
+}

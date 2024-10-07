@@ -16,18 +16,16 @@ class PackagesManager
     private RemoteManager $remoteManager;
     private PackageBuilder $builder;
     private Sources $sources;
-
     private RestoreService $restoreService;
 
     public function __construct()
     {
-        $ppmDirectory = WIN ? Path::assemblyCombine() : (posix_getpwuid(posix_getuid())['dir'] . '/.ppm');
-        Directory::createDirectory($ppmDirectory);
-        $tmp = new TmpManager(TMP_DIRECTORY);
-        $this->sources = new Sources(Path::combine($ppmDirectory, 'sources.json'));
-        $this->remoteManager = new RemoteManager($this->sources, $tmp, Directory::createDirectory($ppmDirectory . DIRECTORY_SEPARATOR . 'catalog'));
+        Directory::createDirectory(Path::assemblyCombine());
+        $tmp = (new TmpManager(TMP_DIRECTORY))->create();
+        $this->sources = new Sources(Path::assemblyCombine('sources.json'));
+        $this->remoteManager = new RemoteManager($this->sources, $tmp, Directory::createDirectory(Path::assemblyCombine('catalog')));
         $this->storage = new PackagesStorage(
-            Directory::createDirectory($ppmDirectory . DIRECTORY_SEPARATOR . 'packages'),
+            Directory::createDirectory(Path::assemblyCombine('packages')),
         );
         $this->builder = new PackageBuilder($this->storage, $tmp);
         $this->restoreService = new RestoreService($this->storage, $this->remoteManager, $tmp);

@@ -25,7 +25,7 @@ class ContextBuilder
         foreach ($filter->getTypeFiles() as $path => $relativePath) {
             $foundTypes = EntityFinder::findByTokens($path);
             foreach ($foundTypes as $type) {
-                $localPath = preg_replace("/\\\\/", '.', $type) . '.php';
+                $localPath = 'types/' . preg_replace("/\\\\/", '.', $type) . '.php';
                 $types[$type] = $localPath;
                 $innerFiles[$localPath] = $path;
             }
@@ -43,8 +43,9 @@ class ContextBuilder
     {
         $resources = [];
         foreach ($filter->getResources() as $path => $relativePath) {
-            $resources[$relativePath] = $relativePath;
-            $innerFiles[$relativePath] = $path;
+            $innerPath = 'resources/'. $relativePath;
+            $resources[$relativePath] = $innerPath;
+            $innerFiles[$innerPath] = $path;
         }
         $manifest->setResources($resources);
     }

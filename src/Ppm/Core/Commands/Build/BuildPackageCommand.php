@@ -1,13 +1,18 @@
 <?php
 
-namespace Ppm\Core\Commands\Builders;
+namespace Ppm\Core\Commands\Build;
 
 use Ppm\Core\Solution;
 use Ppm\Framework\Terminal\CommandRouting\Contracts\CommandBase;
 use Ppm\Packages\PackagesManager;
 
-class BuildPackage extends CommandBase
+class BuildPackageCommand extends CommandBase
 {
+    public function getDescription(): string
+    {
+        return "Create new local package from project";
+    }
+
     public function execute(array $parameters, array $options): void
     {
         $project = $parameters['project'];
