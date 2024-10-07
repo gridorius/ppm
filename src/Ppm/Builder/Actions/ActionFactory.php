@@ -1,0 +1,22 @@
+<?php
+
+namespace Ppm\Builder\Actions;
+
+use Exception;
+
+class ActionFactory
+{
+    public static function createAction(array $arguments): IAction
+    {
+        switch ($arguments['type']) {
+            case 'copy':
+                return new CopyAction($arguments['from'], $arguments['to']);
+            case 'delete':
+                return new DeleteAction($arguments['file'] ?? null, $arguments['directory'] ?? null);
+            case 'shell':
+                return new ShellAction($arguments['command']);
+            default:
+                throw new Exception("Unexpected action type {$arguments['type']}");
+        }
+    }
+}

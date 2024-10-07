@@ -1,0 +1,19 @@
+{
+  "name": "Ppm.Core",
+  "version": "1.5.2",
+  "author": "Nikita Akimov gridorius@yandex.ru",
+  "runner": "ppm",
+  "entrypoint": "PPM\\Program",
+  "resources": [
+    {
+      "include": "resources/*"
+    }
+  ],
+  "projects": [
+    "../../Terminal",
+    "../../Utils",
+    "../../Builder",
+    "../../Packages",
+    "../../Services"
+  ]
+}

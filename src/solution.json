@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "PpmCore": "Ppm/Core",
+    "PpmTerminal": "Ppm/Terminal",
+    "PpmTests": "Ppm/Tests",
+    "PpmFramework": "Ppm/Framework"
+  }
+}

@@ -1,6 +1,0 @@
-{
-  "projectReferences": [
-    "../Builder/Builder.proj.json",
-    "../Utils/Utils.proj.json"
-  ]
-}

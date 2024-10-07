@@ -1,0 +1,12 @@
+{
+  "projects": [
+    "../Utils",
+    "../Terminal",
+    "../Common"
+  ],
+  "resources": [
+    {
+      "include": "templates/*.php"
+    }
+  ]
+}
