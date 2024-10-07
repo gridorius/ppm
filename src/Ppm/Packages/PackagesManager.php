@@ -5,10 +5,10 @@ namespace Ppm\Packages;
 use Ppm\Framework\Filesystem\Directory;
 use Ppm\Framework\Filesystem\Path;
 use Ppm\Framework\Filesystem\TmpManager;
+use Ppm\Packages\Common\Storage\PackagesStorage;
 use Ppm\Packages\Services\RestoreService;
 use Ppm\Packages\Sources\Source;
 use Ppm\Packages\Sources\Sources;
-use Ppm\Packages\Storage\PackagesStorage;
 
 class PackagesManager
 {

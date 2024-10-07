@@ -6,7 +6,7 @@ use Ppm\Builder\BuildContext;
 use Ppm\Builder\ContextBuilder;
 use Ppm\Builder\FileStructure;
 use Ppm\Builder\ProjectFiles;
-use Ppm\Packages\PackageUtils;
+use Ppm\Packages\Common\PackageUtils;
 
 class ConfigurationCollection
 {

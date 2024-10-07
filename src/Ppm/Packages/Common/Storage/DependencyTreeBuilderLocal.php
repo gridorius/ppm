@@ -1,6 +1,6 @@
 <?php
 
-namespace Ppm\Packages\Storage;
+namespace Ppm\Packages\Common\Storage;
 
 class DependencyTreeBuilderLocal extends DependencyTreeBuilderBase
 {

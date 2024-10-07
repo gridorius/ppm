@@ -2,6 +2,8 @@
 
 namespace Ppm\Packages\Storage;
 
+use Ppm\Packages\Common\Storage\DependencyTreeBuilderBase;
+
 class DependencyTreeBuilderRemote extends DependencyTreeBuilderBase
 {
     protected array $dependencies = [];

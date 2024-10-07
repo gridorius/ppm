@@ -2,6 +2,8 @@
 
 namespace Ppm\Packages\Storage;
 
+use Ppm\Packages\Common\Storage\PackageStorageBase;
+
 class RemotePackageStorage extends PackageStorageBase
 {
     public function __construct(array $packages)

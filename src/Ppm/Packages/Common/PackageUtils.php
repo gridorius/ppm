@@ -1,6 +1,6 @@
 <?php
 
-namespace Ppm\Packages;
+namespace Ppm\Packages\Common;
 
 class PackageUtils
 {

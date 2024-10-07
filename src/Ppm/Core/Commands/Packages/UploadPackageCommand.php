@@ -5,7 +5,6 @@ namespace Ppm\Core\Commands\Packages;
 use Exception;
 use Ppm\Framework\Terminal\CommandRouting\Contracts\CommandBase;
 use Ppm\Packages\PackagesManager;
-use Ppm\Packages\PackageUtils;
 
 class UploadPackageCommand extends CommandBase
 {

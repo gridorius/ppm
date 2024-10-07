@@ -4,6 +4,7 @@ namespace Ppm\Core;
 
 use Exception;
 use Ppm\Builder\Configuration\Configuration;
+use Ppm\Builder\Constants;
 use Ppm\Builder\ProjectFile;
 use Ppm\Framework\Filesystem\Directory;
 use Ppm\Framework\Filesystem\PathUtils;
@@ -40,16 +41,11 @@ class Solution
         $storage = $manager->getStorage();
         $projects = $this->getData()['projects'];
 
-        $packages = [];
+        $packages = [Constants::FRAMEWORK_PHAR_NAME];
         foreach ($projects as $project) {
             $configuration = new Configuration($this->getProjectPath($project));
             foreach ($configuration->buildConfigurationCollection()->getPackages() as $package)
                 $packages[] = $package;
-        }
-
-        if (empty($packages)) {
-            echo "Projects have no packages!\n";
-            return;
         }
 
         $this->getPackagesDirectory()->clear();

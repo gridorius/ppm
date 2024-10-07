@@ -2,6 +2,7 @@
   "projects": {
     "PpmCore": "Ppm/Core",
     "PpmTests": "Ppm/Tests",
-    "PpmFramework": "Ppm/Framework"
+    "PpmFramework": "Ppm/Framework",
+    "PpmPackagesCommon": "Ppm/Packages/Common"
   }
 }

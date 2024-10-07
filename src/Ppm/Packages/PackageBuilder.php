@@ -8,7 +8,8 @@ use Ppm\Builder\Configuration\Configuration;
 use Ppm\Framework\Filesystem\Directory;
 use Ppm\Framework\Filesystem\File;
 use Ppm\Framework\Filesystem\TmpManager;
-use Ppm\Packages\Storage\PackagesStorage;
+use Ppm\Packages\Common\MetadataUtil;
+use Ppm\Packages\Common\Storage\PackagesStorage;
 
 class PackageBuilder
 {

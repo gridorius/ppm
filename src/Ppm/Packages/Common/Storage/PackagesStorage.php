@@ -1,10 +1,10 @@
 <?php
 
-namespace Ppm\Packages\Storage;
+namespace Ppm\Packages\Common\Storage;
 
 use Ppm\Framework\Filesystem\Directory;
-use Ppm\Packages\MetadataUtil;
-use Ppm\Packages\PackageUtils;
+use Ppm\Packages\Common\MetadataUtil;
+use Ppm\Packages\Common\PackageUtils;
 
 class PackagesStorage extends PackageStorageBase
 {

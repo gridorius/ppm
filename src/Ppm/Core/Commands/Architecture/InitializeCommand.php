@@ -9,7 +9,7 @@ class InitializeCommand extends CommandBase
 
     public function getDescription(): string
     {
-        return "Create solution";
+        return "Create solution in current directory";
     }
 
     public function execute(array $parameters, array $options): void

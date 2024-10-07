@@ -1,11 +1,11 @@
 <?php
 
-namespace Ppm\Packages\Storage;
+namespace Ppm\Packages\Common\Storage;
 
 use Phar;
 use Ppm\Framework\Filesystem\Directory;
-use Ppm\Packages\Metadata;
-use Ppm\Packages\MetadataUtil;
+use Ppm\Packages\Common\Metadata;
+use Ppm\Packages\Common\MetadataUtil;
 
 class Package
 {
