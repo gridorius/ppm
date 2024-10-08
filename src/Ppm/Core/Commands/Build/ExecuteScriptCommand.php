@@ -17,7 +17,7 @@ class ExecuteScriptCommand extends CommandBase
 
     public function execute(array $parameters, array $options): void
     {
-        $scriptName = $parameters['runner'];
+        $scriptName = $parameters['script'];
         $solution = Solution::getSolutionOrThrow();
         $script = $solution->getScript($scriptName);
         if (is_null($script))
