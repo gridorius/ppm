@@ -15,9 +15,16 @@ class Assembly
     const LOADED_TYPES_MEMORY_KEY = 'LoadedTypes';
     const INCLUDED_MEMORY_KEY = 'Included';
 
-    public static function registerAutoloader(): void
+    private MemoryStorage $storage;
+
+    public function __construct()
     {
-        $types = MemoryStorage::getArray(static::TYPES_MEMORY_KEY);
+        $this->storage = new MemoryStorage();
+    }
+
+    public function registerAutoloader(): void
+    {
+        $types = $this->storage->getArray(static::TYPES_MEMORY_KEY);
         spl_autoload_register(function ($type) use ($types) {
             if ($types->has($type))
                 require $types->get($type);
@@ -26,10 +33,10 @@ class Assembly
         });
     }
 
-    public static function preloadTypes(): void
+    public function preloadTypes(): void
     {
-        $loadedTypes = MemoryStorage::getArray(static::LOADED_TYPES_MEMORY_KEY);
-        $types = MemoryStorage::getArray(static::TYPES_MEMORY_KEY);
+        $loadedTypes = $this->storage->getArray(static::LOADED_TYPES_MEMORY_KEY);
+        $types = $this->storage->getArray(static::TYPES_MEMORY_KEY);
         foreach ($types as $type => $path) {
             if ($loadedTypes->has($type)) continue;
             class_exists($type);
@@ -37,10 +44,10 @@ class Assembly
         }
     }
 
-    public static function includeScripts(): void
+    public function includeScripts(): void
     {
-        $included = MemoryStorage::getArray(static::INCLUDED_MEMORY_KEY);
-        $includes = MemoryStorage::getArray(static::INCLUDES_MEMORY_KEY);
+        $included = $this->storage->getArray(static::INCLUDED_MEMORY_KEY);
+        $includes = $this->storage->getArray(static::INCLUDES_MEMORY_KEY);
         foreach ($includes as $path) {
             if ($included->has($path)) continue;
             require $path;
@@ -48,9 +55,9 @@ class Assembly
         }
     }
 
-    public static function registerAssembly(string $name, string $directory): void
+    public function registerAssembly(string $name, string $directory): void
     {
-        $assemblies = MemoryStorage::getArray(static::ASSEMBLIES_MEMORY_KEY);
+        $assemblies = $this->storage->getArray(static::ASSEMBLIES_MEMORY_KEY);
         if ($assemblies->has($name)) return;
         $path = "phar://{$name}";
         $assemblies->set($name, [
@@ -59,81 +66,87 @@ class Assembly
             'name' => $name
         ]);
         $manifest = include $path . '/manifest.php';
-        static::registerTypes($manifest['types']);
-        static::registerResources($manifest['resources']);
-        static::registerIncludes($manifest['includes']);
-        static::includeDepends($manifest['depends'], $directory);
+        $this->registerTypes($manifest['types']);
+        $this->registerResources($manifest['resources']);
+        $this->registerIncludes($manifest['includes']);
+        $this->includeDepends($manifest['depends'], $directory);
     }
 
-    public static function registerTypes(array $types): void
+    public function registerTypes(array $types): void
     {
-        $typesStorage = MemoryStorage::getArray(static::TYPES_MEMORY_KEY);
+        $typesStorage = $this->storage->getArray(static::TYPES_MEMORY_KEY);
         foreach ($types as $type => $path) {
             $typesStorage->set($type, $path);
         }
     }
 
-    public static function registerIncludes(array $includes): void
+    public function registerIncludes(array $includes): void
     {
-        $includesStorage = MemoryStorage::getArray(static::INCLUDES_MEMORY_KEY);
+        $includesStorage = $this->storage->getArray(static::INCLUDES_MEMORY_KEY);
         foreach ($includes as $path)
             $includesStorage->add($path);
     }
 
-    public static function registerResources(array $resources): void
+    public function registerResources(array $resources): void
     {
         foreach ($resources as $name => $path)
             Resources::addResource($name, $path);
     }
 
-    private static function includeDepends(array $depends, string $directory): void
+    private function includeDepends(array $depends, string $directory): void
     {
-        $assemblies = MemoryStorage::getArray(static::ASSEMBLIES_MEMORY_KEY);
+        $assemblies = $this->storage->getArray(static::ASSEMBLIES_MEMORY_KEY);
         foreach ($depends as $name)
             if (!$assemblies->has($name))
                 try {
-                    static::includePhar($directory . DIRECTORY_SEPARATOR . $name . '.phar');
+                    $this->includePhar($directory . DIRECTORY_SEPARATOR . $name . '.phar');
                 } catch (Exception $exception) {
                     echo $exception->getMessage();
                 }
     }
 
-    public static function includePhar(string $path): void
+    public function includePhar(string $path): void
     {
         if (!file_exists($path))
             throw new Exception("File {$path} not found");
         require $path;
     }
 
-    public static function entrypoint($entrypoint, $argv = []): void
+    public function includeAndLoad(string $path): void
+    {
+        $this->includePhar($path);
+        $this->load();
+    }
+
+    public function entrypoint($entrypoint, $argv = []): void
     {
         try {
-            static::registerAutoloader();
-            static::preload();
+            $this->registerAutoloader();
+            $this->load();
             $entrypoint($argv);
         } catch (Exception $exception) {
             throw new \Ppm\Framework\Exception($exception);
         }
     }
 
-    public static function preload(): void
+    public function load(): void
     {
-        static::preloadTypes();
-        static::includeScripts();
+        $this->preloadTypes();
+        $this->includeScripts();
     }
 
-    public static function getDirectoryCommands(string $directory): array
+    public function getDirectoryCommands(string $directory): array
     {
         $commands = [];
         $directory = new Directory($directory);
         foreach ($directory->glob('*.phar') as $path) {
-            $manifest = static::getManifestByPath($path);
+            $manifest = $this->getManifestByPath($path);
             $commands[$path] = $manifest['commands'];
         }
         return $commands;
     }
 
-    public static function getManifestByPath(string $path): array
+    public function getManifestByPath(string $path): array
     {
         return include "phar://{$path}/manifest.php";
     }

@@ -19,7 +19,7 @@ class InitializeCommand extends CommandBase
         mkdir($directory, 0755, true);
         file_put_contents($directory . '/.gitignore',
             <<<GITIGNORE
-            .ppm_packages
+            .ppm
             GITIGNORE
         );
         file_put_contents($directory . '/solution.json', json_encode([

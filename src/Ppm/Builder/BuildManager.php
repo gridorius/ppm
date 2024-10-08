@@ -42,12 +42,13 @@ class BuildManager
     protected static function buildProjects(ConfigurationCollection $configurationCollection, string $outDirectory): void
     {
         $projectBuilder = new ProjectBuilder();
-        foreach ($configurationCollection->buildProjectsContexts() as $context) {
+        foreach ($configurationCollection->getContextCollection()->toArray() as $context) {
             $timer = new Timer();
             $projectBuilder->build($context, $outDirectory);
             static::showBuildLog($timer->getPassed(), $context);
         }
     }
+
 
     private static function showBuildLog(string $passed, BuildContext $context): void
     {

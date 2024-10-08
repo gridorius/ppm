@@ -4,14 +4,13 @@ namespace Ppm\Framework\Storage;
 
 use ArrayAccess;
 use Iterator;
+use Ppm\Framework\Traits\Observable;
 
 class StorageArray implements Iterator, ArrayAccess
 {
+    use Observable;
     private array $data;
 
-    /**
-     * @param array $data
-     */
     public function __construct(array &$data)
     {
         $this->data = &$data;
@@ -30,26 +29,31 @@ class StorageArray implements Iterator, ArrayAccess
     public function set($key, $value): void
     {
         $this->data[$key] = $value;
+        $this->update();
     }
 
     public function add($value): void
     {
         $this->data[] = $value;
+        $this->update();
     }
 
     public function delete(string $key): void
     {
         unset($this->data[$key]);
+        $this->update();
     }
 
     public function push(...$values): void
     {
         array_push($this->data, ...$values);
+        $this->update();
     }
 
     public function merge(array $values): void
     {
         $this->data = array_merge($this->data, $values);
+        $this->update();
     }
 
     public function has(string $key): bool

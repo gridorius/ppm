@@ -1,7 +1,7 @@
 <?php
 
-use Ppm\Framework\Assembly;
+use Ppm\Framework\CurrentAssembly;
 
 Phar::mapPhar('PROJECT_NAME');
-Assembly::registerAssembly('PROJECT_NAME', __DIR__);
+CurrentAssembly::getAssembly()->registerAssembly('PROJECT_NAME', __DIR__);
 __HALT_COMPILER();

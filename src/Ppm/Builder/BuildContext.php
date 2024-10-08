@@ -26,6 +26,17 @@ class BuildContext
         $this->outerFiles = $outerFiles;
     }
 
+    public function getHash(): string
+    {
+        $hashString = '';
+        foreach ($this->innerFiles as $path)
+            $hashString .= hash_file('sha256', $path);
+        foreach ($this->outerFiles as $path)
+            $hashString .= hash_file('sha256', $path);
+
+        return hash('sha256', $hashString);
+    }
+
     public function getConfiguration(): Configuration
     {
         return $this->configuration;

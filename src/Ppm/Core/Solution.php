@@ -9,6 +9,7 @@ use Ppm\Builder\ProjectFile;
 use Ppm\Framework\Filesystem\Directory;
 use Ppm\Framework\Filesystem\Path;
 use Ppm\Framework\Filesystem\PathUtils;
+use Ppm\Framework\Storage\FileStorage;
 use Ppm\Packages\PackagesManager;
 
 class Solution
@@ -17,11 +18,15 @@ class Solution
     private string $directory;
     private array $data;
 
+    private FileStorage $cache;
+
     public function __construct(string $path)
     {
         $this->path = $path;
         $this->directory = dirname($this->path);
         $this->data = PathUtils::parseJson($this->path);
+        Directory::createDirectory($this->getSolutionDataPath());
+        $this->cache = new FileStorage($this->getSolutionDataPath('cache.json'));
     }
 
     public static function getSolution(): ?Solution
@@ -49,7 +54,6 @@ class Solution
                 $packages[] = $package;
         }
 
-
         $this->getPackagesDirectory()->clear();
         $packages = array_unique($packages);
         $packagesDirectory = $this->getPackagesDirectory();
@@ -65,6 +69,11 @@ class Solution
     public function getData(): array
     {
         return $this->data;
+    }
+
+    public function getScript(string $project): ?array
+    {
+        return $this->data['scripts'][$project] ?? null;
     }
 
     public function save(array $data): void
@@ -85,13 +94,45 @@ class Solution
 
     public function getPackagesDirectory(): Directory
     {
-        return Directory::from($this->directory . DIRECTORY_SEPARATOR . '.ppm_packages')->create();
+        return Directory::from($this->getSolutionDataPath('packages'))->create();
+    }
+
+    public function getSolutionDataPath(string ...$parts): string
+    {
+        return Path::combine($this->directory, '.ppm', ...$parts);
     }
 
     public function checkProject(string $projectName): void
     {
         if (!$this->hasProject($projectName))
             throw new Exception("Project {$projectName} not found");
+    }
+
+    public function buildProject(string $name, string $outDirectory = null): string
+    {
+        if (is_null($outDirectory))
+            $outDirectory = $this->getDirectory() . DIRECTORY_SEPARATOR . '/Build/' . $name;
+        $this->checkProject($name);
+        Directory::createDirectory($outDirectory);
+        $configurationCollection = BuildUtil::getProjectConfiguration($this->getProjectPath($name));
+        $contexts = $configurationCollection->getContextCollection();
+        $hash = $contexts->getHash();
+        $projectsCache = $this->cache->getArray('projects');
+        if ($projectsCache->get($name) == $hash) {
+            echo "Project cached" . PHP_EOL;
+            return $outDirectory;
+        } else {
+            BuildUtil::buildFromConfigurationCollection($configurationCollection, $outDirectory);
+            $projectsCache->set($name, $hash);
+        }
+        return $outDirectory;
+    }
+
+    public function buildPackage(string $name): void
+    {
+        $this->checkProject($name);
+        $manager = new PackagesManager();
+        $manager->getBuilder()->build($this->getProjectPath($name));
     }
 
     public function getDirectory(): string

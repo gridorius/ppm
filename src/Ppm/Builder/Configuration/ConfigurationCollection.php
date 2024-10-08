@@ -3,6 +3,7 @@
 namespace Ppm\Builder\Configuration;
 
 use Ppm\Builder\BuildContext;
+use Ppm\Builder\BuildContextCollection;
 use Ppm\Builder\ContextBuilder;
 use Ppm\Builder\FileStructure;
 use Ppm\Builder\ProjectFiles;
@@ -13,11 +14,13 @@ class ConfigurationCollection
     /**
      * @var Configuration[]
      */
-    private array $configurations = [];
+    private array $configurations;
+    private ?BuildContextCollection $contexts;
 
     public function __construct(array $configurations)
     {
         $this->configurations = $configurations;
+        $this->contexts = null;
     }
 
     public function mergeCollection(ConfigurationCollection $collection): void
@@ -30,23 +33,23 @@ class ConfigurationCollection
         return $this->configurations;
     }
 
-    /**
-     * @return BuildContext[]
-     */
-    public function buildProjectsContexts(): array
+    public function getContextCollection(): BuildContextCollection
     {
-        $contexts = [];
-        $fileStructure = new FileStructure();
-        foreach ($this->configurations as $configuration) {
-            $projectDirectory = $configuration->getDirectory();
-            if (!$fileStructure->hasProject($projectDirectory))
-                $fileStructure->scanDirectory($projectDirectory);
+        if (is_null($this->contexts)) {
+            $contexts = [];
+            $fileStructure = new FileStructure();
+            foreach ($this->configurations as $configuration) {
+                $projectDirectory = $configuration->getDirectory();
+                if (!$fileStructure->hasProject($projectDirectory))
+                    $fileStructure->scanDirectory($projectDirectory);
 
-            $projectFiles = new ProjectFiles($fileStructure->getProjectFiles($projectDirectory), $configuration);
-            $contexts[] = ContextBuilder::build($projectFiles, $configuration);
+                $projectFiles = new ProjectFiles($fileStructure->getProjectFiles($projectDirectory), $configuration);
+                $contexts[] = ContextBuilder::build($projectFiles, $configuration);
+            }
+            $this->contexts = new BuildContextCollection($contexts);
         }
 
-        return $contexts;
+        return $this->contexts;
     }
 
     public function getPackages(): array

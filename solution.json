@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "PpmCore": "src/Ppm/Core",
+    "PpmTests": "src/Ppm/Tests",
+    "PpmFramework": "src/Ppm/Framework",
+    "PpmPackagesCommon": "src/Ppm/Packages/Common"
+  }
+}

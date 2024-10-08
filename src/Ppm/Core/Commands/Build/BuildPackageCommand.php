@@ -17,8 +17,6 @@ class BuildPackageCommand extends CommandBase
     {
         $project = $parameters['project'];
         $solution = Solution::getSolutionOrThrow();
-        $solution->checkProject($project);
-        $manager = new PackagesManager();
-        $manager->getBuilder()->build($solution->getProjectPath($project));
+        $solution->buildPackage($project);
     }
 }
