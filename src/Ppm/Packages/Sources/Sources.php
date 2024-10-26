@@ -8,8 +8,8 @@ use Iterator;
 use Ppm\Framework\Filesystem\Directory;
 use Ppm\Framework\Filesystem\PathUtils;
 use Ppm\Framework\Network\Client\Body\FormUrlencodedBody;
-use Ppm\Framework\Network\Client\HttpClient;
-use Ppm\Framework\Network\Client\Response;
+use Ppm\Framework\Network\Client\HttpRequestHelper;
+use Ppm\Framework\Network\Client\HttpResponse;
 
 class Sources implements Iterator, Countable
 {
@@ -97,21 +97,20 @@ class Sources implements Iterator, Countable
 
     public function authorize(string $source, string $login, string $password, ?string $alias = null): void
     {
-        $client = new HttpClient();
+        $client = new HttpRequestHelper();
         $source = $this->has($source) ? $this->get($source) : $this->createSource($source, $alias);
-        $request = $client
-            ->post($source->makeRequestPath('auth'))
+        $response = HttpRequestHelper::post($source->makeRequestPath('auth'))
             ->setHeaders([
                 'Client: ppm client'
             ])
             ->setBody(new FormUrlencodedBody([
                 'login' => $login,
                 'password' => $password
-            ]));
+            ]))
+            ->send();
 
-        $response = $client->send($request);
         $response
-            ->awaitCode(200, function (Response $response) use ($source) {
+            ->awaitCode(200, function (HttpResponse $response) use ($source) {
                 $source->setToken($response->json()['token']);
                 $this->updateFile();
                 echo "Successful authorization\n";

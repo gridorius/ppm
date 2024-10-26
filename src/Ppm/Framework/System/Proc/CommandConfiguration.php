@@ -2,52 +2,67 @@
 
 namespace Ppm\Framework\System\Proc;
 
+use Ppm\Framework\System\Proc\Descriptors\DescriptorBase;
+use Ppm\Framework\System\Proc\Descriptors\PipeDescriptor;
+use Ppm\Framework\System\Proc\Descriptors\STDDescriptor;
+
 class CommandConfiguration
 {
     const TARGET_PIPE = 'pipe';
     const TARGET_FILE = 'file';
-    private array $descriptors;
-    private array $command;
+    protected array $descriptors;
+    protected array $command;
 
     public function __construct(string ...$command)
     {
         $this->command = $command;
         $this->descriptors = [];
         $this
-            ->setPipeDescriptor(Descriptors::STDIN, 'r')
-            ->setResourceDescriptor(Descriptors::STDOUT, STDOUT)
-            ->setResourceDescriptor(Descriptors::STDERR, STDERR);
+            ->setDescriptor(Descriptors::STDIN, new PipeDescriptor('r'))
+            ->setDescriptor(Descriptors::STDOUT, new STDDescriptor(Descriptors::STDOUT))
+            ->setDescriptor(Descriptors::STDERR, new STDDescriptor(Descriptors::STDERR));
     }
 
-    public function setResourceDescriptor(int $descriptor, $resource): CommandConfiguration
+    public function addArguments(string ...$arguments): static
     {
-        $this->descriptors[$descriptor] = $resource;
+        $this->command = array_merge($this->command, $arguments);
         return $this;
     }
 
-    public function setPipeDescriptor(int $descriptor, string $mode): self
+    public function setCommand(string ...$command): static
     {
-        return $this->setDescriptor($descriptor, self::TARGET_PIPE, $mode);
+        $this->command = $command;
+        return $this;
     }
 
-    public function setFileDescriptor(int $descriptor, string $path, $mode = 'a'): self
+    public function clone(): static
     {
-        return $this->setDescriptor($descriptor, self::TARGET_FILE, $path, $mode);
+        $command = new static(...$this->command);
+        foreach ($this->descriptors as $key => $value)
+            $command->setDescriptor($key, $value);
+        return $command;
     }
 
-    public function setDescriptor(int $descriptor, ...$options): self
+    public function setDescriptor(int $descriptor, DescriptorBase $type): self
     {
-        $this->descriptors[$descriptor] = $options;
+        $this->descriptors[$descriptor] = $type;
         return $this;
     }
 
     public function getDescriptors(): array
     {
-        return $this->descriptors;
+        return array_map(function (DescriptorBase $descriptor) {
+            return $descriptor->getDescriptor();
+        }, $this->descriptors);
     }
 
     public function getCommand(): array
     {
         return $this->command;
+    }
+
+    public function getCommandString(): string
+    {
+        return implode(' ', $this->command);
     }
 }

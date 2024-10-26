@@ -16,6 +16,17 @@ class ResourceStream extends StreamBase
         $this->resource = $resource;
     }
 
+    public function readAll(int $blockSize = 8192): string
+    {
+        $content = '';
+        while (true) {
+            $block = fread($this->resource, $blockSize);
+            $content .= $block;
+            if (strlen($block) < $blockSize)
+                return $content;
+        }
+    }
+
     public static function from($resource): static
     {
         return new static($resource);
@@ -31,11 +42,16 @@ class ResourceStream extends StreamBase
         return fread($this->resource, $length);
     }
 
+    public function readLine(): string
+    {
+        return fgets($this->resource);
+    }
+
     public function readToChar(string $toChar): string
     {
         $string = '';
         $length = $this->getRemainderLength();
-        for($i = 0; $i < $length; $i++) {
+        for ($i = 0; $i < $length; $i++) {
             $char = $string .= $this->read(1);
             if ($toChar == $char) break;
         }
@@ -70,12 +86,13 @@ class ResourceStream extends StreamBase
 
     public function write(string $data): void
     {
-        fwrite($this->resource, $data);
+        if (fwrite($this->resource, $data) === false)
+            throw new Exception(sprintf("Unable to write (%s) bytes to stream", strlen($data)));
     }
 
     public function writeLine(string $data): void
     {
-        $this->write($data . PHP_EOL);
+        $this->write($data . "\n");
     }
 
     public function rewind(): void

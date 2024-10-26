@@ -8,9 +8,8 @@ use Ppm\Builder\Configuration\Configuration;
 use Ppm\Builder\Configuration\Manifest;
 use Ppm\Framework\Filesystem\Directory;
 use Ppm\Framework\Resources\Resources;
+use Ppm\Framework\Utils\ArrayUtils;
 use Ppm\Framework\Utils\StringUtils;
-use Utils\FileUtils;
-use Utils\ReplaceUtils;
 
 class ProjectBuilder
 {
@@ -79,7 +78,7 @@ class ProjectBuilder
     {
         $phar->addFromString(
             Constants::MANIFEST_FILE_NAME_PHP,
-            "<?php\n return " . var_export($manifest->toArray(), true) . ";\n"
+            "<?php\n return " . ArrayUtils::export($manifest->toArray()) . ";\n"
         );
     }
 }

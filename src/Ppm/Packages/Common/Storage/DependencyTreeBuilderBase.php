@@ -23,5 +23,5 @@ abstract class DependencyTreeBuilderBase
         return $tree;
     }
 
-    abstract protected function getDepends(string $name, string $version): ?array;
+    abstract public function getDepends(string $name, string $version): ?array;
 }

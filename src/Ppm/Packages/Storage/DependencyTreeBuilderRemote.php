@@ -14,7 +14,7 @@ class DependencyTreeBuilderRemote extends DependencyTreeBuilderBase
         $this->dependencies = $catalog['depends'];
     }
 
-    protected function getDepends(string $name, string $version): ?array
+    public function getDepends(string $name, string $version): ?array
     {
         return $this->dependencies[$name][$version];
     }

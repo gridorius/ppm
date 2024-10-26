@@ -8,7 +8,6 @@ use Ppm\Core\Commands\Build\BuilderCommandsConfiguration;
 use Ppm\Core\Commands\InstallCommand;
 use Ppm\Core\Commands\Packages\PackagesCommandsConfiguration;
 use Ppm\Core\Commands\Sources\SourcesCommandsConfiguration;
-use Ppm\Framework\Assembly;
 use Ppm\Framework\CurrentAssembly;
 use Ppm\Framework\Filesystem\Path;
 use Ppm\Framework\Terminal\CommandRouting\CommandsRouter;
@@ -24,7 +23,6 @@ class Program
         $router->setDescriptionHeader('ppm', '<command>');
         try {
             $router->registerCommand("install", new InstallCommand());
-
             $router->applyConfiguration(new BuilderCommandsConfiguration());
             $router->applyConfiguration(new SourcesCommandsConfiguration());
             $router->applyConfiguration(new PackagesCommandsConfiguration());
@@ -33,11 +31,12 @@ class Program
             $assemblyCommands = $assembly->getDirectoryCommands(getcwd());
             foreach ($assemblyCommands as $pharPath => $commands) {
                 foreach ($commands as $command => $parameters)
-                    $router->register('run ' . $command, function (array $params, array $options) use ($pharPath, $parameters, $assembly) {
-                        $assembly->includeAndLoad($pharPath);
-                        $handler = explode('::', $parameters['handler']);
-                        call_user_func($handler, $parameters, $options);
-                    })->addDefinedOptions($parameters['options'])
+                    $router->register('app ' . $command,
+                        function (array $params, array $options) use ($pharPath, $parameters, $assembly) {
+                            $assembly->includeAndLoad($pharPath);
+                            $handler = explode('::', $parameters['handler']);
+                            call_user_func($handler, $parameters, $options);
+                        })->addDefinedOptions($parameters['options'])
                         ->setDescription($parameters['description']);
             }
 

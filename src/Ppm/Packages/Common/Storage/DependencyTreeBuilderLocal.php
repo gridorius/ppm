@@ -25,7 +25,7 @@ class DependencyTreeBuilderLocal extends DependencyTreeBuilderBase
         }
     }
 
-    protected function getDepends(string $name, string $version): ?array
+    public function getDepends(string $name, string $version): ?array
     {
         return $this->dependencies[$name][$version] ?? null;
     }

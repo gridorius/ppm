@@ -82,9 +82,16 @@ class Directory extends FromPath
         return $this->path;
     }
 
-    public function extractPhar(Phar $phar): static
+    public function extractPhar(Phar $phar, array $ignoreNames = []): static
     {
-        $phar->extractTo($this->path);
+        $files = null;
+        if (!empty($ignoreNames)) {
+            $files = [];
+            foreach ($phar as $info)
+                if (!in_array($info->getFileName(), $ignoreNames))
+                    $files[] = $info->getFileName();
+        }
+        $phar->extractTo($this->path, $files, true);
         return $this;
     }
 

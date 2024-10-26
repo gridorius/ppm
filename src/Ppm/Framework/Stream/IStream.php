@@ -12,7 +12,7 @@ interface IStream
 
     public function readToChar(string $toChar): string;
 
-    public function write(string $line): void;
+    public function write(string $data): void;
 
     public function writeLine(string $data): void;
 

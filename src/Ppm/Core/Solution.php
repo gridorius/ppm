@@ -3,6 +3,7 @@
 namespace Ppm\Core;
 
 use Exception;
+use Ppm\Builder\BuildManager;
 use Ppm\Builder\Configuration\Configuration;
 use Ppm\Builder\Constants;
 use Ppm\Builder\ProjectFile;
@@ -50,8 +51,8 @@ class Solution
         $packages = [];
         foreach ($projects as $name => $relativePath) {
             $configuration = new Configuration($this->getProjectPath($name));
-            foreach ($configuration->buildConfigurationCollection()->getPackages() as $package)
-                $packages[] = $package;
+            foreach ($configuration->buildConfigurationCollection()->getPackages() as $packageName => $version)
+                $packages[$packageName] = $version;
         }
 
         $this->getPackagesDirectory()->clear();
@@ -119,6 +120,7 @@ class Solution
         $hash = $contexts->getHash();
         $projectsCache = $this->cache->getArray('projects');
         if ($projectsCache->get($name) == $hash) {
+            BuildManager::AddAssemblyPhar($outDirectory);
             echo "Project cached" . PHP_EOL;
             return $outDirectory;
         } else {

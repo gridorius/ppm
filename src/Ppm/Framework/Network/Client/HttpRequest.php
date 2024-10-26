@@ -3,10 +3,10 @@
 namespace Ppm\Framework\Network\Client;
 
 use Ppm\Framework\Network\Client\Body\RequestBodyBase;
+use Ppm\Framework\Network\Constants\RequestMethods;
 use Ppm\Framework\Network\RequestCookies;
-use Ppm\Framework\Network\RequestMethods;
 
-class RequestData
+class HttpRequest
 {
     private string $url;
     private string $method;
@@ -22,9 +22,20 @@ class RequestData
         $this->_cookies = new RequestCookies();
     }
 
+    public function setUrl(string $url): static
+    {
+        $this->url = $url;
+        return $this;
+    }
+
     public function getUrl(): string
     {
         return $this->url;
+    }
+
+    public function getUrlData(): array
+    {
+        return parse_url($this->url);
     }
 
     public function getMethod(): string

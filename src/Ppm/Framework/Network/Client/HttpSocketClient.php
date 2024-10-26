@@ -2,22 +2,25 @@
 
 namespace Ppm\Framework\Network\Client;
 
-use Ppm\Framework\Network\Socket\SocketClient;
-use Ppm\Framework\Stream\Parallel\ParallelStreamsReader;
+use Ppm\Framework\Network\Socket\SocketHostPortClient;
 
-class HttpSocketClient extends SocketClient
+class HttpSocketClient extends SocketHostPortClient
 {
-    private RequestData $request;
+    private HttpRequest $request;
+
+    private int $timeout;
 
     /**
-     * @param RequestData $request
+     * @param HttpRequest $request
      */
-    public function __construct(RequestData $request, int $timeout = 5)
+    public function __construct(HttpRequest $request, int $timeout = 5)
     {
         $this->request = $request;
-        $parsedRequest = parse_url($request->getUrl());
-        $port = $parsedRequest["port"] ?? ($parsedRequest["scheme"] == 'http' ? 80 : 443);
-        parent::__construct('tcp://' . $parsedRequest['host'] . ':' . $port, $timeout);
+        $this->timeout = $timeout;
+        $urlData = $request->getUrlData();
+        $port = $urlData["port"] ?? 80;
+        parent::__construct($urlData['host'], $port, $timeout);
+        $this->unblock();
     }
 
     public function sendBlocks(callable $onProgress = null, int $blockSize = 8192): static
@@ -32,13 +35,13 @@ class HttpSocketClient extends SocketClient
             if ($onProgress !== null)
                 call_user_func($onProgress, $length, $uploadedLength);
         }
+
+        return $this;
     }
 
-    public function waitResponse(callable $onProgress = null): Response
+    public function waitResponse(callable $onProgress = null): HttpResponse
     {
-        $receiver = new HttpResponseReceiver($this, $onProgress);
-        $parallel = new ParallelStreamsReader([$receiver]);
-        $parallel->handleInput(0, 30000);
-        return $receiver->getResponse();
+        $parallel = new HttpAsyncReader([$this->request], $this->timeout, $onProgress);
+        return $parallel->waitAll()->getResponsesCollection()->first();
     }
 }

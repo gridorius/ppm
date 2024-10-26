@@ -2,8 +2,8 @@
 
 namespace Ppm\Packages\Services;
 
+use Exception;
 use PharData;
-use Ppm\Framework\Exception;
 use Ppm\Framework\Filesystem\File;
 use Ppm\Framework\Filesystem\TmpManager;
 use Ppm\Packages\Common\Storage\PackagesStorage;

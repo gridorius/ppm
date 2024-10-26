@@ -3,7 +3,7 @@
 namespace Ppm\Framework\Network\Client\Body;
 
 use CURLFile;
-use Ppm\Framework\Network\ContentTypes;
+use Ppm\Framework\Network\Constants\HttpContentTypes;
 
 class MultipartBody extends RequestBodyBase
 {
@@ -28,6 +28,7 @@ class MultipartBody extends RequestBodyBase
     public function addFile(string $key, string $name, string $path, string $contentType = 'text/plain'): static
     {
         $this->fields[$key] = [$path, $name, $contentType];
+        return $this;
     }
 
     public function buildRequestBody(): string
@@ -63,6 +64,6 @@ class MultipartBody extends RequestBodyBase
 
     public function getContentType(): string
     {
-        return ContentTypes::MULTIPART . '; boundary=' . $this->boundary;
+        return HttpContentTypes::MULTIPART . '; boundary=' . $this->boundary;
     }
 }

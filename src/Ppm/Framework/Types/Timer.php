@@ -11,11 +11,18 @@ class Timer
         $this->reset();
     }
 
-    public function reset(): void{
+    public function reset(): void
+    {
         $this->start = microtime(true);
     }
 
-    public function getPassed(): string{
-        return number_format(microtime(true) - $this->start, 3);
+    public function getPassed(): float
+    {
+        return microtime(true) - $this->start;
+    }
+
+    public function getFormatPassed(): string
+    {
+        return number_format($this->getPassed(), 3);
     }
 }

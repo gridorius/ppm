@@ -2,7 +2,7 @@
 
 namespace Ppm\Framework\Network\Client\Body;
 
-use Ppm\Framework\Network\ContentTypes;
+use Ppm\Framework\Network\Constants\HttpContentTypes;
 
 class FormUrlencodedBody extends RequestBodyBase
 {
@@ -26,7 +26,7 @@ class FormUrlencodedBody extends RequestBodyBase
 
     public function getContentType(): string
     {
-        return ContentTypes::FORM_URLENCODED;
+        return HttpContentTypes::FORM_URLENCODED;
     }
 
     public function toCurl($curl): void

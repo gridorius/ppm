@@ -6,7 +6,7 @@ use Exception;
 
 class CommandLauncher
 {
-    public function launch(CommandConfiguration $configuration): LaunchedProcess
+    public static function launch(CommandConfiguration $configuration): LaunchedProcess
     {
         $pipes = [];
         $processResource = proc_open($configuration->getCommand(), $configuration->getDescriptors(), $pipes);
@@ -14,6 +14,6 @@ class CommandLauncher
         if (!is_resource($processResource))
             throw new Exception("Process opening failed");
 
-        return new LaunchedProcess(new ProcResource($processResource), $pipes);
+        return new LaunchedProcess($processResource, $pipes, $configuration);
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Ppm\Framework\Network;
+namespace Ppm\Framework\Network\Constants;
 
 class RequestMethods
 {

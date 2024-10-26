@@ -3,6 +3,7 @@
 namespace Ppm\Tests;
 
 use Exception;
+use Ppm\Framework\AssemblyExceptionFormatter;
 use Ppm\Framework\Terminal\ShellStyleParser;
 use ReflectionClass;
 use ReflectionMethod;
@@ -82,7 +83,7 @@ class TestRunner
             Assert::addFailure(sprintf("Unexpected: %s(%s, %s)\n%s", get_class($exception),
                 $exception->getMessage(),
                 $exception->getCode(),
-                \Ppm\Framework\Exception::prepareTraceAsString($exception->getTrace())
+                AssemblyExceptionFormatter::prepareTraceAsString($exception)
             ), $exception->getLine());
         } finally {
             $this->log($source, $showLine);

@@ -16,7 +16,7 @@ class BuildManager
         try {
             $timer = new Timer();
             static::buildProjects($configurationCollection, $outDirectory);
-            $passed = $timer->getPassed();
+            $passed = $timer->getFormatPassed();
             echo "Build is completed in {$passed}s\n";
             echo "Output directory: {$outDirectory}\n";
         } catch (Exception $exception) {
@@ -45,7 +45,7 @@ class BuildManager
         foreach ($configurationCollection->getContextCollection()->toArray() as $context) {
             $timer = new Timer();
             $projectBuilder->build($context, $outDirectory);
-            static::showBuildLog($timer->getPassed(), $context);
+            static::showBuildLog($timer->getFormatPassed(), $context);
         }
     }
 

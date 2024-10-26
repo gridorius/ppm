@@ -3,83 +3,42 @@
 namespace Ppm\Framework\Network\Socket;
 
 use Exception;
-use Ppm\Framework\Stream\Parallel\StreamReceiverBase;
+use Ppm\Framework\Event\EventDispatcher;
+use Ppm\Framework\Network\Socket\Events\ServerCreatedEvent;
 use Ppm\Framework\Stream\ResourceStream;
-use Ppm\Framework\Traits\Observable;
 
-abstract class StreamSocketServer
+class StreamSocketServer extends ResourceStream
 {
-    use Observable;
-    const EVENT_ON_ITERATION = 'on_iteration';
-    protected SocketReceiver $socketReceiver;
-
-    /**
-     * @var StreamReceiverBase[]
-     */
-    protected array $receivers = [];
-
-    protected ParallelSocket $parallel;
-
-    public function __construct()
+    public function __construct(string $host, int $port, int $backlog = 500, bool $reusePort = false)
     {
-        $this->parallel = new ParallelSocket();
-    }
-
-    public function getReceivers(): array
-    {
-        return $this->receivers;
-    }
-
-    public function getReceiver(string $id): StreamReceiverBase
-    {
-        return $this->receivers[$id];
-    }
-
-    public function listen(string $host, int $port, int $timeoutSeconds = null, int $timeoutMicroseconds = null): void
-    {
-        $this->createServer($host, $port);
-
-        while (true) {
-            $this->handleInput($timeoutSeconds, $timeoutMicroseconds);
-            $this->call(static::EVENT_ON_ITERATION, $this);
-        }
-    }
-
-    protected function createServer(string $host, int $port): void
-    {
-        $socketServer = stream_socket_server(
+        $server = stream_socket_server(
             "tcp://{$host}:{$port}",
             $errorCode,
             $errorMessage,
             STREAM_SERVER_BIND | STREAM_SERVER_LISTEN,
+            stream_context_create([
+                'socket' => [
+                    'backlog' => $backlog,
+                    'so_reuseport' => $reusePort
+                ]
+            ])
         );
-        if ($errorMessage)
-            throw new Exception("{$errorMessage} ({$errorCode})");
-        $stream = new ResourceStream($socketServer);
-        $stream->unblock();
-        $this->socketReceiver = new SocketReceiver($stream, $this);
+
+        parent::__construct($server);
+        if (!empty($errorMessage))
+            throw new Exception($errorMessage, $errorCode);
+        $this->unblock();
+        EventDispatcher::emit(new ServerCreatedEvent($host, $port));
     }
 
-    public function handleInput(int $seconds = null, int $microseconds = null): array
+    public function acceptConnection(float $timeout, callable $callback): void
     {
-        $this
-            ->parallel
-            ->setReceivers($this->getWorkReceivers())
-            ->addReceiver($this->socketReceiver)
-            ->handleInput($seconds, $microseconds);
+        $newConnectionStream = stream_socket_accept($this->resource, $timeout, $peerName);
+        if ($newConnectionStream === false)
+            return;
+
+        $connection = new Socket($newConnectionStream);
+        $connection->unblock();
+        $callback($peerName, $connection);
     }
-
-    public function acceptConnection(string $peerName, ResourceStream $connectionStream): void
-    {
-        $connectionReceiver = $this->onConnect($peerName, $connectionStream);
-        if (!is_null($connectionReceiver))
-            $this->receivers[uniqid('connection_')] = $connectionReceiver;
-    }
-
-    /**
-     * @return StreamReceiverBase[]
-     */
-    abstract protected function getWorkReceivers(): array;
-
-    abstract protected function onConnect(string $peer, ResourceStream $stream): ?StreamReceiverBase;
 }

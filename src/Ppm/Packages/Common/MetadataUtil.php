@@ -4,6 +4,7 @@ namespace Ppm\Packages\Common;
 
 
 use Ppm\Builder\Configuration\Configuration;
+use Ppm\Framework\Utils\ArrayUtils;
 
 class MetadataUtil
 {
@@ -26,7 +27,7 @@ class MetadataUtil
     {
         file_put_contents(
             $packageDirectory . DIRECTORY_SEPARATOR . MetadataUtil::METADATA_FILE_NAME,
-            "<?php\nreturn " . var_export($metadata, true) . ';');
+            "<?php\nreturn " . ArrayUtils::export($metadata) . ';');
     }
 
     public static function getPackageMetadata(string $path): Metadata

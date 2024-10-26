@@ -9,6 +9,7 @@ use Ppm\Framework\Traits\Observable;
 class StorageArray implements Iterator, ArrayAccess
 {
     use Observable;
+
     private array $data;
 
     public function __construct(array &$data)
@@ -68,7 +69,7 @@ class StorageArray implements Iterator, ArrayAccess
         return $this->has($offset);
     }
 
-    public function offsetGet(mixed $offset)
+    public function offsetGet(mixed $offset): mixed
     {
         return $this->get($offset);
     }
@@ -83,17 +84,17 @@ class StorageArray implements Iterator, ArrayAccess
         $this->delete($offset);
     }
 
-    public function current()
+    public function current(): mixed
     {
         return current($this->data);
     }
 
-    public function next()
+    public function next(): void
     {
-        return next($this->data);
+        next($this->data);
     }
 
-    public function key()
+    public function key(): string|int|null
     {
         return key($this->data);
     }

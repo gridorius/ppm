@@ -1,8 +1,8 @@
 <?php
 
-namespace Ppm\Framework\Network;
+namespace Ppm\Framework\Network\Constants;
 
-class ContentTypes
+class HttpContentTypes
 {
     const FORM_URLENCODED = "application/x-www-form-urlencoded";
 

@@ -133,10 +133,11 @@ components:
       scheme: bearer
   schemas:
     packagesRequest:
-      type: array
-      items:
-        type: string
-        pattern: "name_version"
+      type: object
+      properties:
+        name:
+          type: string
+          pattern: version
     packagesResponse:
       type: array
       items:

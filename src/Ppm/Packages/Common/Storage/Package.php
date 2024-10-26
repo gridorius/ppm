@@ -19,7 +19,7 @@ class Package
 
     public function extractTo(Directory $directory): void
     {
-        $directory->extractPhar(new Phar($this->path));
+        $directory->extractPhar(new Phar($this->path), [MetadataUtil::METADATA_FILE_NAME]);
     }
 
     public function getMetadata(): Metadata

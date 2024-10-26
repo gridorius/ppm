@@ -6,7 +6,7 @@ use Closure;
 use Exception;
 use SimpleXMLElement;
 
-class Response
+class HttpResponse
 {
     private array $headers;
     private array $headerOptions;
@@ -44,6 +44,7 @@ class Response
     {
         $this->code = $code;
         $this->status = $status;
+        return $this;
     }
 
     public function addContent(string $content): static
@@ -119,14 +120,14 @@ class Response
         );
     }
 
-    public function awaitCode(int $code, Closure $handler): Response
+    public function awaitCode(int $code, Closure $handler): HttpResponse
     {
         if ($this->getCode() == $code)
             $handler($this);
         return $this;
     }
 
-    public function awaitCodes(array $codes, Closure $handler): Response
+    public function awaitCodes(array $codes, Closure $handler): HttpResponse
     {
         if (in_array($this->getCode(), $codes))
             $handler($this);

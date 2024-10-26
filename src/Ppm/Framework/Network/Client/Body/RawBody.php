@@ -3,14 +3,14 @@
 namespace Ppm\Framework\Network\Client\Body;
 
 
-use Ppm\Framework\Network\ContentTypes;
+use Ppm\Framework\Network\Constants\HttpContentTypes;
 
 class RawBody extends RequestBodyBase
 {
     private string $body;
     private string $contentType;
 
-    public function __construct(string $body, string $contentType = ContentTypes::TEXT)
+    public function __construct(string $body, string $contentType = HttpContentTypes::TEXT)
     {
         $this->body = $body;
         $this->contentType = $contentType;

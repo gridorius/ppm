@@ -19,6 +19,11 @@ abstract class StorageBase
         $this->onUpdateValue($storageKey, $value);
     }
 
+    public function appendString(string $storageKey, string $value): void
+    {
+        $this->data[$storageKey] = ($this->data[$storageKey] ?? '') . $value;
+    }
+
     public function getString(string $storageKey): ?string
     {
         return (string)$this->data[$storageKey];

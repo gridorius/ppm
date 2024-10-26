@@ -43,7 +43,7 @@ class ContextBuilder
     {
         $resources = [];
         foreach ($filter->getResources() as $path => $relativePath) {
-            $innerPath = 'resources/'. $relativePath;
+            $innerPath = 'resources/' . $relativePath;
             $resources[$relativePath] = $innerPath;
             $innerFiles[$innerPath] = $path;
         }
@@ -54,7 +54,7 @@ class ContextBuilder
     {
         $includes = [];
         foreach ($filter->getIncludes() as $path => $relativePath) {
-            $localPath = static::makeInnerPath($path);
+            $localPath = 'includes/' . pathinfo($relativePath, PATHINFO_BASENAME);
             $includes[] = $localPath;
             $innerFiles[$localPath] = $path;
         }

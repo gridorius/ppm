@@ -19,6 +19,16 @@ class StringStream extends StreamBase
         return $content;
     }
 
+    public function readLine(): string
+    {
+        return $this->readToChar("\n");
+    }
+
+    public function readAll(): string
+    {
+        return $this->read($this->getRemainderLength());
+    }
+
     public function readToChar(string $toChar): string
     {
         $string = '';
@@ -34,9 +44,9 @@ class StringStream extends StreamBase
         return strlen($this->data) - $this->cursor;
     }
 
-    public function write(string $line): void
+    public function write(string $data): void
     {
-        $this->data .= $line;
+        $this->data .= $data;
     }
 
     public function writeLine(string $data): void

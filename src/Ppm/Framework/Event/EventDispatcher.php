@@ -6,16 +6,17 @@ use Closure;
 
 class EventDispatcher
 {
-    private array $handlers = [];
+    private static array $handlers = [];
 
-    public function addEventHandler(string $eventName, callable $handler): void
+    public static function addEventHandler(string $eventName, callable $handler): void
     {
-        $this->handlers[$eventName][] = $handler;
+        static::$handlers[$eventName][] = $handler;
     }
 
-    public function emit(IEvent $event): void
+    public static function emit(IEvent $event): void
     {
-        foreach ($this->handlers[$event->getName()] as $handler)
-            call_user_func($handler, $event);
+        if (!empty(static::$handlers[$event->getName()]))
+            foreach (static::$handlers[$event->getName()] as $handler)
+                call_user_func($handler, $event);
     }
 }
