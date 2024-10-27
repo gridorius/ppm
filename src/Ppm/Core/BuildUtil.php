@@ -28,7 +28,7 @@ class BuildUtil
         $storage = $packageManager->getStorage();
         $packageManager->getRestoreService()->restore($configurationCollection->getPackages());
         BuildManager::buildFromConfigurationCollection($configurationCollection, $outDir);
-        BuildManager::AddAssemblyPhar($outDir);
+        BuildManager::AddFrameworkPhar($outDir);
         $packages = $storage->getDependencyTreeBuilder()->buildPackagesTree($configurationCollection->getPackages());
         $storage->extractPackages($packages->getFound(), new Directory($outDir));
     }

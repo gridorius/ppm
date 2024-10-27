@@ -9,10 +9,8 @@ class ActionFactory
     public static function createAction(array $arguments): IAction
     {
         switch ($arguments['type']) {
-            case 'copy':
-                return new CopyAction($arguments['from'], $arguments['to']);
             case 'delete':
-                return new DeleteAction($arguments['file'] ?? null, $arguments['directory'] ?? null);
+                return new DeleteAction($arguments['template']);
             case 'shell':
                 return new ShellAction($arguments['command']);
             default:

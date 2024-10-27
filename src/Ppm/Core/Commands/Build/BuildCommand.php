@@ -18,7 +18,7 @@ class BuildCommand extends CommandBase
     {
         $project = $parameters['project'];
         $solution = Solution::getSolutionOrThrow();
-        $solution->buildProject($project, $options['o'] ? PathUtils::resolveRelativePath(getcwd(), $options['o']) : null);
+        $solution->buildProject($project, !empty($options['o']) ? PathUtils::resolveRelativePath(getcwd(), $options['o']) : null);
     }
 
     public function getDescription(): string

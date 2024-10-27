@@ -4,6 +4,12 @@ namespace Ppm\Builder;
 
 class EntityFinder
 {
+    /**
+     * find types on file
+     *
+     * @param string $path
+     * @return array
+     */
     public static function findByTokens(string $path): array
     {
         $content = file_get_contents($path);

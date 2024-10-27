@@ -32,7 +32,7 @@ class Directory extends FromPath
 
     public function glob(string $pattern, int $flags = 0): array
     {
-        return glob($this->path . $pattern, $flags);
+        return glob($this->path . DIRECTORY_SEPARATOR . $pattern, $flags);
     }
 
     public function clear(): static
@@ -80,6 +80,11 @@ class Directory extends FromPath
     public function getPath(): string
     {
         return $this->path;
+    }
+
+    public function combine(string ...$parts): string
+    {
+        return Path::combine($this->path, ...$parts);
     }
 
     public function extractPhar(Phar $phar, array $ignoreNames = []): static

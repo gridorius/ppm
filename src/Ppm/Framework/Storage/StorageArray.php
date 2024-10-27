@@ -24,7 +24,7 @@ class StorageArray implements Iterator, ArrayAccess
 
     public function get(string $key)
     {
-        return $this->data[$key];
+        return $this->data[$key] ?? null;
     }
 
     public function set($key, $value): void

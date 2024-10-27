@@ -7,19 +7,26 @@ use Ppm\Builder\Configuration\Manifest;
 
 class ContextBuilder
 {
+    /**
+     * build project context
+     *
+     * @param ProjectFiles $projectFiles
+     * @param Configuration $configuration
+     * @return BuildContext
+     */
     public static function build(ProjectFiles $projectFiles, Configuration $configuration): BuildContext
     {
         $manifest = new Manifest($configuration);
         $innerFiles = [];
         $outerFiles = [];
-        static::findTypeFiles($projectFiles, $manifest, $innerFiles);
-        static::findMoveFiles($projectFiles, $outerFiles);
-        static::findResources($projectFiles, $manifest, $innerFiles);
-        static::findIncludes($projectFiles, $manifest, $innerFiles);
+        static::prepareTypedFiles($projectFiles, $manifest, $innerFiles);
+        static::prepareMovedFiles($projectFiles, $outerFiles);
+        static::prepareResources($projectFiles, $manifest, $innerFiles);
+        static::prepareIncludes($projectFiles, $manifest, $innerFiles);
         return new BuildContext($configuration, $manifest, $innerFiles, $outerFiles);
     }
 
-    private static function findTypeFiles(ProjectFiles $filter, Manifest $manifest, array &$innerFiles): void
+    private static function prepareTypedFiles(ProjectFiles $filter, Manifest $manifest, array &$innerFiles): void
     {
         $types = [];
         foreach ($filter->getTypeFiles() as $path => $relativePath) {
@@ -33,13 +40,13 @@ class ContextBuilder
         $manifest->setTypes($types);
     }
 
-    private static function findMoveFiles(ProjectFiles $filter, array &$outerFiles): void
+    private static function prepareMovedFiles(ProjectFiles $filter, array &$outerFiles): void
     {
         foreach ($filter->getFiles() as $realPath => $relativePath)
             $outerFiles[$relativePath] = $realPath;
     }
 
-    private static function findResources(ProjectFiles $filter, Manifest $manifest, array &$innerFiles): void
+    private static function prepareResources(ProjectFiles $filter, Manifest $manifest, array &$innerFiles): void
     {
         $resources = [];
         foreach ($filter->getResources() as $path => $relativePath) {
@@ -50,7 +57,7 @@ class ContextBuilder
         $manifest->setResources($resources);
     }
 
-    private static function findIncludes(ProjectFiles $filter, Manifest $manifest, array &$innerFiles): void
+    private static function prepareIncludes(ProjectFiles $filter, Manifest $manifest, array &$innerFiles): void
     {
         $includes = [];
         foreach ($filter->getIncludes() as $path => $relativePath) {
@@ -59,10 +66,5 @@ class ContextBuilder
             $innerFiles[$localPath] = $path;
         }
         $manifest->setIncludes($includes);
-    }
-
-    private static function makeInnerPath(string $path): string
-    {
-        return hash_file('sha256', $path) . '.' . pathinfo($path, PATHINFO_EXTENSION);
     }
 }

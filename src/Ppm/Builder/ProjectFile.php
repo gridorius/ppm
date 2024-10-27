@@ -6,6 +6,13 @@ use Exception;
 
 class ProjectFile
 {
+    /**
+     * return project file from directory or throw
+     *
+     * @param string $path
+     * @return string
+     * @throws Exception
+     */
     public static function getPathOrThrow(string $path): string
     {
         $result = glob($path . '/*proj.json');
@@ -18,6 +25,12 @@ class ProjectFile
         return $result[0];
     }
 
+    /**
+     * return project file from directory or null
+     *
+     * @param string $path
+     * @return string|null
+     */
     public static function getPathOrNull(string $path): ?string
     {
         $result = glob($path . '/*proj.json');

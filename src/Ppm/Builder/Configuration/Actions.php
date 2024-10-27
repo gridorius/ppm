@@ -37,6 +37,13 @@ class Actions
         }
     }
 
+    /**
+     * run before build actions
+     *
+     * @param string $buildDirectory
+     * @param string $outDirectory
+     * @return void
+     */
     public function runBeforeBuild(string $buildDirectory, string $outDirectory): void
     {
         foreach ($this->beforeBuild as $action) {
@@ -45,6 +52,13 @@ class Actions
         }
     }
 
+    /**
+     * run after build actions
+     *
+     * @param string $buildDirectory
+     * @param string $outDirectory
+     * @return void
+     */
     public function runAfterBuild(string $buildDirectory, string $outDirectory): void
     {
         foreach ($this->afterBuild as $action) {

@@ -62,9 +62,11 @@ class PackagesStorage extends PackageStorageBase
     public function import(string $path): void
     {
         $metadata = MetadataUtil::getPackageMetadata($path);
+        $name = PackageUtils::makePackagePharName($metadata->getName(), $metadata->getVersion());
         $this
             ->directory
-            ->copyFileFrom($path, PackageUtils::makePackagePharName($metadata->getName(), $metadata->getVersion()));
+            ->copyFileFrom($path, $name);
+        $this->registerPackage($metadata->getName(), $metadata->getVersion(), $this->directory->getFile($name)->getPath());
     }
 
     public function getDependencyTreeBuilder(): DependencyTreeBuilderLocal

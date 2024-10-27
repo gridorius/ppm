@@ -16,6 +16,6 @@ class PackageUtils
 
     public static function parsePackageName(string $path): array
     {
-        return explode('_', pathinfo($path, PATHINFO_BASENAME));
+        return explode('_', pathinfo($path, PATHINFO_FILENAME));
     }
 }

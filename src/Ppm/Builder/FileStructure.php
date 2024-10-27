@@ -8,6 +8,12 @@ class FileStructure
 {
     private array $structure = [];
 
+    /**
+     * scan project directory files
+     *
+     * @param string $path
+     * @return void
+     */
     public function scanDirectory(string $path): void
     {
         $files = PathUtils::scanDirectory($path);
@@ -16,6 +22,12 @@ class FileStructure
             $this->structure[$projectDirectory] = $files;
     }
 
+    /**
+     * return files from project directory
+     *
+     * @param string $projectDirectory
+     * @return array
+     */
     public function getProjectFiles(string $projectDirectory): array
     {
         return $this->structure[$projectDirectory];
@@ -26,6 +38,12 @@ class FileStructure
         return key_exists($projectDirectory, $this->structure);
     }
 
+    /**
+     * split directory projects
+     *
+     * @param $items
+     * @return array
+     */
     protected function splitProjects($items): array
     {
         $projectDirectories = [];

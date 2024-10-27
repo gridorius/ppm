@@ -4,10 +4,12 @@ namespace Ppm\Framework\Utils;
 
 class StringUtils
 {
-    public static function replace(array $from, array $to, string $haystack): string
+    public static function replace(string $haystack, array $map): string
     {
-        for ($i = 0; $i < count($from); $i++)
-            $from[$i] = "/{$from[$i]}/";
+        $from = [];
+        $to = array_values($map);
+        foreach ($map as $key => $value)
+            $from[] = "/{$key}/";
 
         return preg_replace($from, $to, $haystack);
     }

@@ -15,7 +15,7 @@ class File extends FromPath
         return $this;
     }
 
-    public function setJsonContent(object $object, int $flags = JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE): static
+    public function setJsonContent(mixed $object, int $flags = JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE): static
     {
         file_put_contents($this->path, json_encode($object, $flags));
         return $this;
@@ -27,12 +27,12 @@ class File extends FromPath
         return $this;
     }
 
-    public function getSerializedContent(): object
+    public function getSerializedContent(): mixed
     {
         return unserialize(file_get_contents($this->path));
     }
 
-    public function getJsonContent(): array
+    public function getJsonContent(): ?array
     {
         return json_decode(file_get_contents($this->path), true);
     }

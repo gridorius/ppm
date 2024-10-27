@@ -18,9 +18,11 @@ class PackagesManager
     private Sources $sources;
     private RestoreService $restoreService;
 
+    private Directory $extensions;
+
     public function __construct()
     {
-        Directory::createDirectory(Path::assemblyCombine());
+        $this->extensions = Directory::from(Path::assemblyCombine('extensions'))->create();
         $tmp = (new TmpManager(TMP_DIRECTORY))->create();
         $this->sources = new Sources(Path::assemblyCombine('sources.json'));
         $this->remoteManager = new RemoteManager($this->sources, $tmp, Directory::createDirectory(Path::assemblyCombine('catalog')));
@@ -29,6 +31,11 @@ class PackagesManager
         );
         $this->builder = new PackageBuilder($this->storage, $tmp);
         $this->restoreService = new RestoreService($this->storage, $this->remoteManager, $tmp);
+    }
+
+    public function getExtensionsDirectory(): Directory
+    {
+        return $this->extensions;
     }
 
     public function getBuilder(): PackageBuilder

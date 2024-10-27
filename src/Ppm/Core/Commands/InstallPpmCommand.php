@@ -6,7 +6,7 @@ use Ppm\Framework\Filesystem\Path;
 use Ppm\Framework\Resources\Resources;
 use Ppm\Framework\Terminal\CommandRouting\Contracts\CommandBase;
 
-class InstallCommand extends CommandBase
+class InstallPpmCommand extends CommandBase
 {
     public function getDescription(): string
     {

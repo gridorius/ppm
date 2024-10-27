@@ -3,38 +3,33 @@
 namespace Ppm\Builder\Actions;
 
 use Exception;
+use Ppm\Framework\Filesystem\Directory;
+use Ppm\Framework\Filesystem\File;
 use Ppm\Framework\Filesystem\PathUtils;
+use Ppm\Framework\Utils\StringUtils;
 
-class DeleteAction implements IAction
+class DeleteAction extends ActionBase
 {
-    private ?string $file;
-    private ?string $directory;
+    private string $template;
 
-    public function __construct(?string $file, ?string $directory)
+    public function __construct(string $template)
     {
-        $this->file = $file;
-        $this->directory = $directory;
-        if (is_null($this->file) && is_null($this->directory))
-            throw new Exception("Incorrect arguments for delete action");
-    }
-
-    public function setDirectories(string $buildDirectory, string $outDirectory): void
-    {
-        $this->file = ActionReplaceUtils::replacePaths($buildDirectory, $outDirectory, $this->file);
-        $this->directory = ActionReplaceUtils::replacePaths($buildDirectory, $outDirectory, $this->directory);
+        $this->template = $template;
     }
 
     public function run(): void
     {
-        if (!is_null($this->file)) {
-            unlink($this->file);
-            $this->log($this->file);
-        } else {
-            $files = PathUtils::scanDirectory($this->directory);
-            foreach ($files as $path) {
-                unlink($path);
-                $this->log($path);
-            }
+        $template = $this->prepareString($this->template);
+        if (($position = strpos($template, '*')) !== false) {
+            $directory = Directory::from(substr($template, 0, $position));
+            $filesTemplate = substr($template, $position + 1);
+            foreach ($directory->getFiles() as $file)
+                if (fnmatch($filesTemplate, $file))
+                    unlink($file);
+        } elseif (is_dir($template)) {
+            Directory::from($template)->clear();
+        } else if (is_file($template)) {
+            File::from($template)->delete();
         }
     }
 

@@ -120,7 +120,7 @@ class Solution
         $hash = $contexts->getHash();
         $projectsCache = $this->cache->getArray('projects');
         if ($projectsCache->get($name) == $hash) {
-            BuildManager::AddAssemblyPhar($outDirectory);
+            BuildManager::AddFrameworkPhar($outDirectory);
             echo "Project cached" . PHP_EOL;
             return $outDirectory;
         } else {

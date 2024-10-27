@@ -3,6 +3,7 @@
 namespace Ppm\Builder;
 
 use ArrayIterator;
+use Exception;
 use Phar;
 use Ppm\Builder\Configuration\Configuration;
 use Ppm\Builder\Configuration\Manifest;
@@ -13,6 +14,14 @@ use Ppm\Framework\Utils\StringUtils;
 
 class ProjectBuilder
 {
+    /**
+     * build project from BuildContext
+     *
+     * @param BuildContext $context
+     * @param string $outDirectory
+     * @return void
+     * @throws Exception
+     */
     public function build(BuildContext $context, string $outDirectory): void
     {
         $directory = (new Directory($outDirectory))->create();
@@ -33,6 +42,14 @@ class ProjectBuilder
         $actions->runAfterBuild($configuration->getDirectory(), $outDirectory);
     }
 
+    /**
+     * add stub to Phar
+     *
+     * @param Phar $phar
+     * @param Configuration $configuration
+     * @return void
+     * @throws Exception
+     */
     public function makeStub(Phar $phar, Configuration $configuration): void
     {
         $phar->setStub(
@@ -46,22 +63,26 @@ class ProjectBuilder
         );
     }
 
+    /**
+     * create executable from configuration section "runner"
+     *
+     * @param string $outDirectory
+     * @param Configuration $configuration
+     * @return void
+     */
     protected function makeExecutableFile(string $outDirectory, Configuration $configuration): void
     {
         $entrypointData = explode('::', $configuration->getEntrypoint());
         $entrypointClass = $entrypointData[0];
         $entrypointMethod = $entrypointData[1] ?? Constants::DEFAULT_ENTRYPOINT_METHOD;
-        $runnerContent = StringUtils::replace([
-            Constants::REPLACE_PROJECT_NAME,
-            Constants::REPLACE_ENTRYPOINT_CLASS,
-            Constants::REPLACE_ENTRYPOINT_METHOD,
-        ],
+        $runnerContent = StringUtils::replace(
+            $this->getFileOrResource(Constants::RUNNER_TEMPLATE_PATH),
             [
-                $configuration->getName(),
-                $entrypointClass,
-                $entrypointMethod,
-            ],
-            $this->getFileOrResource(Constants::RUNNER_TEMPLATE_PATH));
+                Constants::REPLACE_PROJECT_NAME => $configuration->getName(),
+                Constants::REPLACE_ENTRYPOINT_CLASS => $entrypointClass,
+                Constants::REPLACE_ENTRYPOINT_METHOD => $entrypointMethod,
+            ]
+        );
 
         file_put_contents($outDirectory . DIRECTORY_SEPARATOR . $configuration->getRunner() . '.php', $runnerContent);
     }
@@ -74,6 +95,13 @@ class ProjectBuilder
             return Resources::get($relativePath)->getContent();
     }
 
+    /**
+     * add php manifest to phar
+     *
+     * @param Phar $phar
+     * @param Manifest $manifest
+     * @return void
+     */
     protected function makePhpManifest(Phar $phar, Manifest $manifest): void
     {
         $phar->addFromString(

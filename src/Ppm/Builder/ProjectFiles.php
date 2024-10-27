@@ -20,27 +20,52 @@ class ProjectFiles
         $this->configuration = $configuration;
     }
 
+    /**
+     * return typed project files with .php extension
+     *
+     * @return array
+     */
     public function getTypeFiles(): array
     {
         return $this->filterFiles($this->configuration);
     }
 
+    /**
+     * return moved project files from files section in configuration
+     *
+     * @return array
+     */
     public function getFiles(): array
     {
         return $this->filterFilesByFiltersArray($this->configuration->getFiles());
     }
 
+    /**
+     * return project resources files
+     *
+     * @return array
+     */
     public function getResources(): array
     {
         return $this->filterFilesByFiltersArray($this->configuration->getResources());
     }
 
+    /**
+     * return project include files
+     *
+     * @return array
+     */
     public function getIncludes(): array
     {
         return $this->filterFilesByFiltersArray($this->configuration->getIncludes());
     }
 
-
+    /**
+     * return filtered project files by FileFilter
+     *
+     * @param FileFilter $filter
+     * @return array
+     */
     public function filterFiles(FileFilter $filter): array
     {
         $projectFiles = $this->files;
@@ -65,6 +90,12 @@ class ProjectFiles
         return $files;
     }
 
+    /**
+     * return filtered project files by many filters FileFilter[]
+     *
+     * @param array $filters
+     * @return array
+     */
     public function filterFilesByFiltersArray(array $filters): array
     {
         $files = [];

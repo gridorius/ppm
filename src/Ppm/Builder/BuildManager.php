@@ -11,6 +11,13 @@ use Ppm\Framework\Types\Timer;
 
 class BuildManager
 {
+    /**
+     * build project from ConfigurationCollection
+     *
+     * @param ConfigurationCollection $configurationCollection
+     * @param string $outDirectory
+     * @return void
+     */
     public static function buildFromConfigurationCollection(ConfigurationCollection $configurationCollection, string $outDirectory): void
     {
         try {
@@ -27,6 +34,13 @@ class BuildManager
         }
     }
 
+    /**
+     * build project from path
+     *
+     * @param string $pathToProjectFile
+     * @param string $outDirectory
+     * @return void
+     */
     public static function build(string $pathToProjectFile, string $outDirectory): void
     {
         $mainConfiguration = new Configuration($pathToProjectFile);
@@ -34,7 +48,13 @@ class BuildManager
         static::buildFromConfigurationCollection($configurationCollection, $outDirectory);
     }
 
-    public static function AddAssemblyPhar(string $outDirectory): void
+    /**
+     * add framework phar to build directory
+     *
+     * @param string $outDirectory
+     * @return void
+     */
+    public static function AddFrameworkPhar(string $outDirectory): void
     {
         copy(Path::assemblyCombine(Constants::FRAMEWORK_PHAR_NAME), $outDirectory . DIRECTORY_SEPARATOR . Constants::FRAMEWORK_PHAR_NAME);
     }
@@ -48,7 +68,6 @@ class BuildManager
             static::showBuildLog($timer->getFormatPassed(), $context);
         }
     }
-
 
     private static function showBuildLog(string $passed, BuildContext $context): void
     {

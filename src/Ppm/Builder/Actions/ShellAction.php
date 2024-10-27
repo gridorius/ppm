@@ -2,7 +2,7 @@
 
 namespace Ppm\Builder\Actions;
 
-class ShellAction implements IAction
+class ShellAction extends ActionBase
 {
     private string $command;
 
@@ -11,14 +11,10 @@ class ShellAction implements IAction
         $this->command = $command;
     }
 
-    public function setDirectories(string $buildDirectory, string $outDirectory): void
-    {
-        $this->command = ActionReplaceUtils::replacePaths($buildDirectory, $outDirectory, $this->command);
-    }
-
     public function run(): void
     {
-        proc_open($this->command, [
+        $command = $this->prepareString($this->command);
+        proc_open($command, [
             1 => STDOUT,
             2 => STDERR,
         ], $pipes);
