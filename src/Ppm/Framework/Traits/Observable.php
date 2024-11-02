@@ -8,6 +8,13 @@ trait Observable
 {
     protected array $___handlers = [];
 
+    /**
+     * register event handler
+     *
+     * @param string $event
+     * @param callable $handler
+     * @return void
+     */
     public function on(string $event, callable $handler): void
     {
         $this->___handlers[$event][] = $handler;

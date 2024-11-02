@@ -19,12 +19,11 @@ class ResourceStream extends StreamBase
     public function readAll(int $blockSize = 8192): string
     {
         $content = '';
-        while (true) {
+        do {
             $block = fread($this->resource, $blockSize);
             $content .= $block;
-            if (strlen($block) < $blockSize)
-                return $content;
-        }
+        } while (strlen($block) > $blockSize);
+        return $content;
     }
 
     public static function from($resource): static
@@ -45,17 +44,6 @@ class ResourceStream extends StreamBase
     public function readLine(): string
     {
         return fgets($this->resource);
-    }
-
-    public function readToChar(string $toChar): string
-    {
-        $string = '';
-        $length = $this->getRemainderLength();
-        for ($i = 0; $i < $length; $i++) {
-            $char = $string .= $this->read(1);
-            if ($toChar == $char) break;
-        }
-        return $string;
     }
 
     public function getRemainderLength(): int

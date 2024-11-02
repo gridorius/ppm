@@ -13,7 +13,7 @@ class FormUrlencodedBody extends RequestBodyBase
         $this->fields = $fields;
     }
 
-    public function set(string $name, string $value): static
+    public function setField(string $name, string $value): static
     {
         $this->fields[$name] = $value;
         return $this;

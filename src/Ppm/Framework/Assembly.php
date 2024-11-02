@@ -67,9 +67,9 @@ class Assembly
 
     public function registerAssembly(string $name, string $directory): void
     {
-        if (is_null($this->entrypointProject))
-            $this->entrypointProject = $name;
         if ($this->assemblies->has($name)) return;
+        if (is_null($this->entrypointProject))
+        $this->entrypointProject = $name;
         $path = "phar://{$name}";
         $this->assemblies->set($name, [
             'path' => $path,
@@ -81,7 +81,7 @@ class Assembly
         $this->registerTypes($manifest['types']);
         $this->registerResources($manifest['resources']);
         $this->registerIncludes($manifest['includes']);
-        $this->includeDepends($manifest['depends'], $directory);
+        $this->includeDependencies($manifest['depends'], $directory);
     }
 
     public function registerTypes(array $types): void
@@ -103,9 +103,9 @@ class Assembly
             Resources::addResource($name, $path);
     }
 
-    private function includeDepends(array $depends, string $directory): void
+    private function includeDependencies(array $dependencies, string $directory): void
     {
-        foreach ($depends as $name)
+        foreach ($dependencies as $name)
             if (!$this->assemblies->has($name))
                 try {
                     $this->includePhar($directory . DIRECTORY_SEPARATOR . $name . '.phar');

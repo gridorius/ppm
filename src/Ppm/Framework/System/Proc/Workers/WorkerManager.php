@@ -20,6 +20,12 @@ class WorkerManager
         return $this;
     }
 
+    public function addWorkers(array $workers): static
+    {
+        $this->workers = array_merge($this->workers, $workers);
+        return $this;
+    }
+
     public function write(string $data): static
     {
         foreach ($this->workers as $worker)

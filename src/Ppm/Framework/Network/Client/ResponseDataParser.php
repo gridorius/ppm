@@ -37,7 +37,7 @@ class ResponseDataParser extends HttpParserBase
             ->setHeaderOption($name, $options);
     }
 
-    protected function onEndHeaders(): void
+    protected function onHeadersEnded(): void
     {
         $this->state = $this->response->getHeader('Transfer-Encoding') === 'chunked'
             ? static::STATE_CHUNKED
@@ -63,9 +63,11 @@ class ResponseDataParser extends HttpParserBase
                 }
 
                 $this->response->addContent($content);
+                $contentLength = (int)$this->response->getheader('Content-Length');
+                $responseLength = $this->response->getLength();
                 if (!is_null($this->onProgress))
-                    call_user_func($this->onProgress, (int)$this->response->getheader('Content-Length'), $this->response->getLength());
-                if ((int)$this->response->getheader('Content-Length') <= $this->response->getLength()) {
+                    call_user_func($this->onProgress, $contentLength, $responseLength);
+                if ($contentLength <= $responseLength) {
                     $this->state = static::STATE_COMPLETED;
                     $this->stream->read();
                 }

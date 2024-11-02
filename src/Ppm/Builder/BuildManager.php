@@ -73,7 +73,8 @@ class BuildManager
     {
         $configuration = $context->getConfiguration();
         $manifest = $context->getManifest();
-        echo ShellStyleParser::style("<s style='b,green'>{$configuration->getName()}</s>:<s style='blue'>{$configuration->getVersion()}</s> built in {$passed}s\n");
+        $projectInfo = $configuration->getProjectInfo();
+        echo ShellStyleParser::style("<s style='b,green'>{$projectInfo->getName()}</s>:<s style='blue'>{$projectInfo->getVersion()}</s> built in {$passed}s\n");
         echo ShellStyleParser::style("\tTypes: <s style='green'>{$manifest->getTypesCount()}</s>"
             . "\tResources: <s style='green'>{$manifest->getResourcesCount()}</s>"
             . "\tIncludes: <s style='green'>{$manifest->getIncludesCount()}</s>"

@@ -27,7 +27,7 @@ abstract class ReceiverStateCollectionBase
         return $this->receivers;
     }
 
-    public function size(): int
+    public function getSize(): int
     {
         return count($this->receivers);
     }

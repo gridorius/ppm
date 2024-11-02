@@ -28,7 +28,7 @@ class ProjectBuilder
         $configuration = $context->getConfiguration();
         $actions = $configuration->getActions();
         $actions->runBeforeBuild($configuration->getDirectory(), $directory->getPath());
-        $phar = $directory->createPhar($configuration->getName());
+        $phar = $directory->createPhar($configuration->getProjectInfo()->getName());
         $phar->startBuffering();
         $phar->buildFromIterator(new ArrayIterator($context->getInnerFiles()));
         $directory->copyFiles($context->getOuterFiles());
@@ -55,7 +55,7 @@ class ProjectBuilder
         $phar->setStub(
             preg_replace(
                 Constants::PROJECT_NAME_REGEX_PATTERN,
-                $configuration->getName(),
+                $configuration->getProjectInfo()->getName(),
                 $configuration->hasStub()
                     ? file_get_contents($configuration->getStubPath())
                     : $this->getFileOrResource(Constants::STUB_TEMPLATE_PATH)
@@ -78,7 +78,7 @@ class ProjectBuilder
         $runnerContent = StringUtils::replace(
             $this->getFileOrResource(Constants::RUNNER_TEMPLATE_PATH),
             [
-                Constants::REPLACE_PROJECT_NAME => $configuration->getName(),
+                Constants::REPLACE_PROJECT_NAME => $configuration->getProjectInfo()->getName(),
                 Constants::REPLACE_ENTRYPOINT_CLASS => $entrypointClass,
                 Constants::REPLACE_ENTRYPOINT_METHOD => $entrypointMethod,
             ]

@@ -36,7 +36,7 @@ class PackageBuilder
         $this->packages->import($packed->getPath());
         $tmpDirectory->delete();
 
-        echo "Package {$mainConfiguration->getName()}:{$mainConfiguration->getVersion()} built\n";
+        echo "Package {$mainConfiguration->getProjectInfo()->getName()}:{$mainConfiguration->getProjectInfo()->getVersion()} built\n";
     }
 
     public function createMetadata(Configuration $mainConfiguration, Directory $tmpDirectory): array

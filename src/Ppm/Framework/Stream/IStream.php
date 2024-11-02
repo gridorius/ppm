@@ -10,8 +10,6 @@ interface IStream
 
     public function readAll(): string;
 
-    public function readToChar(string $toChar): string;
-
     public function write(string $data): void;
 
     public function writeLine(string $data): void;

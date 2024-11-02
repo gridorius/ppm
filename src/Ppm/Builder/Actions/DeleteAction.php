@@ -20,7 +20,8 @@ class DeleteAction extends ActionBase
     public function run(): void
     {
         $template = $this->prepareString($this->template);
-        if (($position = strpos($template, '*')) !== false) {
+        $position = strpos($template, '*');
+        if ($position !== false) {
             $directory = Directory::from(substr($template, 0, $position));
             $filesTemplate = substr($template, $position + 1);
             foreach ($directory->getFiles() as $file)

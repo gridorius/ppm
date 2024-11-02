@@ -20,6 +20,16 @@ class Type
         return new static($objectOrClass);
     }
 
+    public function getReflection(): ReflectionClass
+    {
+        return $this->reflection;
+    }
+
+    public function getConstructor(): ReflectionMethod
+    {
+        return $this->reflection->getConstructor();
+    }
+
     /**
      * @return ReflectionMethod[]
      */

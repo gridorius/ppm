@@ -2,7 +2,7 @@
 
 namespace Ppm\Framework\Filesystem;
 
-abstract class FromPath
+abstract class PathFromBase
 {
     protected string $path;
 

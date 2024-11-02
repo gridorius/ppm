@@ -13,11 +13,12 @@ class MetadataUtil
     public static function createFromConfigurationCollection(Configuration $configuration): array
     {
         $configurationCollection = $configuration->buildConfigurationCollection();
+        $projectInfo = $configuration->getProjectInfo();
         return [
-            'name' => $configuration->getName(),
-            'version' => $configuration->getVersion(),
-            'author' => $configuration->getAuthor(),
-            'description' => $configuration->getDescription(),
+            'name' => $projectInfo->getName(),
+            'version' => $projectInfo->getVersion(),
+            'author' => $projectInfo->getAuthor(),
+            'description' => $projectInfo->getDescription(),
             'depends' => $configurationCollection->getPackages(),
             'hashes' => []
         ];

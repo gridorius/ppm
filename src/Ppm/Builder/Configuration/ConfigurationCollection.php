@@ -56,7 +56,7 @@ class ConfigurationCollection
     {
         $packages = [];
         foreach ($this->configurations as $configuration)
-            foreach ($configuration->getPackages() as $name => $version)
+            foreach ($configuration->getProjectDependencies()->getPackages() as $name => $version)
                 $packages[$name] = $version;
 
         return $packages;

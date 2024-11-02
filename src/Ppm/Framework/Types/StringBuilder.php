@@ -9,7 +9,7 @@ class StringBuilder implements Stringable
     protected string $string;
     const EMPTY = '';
 
-    public function __construct(string $string = '')
+    public function __construct(string $string = self::EMPTY)
     {
         $this->string = $string;
     }

@@ -40,7 +40,7 @@ abstract class HttpParserBase
         $line = trim($this->stream->readLine());
         if (empty($line)) {
             $this->state = static::STAGE_BODY;
-            $this->onEndHeaders();
+            $this->onHeadersEnded();
             return;
         }
 
@@ -78,7 +78,7 @@ abstract class HttpParserBase
 
     abstract protected function handleHeader(string $name, string $value, array $options): void;
 
-    abstract protected function onEndHeaders(): void;
+    abstract protected function onHeadersEnded(): void;
 
     abstract protected function handleBody(): void;
 }

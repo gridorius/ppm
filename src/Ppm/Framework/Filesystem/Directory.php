@@ -5,7 +5,7 @@ namespace Ppm\Framework\Filesystem;
 use Exception;
 use Phar;
 
-class Directory extends FromPath
+class Directory extends PathFromBase
 {
     public static function createDirectory(string $path, int $permission = 0755, bool $recursive = true): string
     {

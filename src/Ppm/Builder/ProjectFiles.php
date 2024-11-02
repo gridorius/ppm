@@ -37,7 +37,7 @@ class ProjectFiles
      */
     public function getFiles(): array
     {
-        return $this->filterFilesByFiltersArray($this->configuration->getFiles());
+        return $this->filterFilesByFiltersArray($this->configuration->getFileFilters()->getFiles());
     }
 
     /**
@@ -47,7 +47,7 @@ class ProjectFiles
      */
     public function getResources(): array
     {
-        return $this->filterFilesByFiltersArray($this->configuration->getResources());
+        return $this->filterFilesByFiltersArray($this->configuration->getFileFilters()->getResources());
     }
 
     /**
@@ -57,7 +57,7 @@ class ProjectFiles
      */
     public function getIncludes(): array
     {
-        return $this->filterFilesByFiltersArray($this->configuration->getIncludes());
+        return $this->filterFilesByFiltersArray($this->configuration->getFileFilters()->getIncludes());
     }
 
     /**

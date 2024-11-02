@@ -31,12 +31,13 @@ class Manifest
 
     public function toArray(): array
     {
-        $prefix = "phar://{$this->configuration->getName()}/";
+        $projectInfo = $this->configuration->getProjectInfo();
+        $prefix = "phar://{$projectInfo->getName()}/";
         return [
-            'name' => $this->configuration->getName(),
-            'version' => $this->configuration->getVersion(),
-            'description' => $this->configuration->getDescription(),
-            'author' => $this->configuration->getAuthor(),
+            'name' => $projectInfo->getName(),
+            'version' => $projectInfo->getVersion(),
+            'description' => $projectInfo->getDescription(),
+            'author' => $projectInfo->getAuthor(),
             'resources' => array_map(function ($path) use ($prefix) {
                 return $prefix . $path;
             }, $this->resources),
@@ -46,7 +47,7 @@ class Manifest
             'includes' => array_map(function ($path) use ($prefix) {
                 return $prefix . $path;
             }, $this->includes),
-            'depends' => $this->configuration->getDepends(),
+            'depends' => $this->configuration->getProjectDependencies()->getDependencies(),
             'commands' => $this->configuration->getCommands()
         ];
     }
@@ -68,6 +69,6 @@ class Manifest
 
     public function getDependsCount(): int
     {
-        return count($this->configuration->getDepends());
+        return count($this->configuration->getProjectDependencies()->getDependencies());
     }
 }

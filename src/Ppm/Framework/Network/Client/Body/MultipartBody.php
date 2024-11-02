@@ -19,7 +19,7 @@ class MultipartBody extends RequestBodyBase
         $this->boundary = uniqid(str_repeat('-', 15));
     }
 
-    public function set(string $key, string $value): static
+    public function setField(string $key, string $value): static
     {
         $this->fields[$key] = $value;
         return $this;

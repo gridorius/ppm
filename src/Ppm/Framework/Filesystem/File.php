@@ -2,7 +2,7 @@
 
 namespace Ppm\Framework\Filesystem;
 
-class File extends FromPath
+class File extends PathFromBase
 {
     public function getPath(): string
     {
