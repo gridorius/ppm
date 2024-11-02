@@ -28,11 +28,11 @@ class Configuration extends FileFilter
     {
         static::$projectsCache[$pathToProjectFile] = $this;
         $this->directory = dirname($pathToProjectFile);
-        $name = $configuration['name'] ?? pathinfo($this->directory, PATHINFO_BASENAME);
         $configuration = PathUtils::parseJson($pathToProjectFile, true);
-
+        $name = $configuration['name'] ?? pathinfo($this->directory, PATHINFO_BASENAME);
         $this->projectInfo = new ProjectInfo(
-            $name, $configuration['version'] ?? 'latest',
+            $name,
+            $configuration['version'] ?? 'latest',
             $configuration['author'] ?? '',
             $configuration['description'] ?? ''
         );
