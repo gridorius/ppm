@@ -11,8 +11,8 @@ class Socket extends ResourceStream
         return stream_socket_get_name($this->resource, true);
     }
 
-    public function send(string $data): void
+    public function send(string $data): int
     {
-        stream_socket_sendto($this->resource, $data);
+        return (int)stream_socket_sendto($this->resource, $data);
     }
 }

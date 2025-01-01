@@ -39,4 +39,9 @@ class Package
     {
         return $this->path;
     }
+
+    public function getPharName(): string
+    {
+        return pathinfo($this->path, PATHINFO_BASENAME);
+    }
 }

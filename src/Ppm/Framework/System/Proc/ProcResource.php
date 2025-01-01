@@ -2,9 +2,10 @@
 
 namespace Ppm\Framework\System\Proc;
 
-use Ppm\Framework\Stream\ResourceBase;
 
-class ProcResource extends ResourceBase
+use Ppm\Framework\Stream\Contracts\IResourceBase;
+
+class ProcResource implements IResourceBase
 {
     private $resource;
     private int $pid;

@@ -5,6 +5,8 @@ namespace Ppm\Framework\Network\AsyncEvents;
 use Ppm\Framework\Network\Socket\Socket;
 use Ppm\Framework\Network\Socket\StreamSocketServer;
 use Ppm\Framework\Stream\Async\AsyncStreamsReader;
+use Ppm\Framework\Stream\Async\StreamReadActionBind;
+use Ppm\Framework\Stream\Contracts\IStreamRead;
 
 class EventServer extends StreamSocketServer
 {
@@ -24,8 +26,8 @@ class EventServer extends StreamSocketServer
             $this->acceptConnection(0.00001, [$this, 'onConnect']);
             $this
                 ->reader
-                ->setReceivers($this->listeners)
-                ->awaitContent(0, 300);
+                ->setBindings($this->listeners)
+                ->watch(0, 300);
         }
     }
 
@@ -42,6 +44,13 @@ class EventServer extends StreamSocketServer
 
     public function onConnect(string $peerName, Socket $socket): void
     {
-        $this->listeners[$peerName] = new EventListenerReceiver($socket, $peerName, $this);
+        $this->listeners[$peerName] = StreamReadActionBind::create($socket, function (IStreamRead $stream) use ($peerName) {
+            $eventData = $stream->readLine();
+            if (empty($eventData)) {
+                $this->deleteListener($peerName);
+                $stream->close();
+            } else
+                $this->emit($eventData);
+        });
     }
 }

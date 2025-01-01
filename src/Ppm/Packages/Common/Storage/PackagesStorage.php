@@ -2,7 +2,11 @@
 
 namespace Ppm\Packages\Common\Storage;
 
+use Phar;
+use PharData;
 use Ppm\Framework\Filesystem\Directory;
+use Ppm\Framework\Filesystem\File;
+use Ppm\Framework\Filesystem\TmpManager;
 use Ppm\Packages\Common\MetadataUtil;
 use Ppm\Packages\Common\PackageUtils;
 
@@ -10,10 +14,12 @@ class PackagesStorage extends PackageStorageBase
 {
     protected Directory $directory;
     protected DependencyTreeBuilderLocal $dependencyTreeBuilder;
+    protected TmpManager $tmp;
 
-    public function __construct(string $path)
+    public function __construct(string $path, TmpManager $tmp)
     {
         $this->directory = (new Directory($path))->create();
+        $this->tmp = $tmp;
         $this->dependencyTreeBuilder = new DependencyTreeBuilderLocal($this);
         $this->scan();
     }
@@ -67,6 +73,27 @@ class PackagesStorage extends PackageStorageBase
             ->directory
             ->copyFileFrom($path, $name);
         $this->registerPackage($metadata->getName(), $metadata->getVersion(), $this->directory->getFile($name)->getPath());
+    }
+
+    public function export(array $packages): ?File
+    {
+        $found = [];
+        foreach ($packages as $packageName => $packageVersions) {
+            $package = $this->packages[$packageName][$packageVersions];
+            if (!empty($package))
+                $found[] = $package;
+        }
+
+        if (empty($found))
+            return null;
+
+        $file = $this->tmp->getTmpFile('tar');
+        $phar = new PharData($file->getPath());
+        $phar->startBuffering();
+        foreach ($found as $package)
+            $phar->addFile($package->getPath(), $package->getPharName());
+        $phar->stopBuffering();
+        return $file;
     }
 
     public function getDependencyTreeBuilder(): DependencyTreeBuilderLocal

@@ -3,6 +3,7 @@
 namespace Ppm\Framework\Stream;
 
 use Exception;
+use Ppm\Framework\Stream\Contracts\StreamBase;
 
 class ResourceStream extends StreamBase
 {
@@ -72,10 +73,12 @@ class ResourceStream extends StreamBase
         stream_set_blocking($this->resource, false);
     }
 
-    public function write(string $data): void
+    public function write(string $data): int
     {
-        if (fwrite($this->resource, $data) === false)
+        if (($written = fwrite($this->resource, $data)) === false)
             throw new Exception(sprintf("Unable to write (%s) bytes to stream", strlen($data)));
+
+        return $written;
     }
 
     public function writeLine(string $data): void

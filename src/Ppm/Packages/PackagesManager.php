@@ -28,6 +28,7 @@ class PackagesManager
         $this->remoteManager = new RemoteManager($this->sources, $tmp, Directory::createDirectory(Path::assemblyCombine('catalog')));
         $this->storage = new PackagesStorage(
             Directory::createDirectory(Path::assemblyCombine('packages')),
+            $tmp,
         );
         $this->builder = new PackageBuilder($this->storage, $tmp);
         $this->restoreService = new RestoreService($this->storage, $this->remoteManager, $tmp);

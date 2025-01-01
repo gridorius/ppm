@@ -27,7 +27,7 @@ class MultipartBody extends RequestBodyBase
 
     public function addFile(string $key, string $name, string $path, string $contentType = 'text/plain'): static
     {
-        $this->fields[$key] = [$path, $name, $contentType];
+        $this->files[$key] = [$path, $name, $contentType];
         return $this;
     }
 
@@ -36,20 +36,20 @@ class MultipartBody extends RequestBodyBase
         $lines = [];
         foreach ($this->fields as $key => $value) {
             $lines[] = sprintf("--%s", $this->boundary);
-            $lines[] = sprintf("Content-Disposition: form-data; name=\"%s\"\n", $key);
-            $lines[] = sprintf("%s", $value);
+            $lines[] = sprintf("Content-Disposition: form-data; name=\"%s\"", $key);
+            $lines[] = sprintf("\r\n%s", $value);
         }
 
         foreach ($this->files as $key => $info) {
             [$path, $name, $contentType] = $info;
             $lines[] = sprintf("--%s", $this->boundary);
-            $lines[] = sprintf("Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"\n", $key, $name);
+            $lines[] = sprintf("Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"", $key, $name);
             $lines[] = sprintf("Content-Type: %s;", $contentType);
-            $lines[] = sprintf("%s", file_get_contents($path));
+            $lines[] = sprintf("\r\n%s", file_get_contents($path));
         }
         $lines[] = sprintf("--%s--", $this->boundary);
 
-        return implode("\n\r", $lines);
+        return implode("\r\n", $lines);
     }
 
     public function toCurl($curl): void

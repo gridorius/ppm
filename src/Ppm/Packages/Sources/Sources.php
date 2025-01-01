@@ -107,7 +107,8 @@ class Sources implements Iterator, Countable
                 'login' => $login,
                 'password' => $password
             ]))
-            ->send();
+            ->send()
+            ->waitResponse();
 
         $response
             ->awaitCode(200, function (HttpResponse $response) use ($source) {

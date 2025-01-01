@@ -23,15 +23,18 @@ class HttpSocketClient extends SocketHostPortClient
         $this->unblock();
     }
 
-    public function sendBlocks(callable $onProgress = null, int $blockSize = 8192): static
+    public function getRequest(): HttpRequest
+    {
+        return $this->request;
+    }
+
+    public function send(callable $onProgress = null): static
     {
         $data = RawRequestBuilder::build($this->request);
         $length = strlen($data);
         $uploadedLength = 0;
-        $blocks = str_split($data, $blockSize);
-        foreach ($blocks as $block) {
-            $this->write($block);
-            $uploadedLength += strlen($block);
+        while ($uploadedLength < $length) {
+            $uploadedLength += $this->write(substr($data, $uploadedLength));
             if ($onProgress !== null)
                 call_user_func($onProgress, $length, $uploadedLength);
         }
@@ -41,7 +44,9 @@ class HttpSocketClient extends SocketHostPortClient
 
     public function waitResponse(callable $onProgress = null): HttpResponse
     {
-        $parallel = new HttpAsyncReader([$this->request], $this->timeout, $onProgress);
+        $parallel = new HttpAsyncReader([$this], $this->timeout);
+        if (!is_null($onProgress))
+            $parallel->setDownloadProgressHandler($onProgress);
         return $parallel->waitAll()->getResponsesCollection()->first();
     }
 }

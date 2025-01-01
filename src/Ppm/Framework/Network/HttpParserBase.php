@@ -2,31 +2,29 @@
 
 namespace Ppm\Framework\Network;
 
-use Ppm\Framework\Stream\ResourceStream;
+use Ppm\Framework\Stream\Contracts\IStreamRead;
 
 abstract class HttpParserBase
 {
     const STATE_HEADER = 1;
     const STAGE_BODY = 2;
     const STATE_COMPLETED = 3;
-    protected ResourceStream $stream;
     protected int $state;
     protected int $line = 0;
 
-    public function __construct(ResourceStream $stream)
+    public function __construct()
     {
-        $this->stream = $stream;
         $this->state = static::STATE_HEADER;
     }
 
-    public function handleInput(): void
+    public function onReadyContent(IStreamRead $stream): void
     {
         switch ($this->state) {
             case static::STATE_HEADER:
-                $this->handleHeaders();
+                $this->handleHeaders($stream);
                 break;
             default:
-                $this->handleBody();
+                $this->handleBody($stream);
         }
     }
 
@@ -35,9 +33,9 @@ abstract class HttpParserBase
         return $this->state == static::STATE_COMPLETED;
     }
 
-    protected function handleHeaders(): void
+    protected function handleHeaders(IStreamRead $stream): void
     {
-        $line = trim($this->stream->readLine());
+        $line = trim($stream->readLine());
         if (empty($line)) {
             $this->state = static::STAGE_BODY;
             $this->onHeadersEnded();
@@ -56,10 +54,10 @@ abstract class HttpParserBase
 
     public static function parseRawHeader(string $header): array
     {
-        [$header, $value] = explode(':', $header, 2);
+        [$header, $headerValue] = explode(':', $header, 2);
         $options = [];
-        if (str_contains($value, ";") || str_contains($value, "=")) {
-            $optionsData = explode(';', $value);
+        if (str_contains($headerValue, ";") || str_contains($headerValue, "=")) {
+            $optionsData = explode(';', $headerValue);
             foreach ($optionsData as $option) {
                 if (str_contains($option, "=")) {
                     [$key, $value] = explode('=', $option);
@@ -68,10 +66,19 @@ abstract class HttpParserBase
                     $options[trim($option)] = true;
                 }
             }
-        } else {
-            return [$header, trim($value), []];
+            return [$header, trim($headerValue), $options];
         }
-        return [$header, trim($value), $options];
+        return [$header, trim($headerValue), []];
+    }
+
+    public function reset(): void
+    {
+        $this->state = static::STATE_HEADER;
+    }
+
+    public function onCompleted(): void
+    {
+
     }
 
     abstract protected function parseFirstLine(string $line): void;
@@ -80,5 +87,5 @@ abstract class HttpParserBase
 
     abstract protected function onHeadersEnded(): void;
 
-    abstract protected function handleBody(): void;
+    abstract protected function handleBody(IStreamRead $stream): void;
 }

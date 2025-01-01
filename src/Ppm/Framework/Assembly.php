@@ -36,14 +36,8 @@ class Assembly
     public function registerAutoloader(): void
     {
         spl_autoload_register(function ($type) {
-            try {
-                if ($this->types->has($type))
-                    require $this->types->get($type);
-                else
-                    throw new Exception("Type {$type} not found");
-            } catch (Exception $e) {
-                AssemblyExceptionFormatter::showExceptionEndExit($e);
-            }
+            if ($this->types->has($type))
+                require $this->types->get($type);
         });
     }
 
@@ -69,7 +63,7 @@ class Assembly
     {
         if ($this->assemblies->has($name)) return;
         if (is_null($this->entrypointProject))
-        $this->entrypointProject = $name;
+            $this->entrypointProject = $name;
         $path = "phar://{$name}";
         $this->assemblies->set($name, [
             'path' => $path,

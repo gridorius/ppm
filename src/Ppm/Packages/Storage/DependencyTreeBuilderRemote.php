@@ -11,7 +11,7 @@ class DependencyTreeBuilderRemote extends DependencyTreeBuilderBase
     public function __construct(array $catalog)
     {
         $this->storage = new RemotePackageStorage($catalog['packages']);
-        $this->dependencies = $catalog['depends'];
+        $this->dependencies = $catalog['dependencies'];
     }
 
     public function getDepends(string $name, string $version): ?array

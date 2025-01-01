@@ -28,6 +28,7 @@ class InstallPpmCommand extends CommandBase
                 $path,
                 preg_replace("/PPM_PATH/", $pathToPPM, Resources::get('resources/ppm.sh')->getContent())
             );
+            chmod($path, 755);
         }
         $this->checkResult($result, $path);
     }

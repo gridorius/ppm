@@ -8,6 +8,7 @@ use Ppm\Framework\Filesystem\File;
 use Ppm\Framework\Filesystem\TmpManager;
 use Ppm\Framework\Network\Client\Body\FormUrlencodedBody;
 use Ppm\Framework\Network\Client\Body\JsonBody;
+use Ppm\Framework\Network\Client\Body\MultipartBody;
 use Ppm\Framework\Network\Client\HttpRequestHelper;
 use Ppm\Framework\Network\Client\HttpResponse;
 use Ppm\Packages\Exceptions\BadRequestException;
@@ -33,7 +34,10 @@ class RemoteManager
         Directory::clearDirectory($this->catalogDirectory);
         foreach ($this->sources as $key => $source) {
             $response = HttpRequestHelper::get($source->makeRequestPath("catalog"))
-                ->setHeaders($source->makeAuthHeaders())->send();
+                ->setHeaders($source->makeAuthHeaders())
+                ->getAction()
+                ->send()
+                ->waitResponse();
 
             $response
                 ->awaitCode(200, function (HttpResponse $response) use ($source) {
@@ -54,25 +58,35 @@ class RemoteManager
     public function getCatalog(): array
     {
         $result = [];
-        foreach ($this->sources as $source)
-            $result[$source->getId()] = new DependencyTreeBuilderRemote(json_decode(file_get_contents($this->getSourceCatalogPath($source)), true));
+        foreach ($this->sources as $source) {
+            $catalog = [
+                'packages' => [],
+                'dependencies' => [],
+            ];
+            if (file_exists($this->getSourceCatalogPath($source)))
+                $catalog = json_decode(file_get_contents($this->getSourceCatalogPath($source)), true);
+            $result[$source->getId()] = new DependencyTreeBuilderRemote($catalog);
+        }
 
         return $result;
     }
 
     public function upload(string $path, Source $source): void
     {
-        echo "Package compacted start uploading" . PHP_EOL;
+        echo "Package start uploading" . PHP_EOL;
+
+        $body = new MultipartBody();
+        $body->addFile('package', 'package.phar', $path);
         $response = HttpRequestHelper::put($source->makeRequestPath("catalog/upload"))
-            ->setBody(new FormUrlencodedBody([
-                'package' => curl_file_create($path)
-            ]))
+            ->setBody($body)
             ->setHeaders($source->makeAuthHeaders())
-            ->sendBlocks(5, function ($total, $uploaded) {
+            ->getAction()
+            ->send(function ($total, $uploaded) {
                 $percent = number_format(($uploaded / $total) * 100, 0);
                 echo "uploading - {$percent}%\r";
             })->waitResponse();
         echo "\n";
+
         $response
             ->awaitCode(200, function () {
                 echo "Successful upload package\n";
@@ -87,7 +101,8 @@ class RemoteManager
         $response = HttpRequestHelper::post($source->makeRequestPath("catalog/download"))
             ->setBody(new JsonBody($packages))
             ->setHeaders($source->makeAuthHeaders())
-            ->sendBlocks()
+            ->getAction()
+            ->send()
             ->waitResponse(function ($total, $downloaded) {
                 $percent = number_format(($downloaded / $total) * 100, 0);
                 echo "Downloading - {$percent}%\r";

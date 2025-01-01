@@ -10,6 +10,7 @@ class PackagesCommandsConfiguration extends CommandsConfigurationBase
     public function configure(CommandsRouter $router): void
     {
         $router->registerCommand("packages unpack", new UnpackPackagesToSolutionCommand());
+        $router->registerCommand("packages catalog update", new UpdateCatalogCommand());
         $router->registerCommand("packages upload <source> <name> <version>", new UploadPackageCommand());
         $router->registerCommand("restore <project>", new RestoreCommand());
     }

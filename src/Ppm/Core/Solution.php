@@ -112,7 +112,7 @@ class Solution
     public function buildProject(string $name, string $outDirectory = null): string
     {
         if (is_null($outDirectory))
-            $outDirectory = $this->getDirectory() . DIRECTORY_SEPARATOR . '/Build/' . $name;
+            $outDirectory = $this->getDirectory() . DIRECTORY_SEPARATOR . '/bin/' . $name;
         $this->checkProject($name);
         Directory::createDirectory($outDirectory);
         $configurationCollection = BuildUtil::getProjectConfiguration($this->getProjectPath($name));

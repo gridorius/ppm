@@ -2,6 +2,8 @@
 
 namespace Ppm\Framework\Stream;
 
+use Ppm\Framework\Stream\Contracts\StreamBase;
+
 class StringStream extends StreamBase
 {
     private string $data;
@@ -44,9 +46,10 @@ class StringStream extends StreamBase
         return strlen($this->data) - $this->cursor;
     }
 
-    public function write(string $data): void
+    public function write(string $data): int
     {
         $this->data .= $data;
+        return strlen($data);
     }
 
     public function writeLine(string $data): void

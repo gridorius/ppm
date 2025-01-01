@@ -2,45 +2,38 @@
 
 namespace Ppm\Framework\Stream\Async;
 
-use Ppm\Framework\Stream\Async\Contracts\StreamReceiverBase;
-
 class AsyncStreamsReader
 {
     /**
-     * @var StreamReceiverBase[]
+     * @var StreamReadActionBind[]
      */
-    protected array $receivers;
+    protected array $bindings;
 
-    public function __construct(array $receivers = [])
+    public function __construct(array $bindings = [])
     {
-        $this->receivers = $receivers;
+        $this->bindings = $bindings;
     }
 
-    public function addReceiver(StreamReceiverBase $stream): static
+    public function addBinding(StreamReadActionBind $binding): static
     {
-        $this->receivers[] = $stream;
+        $this->bindings[] = $binding;
         return $this;
     }
 
-    public function setReceivers(array $receivers): static
+    public function setBindings(array $bindings): static
     {
-        $this->receivers = $receivers;
+        $this->bindings = $bindings;
         return $this;
     }
 
-    public function getReceivers(): array
+    public function watch(int $seconds = 1, int $microseconds = 0): void
     {
-        return $this->receivers;
-    }
-
-    public function awaitContent(int $seconds = 1, int $microseconds = 0): void
-    {
-        SelectUtils::handleReceivers($this->receivers, $seconds, $microseconds);
+        SelectUtils::callBindings($this->bindings, $seconds, $microseconds);
     }
 
     public function clear(): static
     {
-        $this->receivers = [];
+        $this->bindings = [];
         return $this;
     }
 }

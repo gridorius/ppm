@@ -22,6 +22,11 @@ class HttpRequest
         $this->_cookies = new RequestCookies();
     }
 
+    public function getAction(): HttpRequestAction
+    {
+        return new HttpRequestAction($this);
+    }
+
     public function setUrl(string $url): static
     {
         $this->url = $url;

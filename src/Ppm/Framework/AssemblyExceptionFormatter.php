@@ -29,11 +29,16 @@ class AssemblyExceptionFormatter
 
     public static function showExceptionEndExit(Throwable $exception): void
     {
-        echo PHP_EOL . get_class($exception) . ': '
-            . $exception->getMessage() . ' in '
-            . static::preparePath($exception->getFile()) . ':' . $exception->getLine() . PHP_EOL;
-        echo static::prepareTraceAsString($exception);
+        file_put_contents("php://stderr", static::getExceptionString($exception));
         exit(1);
+    }
+
+    public static function getExceptionString(Throwable $exception): string
+    {
+        return PHP_EOL . get_class($exception) . ': '
+            . $exception->getMessage() . ' in '
+            . static::preparePath($exception->getFile()) . ':' . $exception->getLine() . PHP_EOL
+            . static::prepareTraceAsString($exception) . PHP_EOL;
     }
 
     public static function formatError(int $errno, string $errstr, string $errfile, int $errline): void

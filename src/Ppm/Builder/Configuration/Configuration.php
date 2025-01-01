@@ -52,7 +52,7 @@ class Configuration extends FileFilter
 
         parent::__construct([
             'include' => $configuration['include'] ?? '*.php',
-            'exclude' => $this->prepareExclude($configuration['exclude'] ?? ''),
+            'exclude' => empty($configuration['exclude']) ? null : $this->prepareExclude($configuration['exclude']),
         ]);
     }
 

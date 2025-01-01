@@ -18,15 +18,22 @@ class SelectUtils
         return $read;
     }
 
-    public static function handleReceivers(array $receivers, int $seconds = 1, int $microseconds = 0): void
+    /**
+     * @param StreamReadActionBind[] $streamBindings
+     * @param int $seconds
+     * @param int $microseconds
+     * @return void
+     * @throws Exception
+     */
+    public static function callBindings(array $streamBindings, int $seconds = 1, int $microseconds = 0): void
     {
-        if (empty($receivers))
+        if (empty($streamBindings))
             return;
         $read = [];
-        foreach ($receivers as $key => $receiver)
-            $read[$key] = $receiver->getTarget();
+        foreach ($streamBindings as $key => $binding)
+            $read[$key] = $binding->getStream();
 
         foreach (static::awaitContent($read, $seconds, $microseconds) as $key => $stream)
-            $receivers[$key]->onReadyContent();
+            $streamBindings[$key]->call();
     }
 }

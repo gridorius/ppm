@@ -6,43 +6,38 @@ use Ppm\Framework\Network\Constants\RequestMethods;
 
 class HttpRequestHelper
 {
-    public static function get(string $url): HttpRequestAction
+    public static function get(string $url): HttpRequest
     {
-        return new HttpRequestAction($url);
+        return new HttpRequest($url);
     }
 
-    public static function post(string $url): HttpRequestAction
+    public static function post(string $url): HttpRequest
     {
-        return new HttpRequestAction($url, RequestMethods::POST);
+        return new HttpRequest($url, RequestMethods::POST);
     }
 
-    public static function put(string $url): HttpRequestAction
+    public static function put(string $url): HttpRequest
     {
-        return new HttpRequestAction($url, RequestMethods::PUT);
+        return new HttpRequest($url, RequestMethods::PUT);
     }
 
-    public static function patch(string $url): HttpRequestAction
+    public static function patch(string $url): HttpRequest
     {
-        return new HttpRequestAction($url, RequestMethods::PATCH);
+        return new HttpRequest($url, RequestMethods::PATCH);
     }
 
-    public static function delete(string $url): HttpRequestAction
+    public static function delete(string $url): HttpRequest
     {
-        return new HttpRequestAction($url, RequestMethods::DELETE);
+        return new HttpRequest($url, RequestMethods::DELETE);
     }
 
-    public static function head(string $url): HttpRequestAction
+    public static function head(string $url): HttpRequest
     {
-        return new HttpRequestAction($url, RequestMethods::HEAD);
+        return new HttpRequest($url, RequestMethods::HEAD);
     }
 
-    public static function options(string $url): HttpRequestAction
+    public static function options(string $url): HttpRequest
     {
-        return new HttpRequestAction($url, RequestMethods::OPTIONS);
-    }
-
-    public static function sendParallel(array $requests, int $timeout = 5): HttpAsyncReader
-    {
-        return new HttpAsyncReader($requests, $timeout);
+        return new HttpRequest($url, RequestMethods::OPTIONS);
     }
 }

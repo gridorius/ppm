@@ -82,9 +82,10 @@ class ProjectFiles
         }
 
         $include = $filter->getInclude();
+        $offset = $filter->getOffset();
         foreach ($projectFiles as $key => $path) {
             if (fnmatch($include, $path, FNM_NOESCAPE))
-                $files[$key] = $path;
+                $files[$key] = preg_replace("/(.[^\/]+\/)/", '', $path, $offset);
         }
 
         return $files;

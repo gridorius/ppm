@@ -2,21 +2,38 @@
 
 namespace Ppm\Framework\Network\Client;
 
-use Generator;
+use Closure;
 use Ppm\Framework\Network\HttpParserBase;
-use Ppm\Framework\Stream\IStream;
+use Ppm\Framework\Stream\Async\IBindable;
+use Ppm\Framework\Stream\Async\StreamReadActionBind;
+use Ppm\Framework\Stream\Contracts\IStream;
+use Ppm\Framework\Stream\Contracts\IStreamRead;
 
-class ResponseDataParser extends HttpParserBase
+class ResponseDataParser extends HttpParserBase implements IBindable
 {
     const STATE_CHUNKED = 4;
     private HttpResponse $response;
-    private $onProgress;
+    protected Closure $onProgress;
 
-    public function __construct(HttpSocketClient $stream, callable $onProgress = null)
+    public function __construct(callable $onProgress = null)
     {
-        parent::__construct($stream);
+        parent::__construct();
         $this->response = new HttpResponse();
-        $this->onProgress = $onProgress;
+        $this->onProgress = Closure::fromCallable($onProgress);
+    }
+
+    public function bind(IStream $stream): StreamReadActionBind
+    {
+        return StreamReadActionBind::create($stream, [
+            $this,
+            'onReadyContent'
+        ]);
+    }
+
+    public function reset(): void
+    {
+        parent::reset();
+        $this->response = new HttpResponse();
     }
 
     public function getResponse(): HttpResponse
@@ -44,19 +61,19 @@ class ResponseDataParser extends HttpParserBase
             : static::STAGE_BODY;
     }
 
-    protected function handleBody(): void
+    protected function handleBody(IStreamRead $stream): void
     {
-        if ($this->stream->eof()) {
+        if ($stream->eof()) {
             $this->state = static::STATE_COMPLETED;
             return;
         }
 
         switch ($this->state) {
             case static::STATE_CHUNKED:
-                $this->readChunk();
+                $this->readChunk($stream);
                 break;
             default:
-                $content = $this->stream->read();
+                $content = $stream->read();
                 if (empty($content)) {
                     $this->state = static::STATE_COMPLETED;
                     return;
@@ -69,7 +86,7 @@ class ResponseDataParser extends HttpParserBase
                     call_user_func($this->onProgress, $contentLength, $responseLength);
                 if ($contentLength <= $responseLength) {
                     $this->state = static::STATE_COMPLETED;
-                    $this->stream->read();
+                    $stream->read();
                 }
         }
     }
@@ -79,9 +96,9 @@ class ResponseDataParser extends HttpParserBase
         return $this->state == static::STATE_COMPLETED;
     }
 
-    private function readChunk(): void
+    private function readChunk(IStreamRead $stream): void
     {
-        $line = $this->stream->readLine();
+        $line = $stream->readLine();
         $hex = trim($line);
         $size = hexdec($hex);
 
@@ -91,10 +108,10 @@ class ResponseDataParser extends HttpParserBase
         }
 
         $size += 2;
-        $chunk = $this->stream->read($size);
+        $chunk = $stream->read($size);
         $loadedLength = strlen($chunk);
         while ($loadedLength < $size) {
-            $chunk .= $this->stream->read($size - $loadedLength);
+            $chunk .= $stream->read($size - $loadedLength);
             $loadedLength = strlen($chunk);
         }
         $chunk = substr($chunk, 0, -2);
