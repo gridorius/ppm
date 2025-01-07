@@ -2,7 +2,7 @@
 
 namespace Ppm\Framework\Network\Client;
 
-use Ppm\Framework\Stream\Async\AsyncStreamsReader;
+use Ppm\Framework\Stream\Async\AsyncStreamWatcher;
 
 class HttpParallelSender
 {
@@ -28,7 +28,7 @@ class HttpParallelSender
         $bindings = [];
         foreach ($this->actions as $action)
             $bindings[] = $action->creteBind($downloadProgressHandler);
-        $async = new AsyncStreamsReader($bindings);
+        $async = new AsyncStreamWatcher($bindings);
 
         while (!$this->isCompleted()) {
             $async->watch();

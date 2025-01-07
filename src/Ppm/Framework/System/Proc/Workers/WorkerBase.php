@@ -3,52 +3,108 @@
 namespace Ppm\Framework\System\Proc\Workers;
 
 use Ppm\Framework\CurrentAssembly;
+use Ppm\Framework\Stream\Async\StreamReadActionBind;
+use Ppm\Framework\Stream\Contracts\IStream;
 use Ppm\Framework\Stream\DescriptorStream;
-use Ppm\Framework\Stream\FileResourceStream;
 use Ppm\Framework\Stream\Modes;
 use Ppm\Framework\Stream\ResourceStream;
 use Ppm\Framework\System\Proc\CommandLauncher;
 use Ppm\Framework\System\Proc\Descriptors\PipeDescriptor;
+use Ppm\Framework\System\Proc\Workers\Contracts\IWorker;
 
-abstract class WorkerBase
+abstract class WorkerBase implements IWorker
 {
-    protected ResourceStream $output;
-    protected ResourceStream $input;
+    protected array $handlers;
+    protected array $partyHandlers;
+    protected IStream $input;
+    protected IStream $output;
+    protected StreamReadActionBind $bind;
+    protected WorkerMessageProtocol $protocol;
 
-    public function __construct(ResourceStream $input, ResourceStream $output)
+    public function __construct(IStream $input, IStream $output)
     {
+        $this->handlers = [];
+        $this->partyHandlers = [];
         $this->input = $input;
         $this->output = $output;
+        $this->bind = StreamReadActionBind::create($this->input, function (IStream $stream) {
+            $this->onReadyData($stream);
+        });
+        $this->protocol = new WorkerMessageProtocol();
     }
 
-    public function getInput(): ResourceStream
+    /**
+     * Запускает воркер
+     */
+    public static function create(): static
     {
-        return $this->input;
+        $process = CommandLauncher::launch(
+            CurrentAssembly::getAssembly()->createCommand([static::class, 'bindWorker'])
+                ->setDescriptor(3, new PipeDescriptor('w'))
+        );
+
+        return new static($process->getPipe(3), $process->getPipe(0));
     }
 
-    public function getOutput(): ResourceStream
-    {
-        return $this->output;
-    }
-
-    public static function start(array $argv): void
+    /**
+     * Создает зеркало воркера в порожденном процессе
+     */
+    public static function bindWorker(): void
     {
         $worker = new static(
             new ResourceStream(STDIN),
             new DescriptorStream(3, Modes::MODE_WRITE)
         );
-
-        $worker->run($argv);
+        $worker->init();
     }
 
-    public static function create(...$arguments): static
+    public function getBind(): StreamReadActionBind
     {
-        $worker = CommandLauncher::launch(
-            CurrentAssembly::getAssembly()->createCommand([static::class, 'start'], ...$arguments)
-                ->setDescriptor(3, new PipeDescriptor('w'))
-        );
-        return new static($worker->getPipe(3), $worker->getPipe(0));
+        return $this->bind;
     }
 
-    abstract public function run(array $argv);
+    public function onMessage(callable $callable): static
+    {
+        $this->handlers[] = $callable;
+        return $this;
+    }
+
+    public function onMessageParty(callable $callable): static
+    {
+        $this->partyHandlers[] = $callable;
+        return $this;
+    }
+
+    public function send(string $message, array $headers = []): void
+    {
+        $this->output->write(WorkerMessageProtocol::prepareMessage($message, $headers));
+    }
+
+    protected function onReadyData(IStream $stream): void
+    {
+        $this->protocol->onReadyData($stream, function (string $message, array $headers, int $remainderLength) {
+            $this->onReadyParty($message, $headers, $remainderLength);
+        });
+        if ($this->protocol->isCompleted()) {
+            $this->callMessageHandlers();
+            $this->protocol->reset();
+        }
+    }
+
+    protected function onReadyParty(string $message, array $headers, int $remainderLength): void
+    {
+        foreach ($this->partyHandlers as $handler)
+            call_user_func($handler, $message, $headers, $remainderLength);
+    }
+
+    protected function callMessageHandlers(): void
+    {
+        foreach ($this->handlers as $handler)
+            call_user_func($handler, $this->protocol->getMessage(), $this->protocol->getHeaders());
+    }
+
+    /**
+     * Инициализация воркера в порожденном процессе
+     */
+    abstract public function init(): void;
 }

@@ -2,7 +2,7 @@
 
 namespace Ppm\Framework\Stream\Async;
 
-class AsyncStreamsReader
+class AsyncStreamWatcher
 {
     /**
      * @var StreamReadActionBind[]

@@ -3,7 +3,7 @@
 namespace Ppm\Framework\Network\Client;
 
 use Closure;
-use Ppm\Framework\Stream\Async\AsyncStreamsReader;
+use Ppm\Framework\Stream\Async\AsyncStreamWatcher;
 use Ppm\Framework\Stream\Async\IBindable;
 use Ppm\Framework\Stream\Async\StreamReadActionBind;
 use Ppm\Framework\Stream\Contracts\IStream;
@@ -51,7 +51,7 @@ class HttpRequestAction implements IBindable
     {
         $this->downloadProgressHandler = $downloadProgressHandler;
         $this->receiver = new ResponseDataParser($downloadProgressHandler);
-        $parallel = new AsyncStreamsReader([$this->bind($this->client)]);
+        $parallel = new AsyncStreamWatcher([$this->bind($this->client)]);
         while (!$this->receiver->isCompleted()) {
             $parallel->watch();
         }

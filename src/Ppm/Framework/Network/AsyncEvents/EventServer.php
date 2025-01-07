@@ -4,20 +4,20 @@ namespace Ppm\Framework\Network\AsyncEvents;
 
 use Ppm\Framework\Network\Socket\Socket;
 use Ppm\Framework\Network\Socket\StreamSocketServer;
-use Ppm\Framework\Stream\Async\AsyncStreamsReader;
+use Ppm\Framework\Stream\Async\AsyncStreamWatcher;
 use Ppm\Framework\Stream\Async\StreamReadActionBind;
 use Ppm\Framework\Stream\Contracts\IStreamRead;
 
 class EventServer extends StreamSocketServer
 {
     private array $listeners;
-    private AsyncStreamsReader $reader;
+    private AsyncStreamWatcher $reader;
 
     public function __construct(string $host, int $port)
     {
         parent::__construct($host, $port, 100, false);
         $this->listeners = [];
-        $this->reader = new AsyncStreamsReader();
+        $this->reader = new AsyncStreamWatcher();
     }
 
     public function listen(): void

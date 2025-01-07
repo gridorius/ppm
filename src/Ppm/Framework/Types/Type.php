@@ -25,7 +25,7 @@ class Type
         return $this->reflection;
     }
 
-    public function getConstructor(): ReflectionMethod
+    public function getConstructor(): ?ReflectionMethod
     {
         return $this->reflection->getConstructor();
     }

@@ -7,8 +7,8 @@ use Ppm\Framework\Stream\Contracts\IStream;
 
 class StreamReadActionBind
 {
-    private IStream $stream;
-    private closure $action;
+    protected IStream $stream;
+    protected closure $action;
 
     public function __construct(IStream $stream, callable $action)
     {
