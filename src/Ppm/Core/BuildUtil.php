@@ -32,4 +32,12 @@ class BuildUtil
         $packages = $storage->getDependencyTreeBuilder()->buildPackagesTree($configurationCollection->getPackages());
         $storage->extractPackages($packages->getFound(), new Directory($outDir));
     }
+
+    public static function buildFromConfigurationCollectionWithoutDependencies(ConfigurationCollection $configurationCollection, string $outDir): void
+    {
+        $packageManager = new PackagesManager();
+        $packageManager->getRestoreService()->restore($configurationCollection->getPackages());
+        BuildManager::buildFromConfigurationCollection($configurationCollection, $outDir);
+        BuildManager::AddFrameworkPhar($outDir);
+    }
 }

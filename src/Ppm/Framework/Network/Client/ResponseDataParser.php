@@ -13,13 +13,13 @@ class ResponseDataParser extends HttpParserBase implements IBindable
 {
     const STATE_CHUNKED = 4;
     private HttpResponse $response;
-    protected Closure $onProgress;
+    protected ?Closure $onProgress;
 
     public function __construct(callable $onProgress = null)
     {
         parent::__construct();
         $this->response = new HttpResponse();
-        $this->onProgress = Closure::fromCallable($onProgress);
+        $this->onProgress = is_null($onProgress) ? null : Closure::fromCallable($onProgress);
     }
 
     public function bind(IStream $stream): StreamReadActionBind

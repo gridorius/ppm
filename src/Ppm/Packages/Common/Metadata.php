@@ -10,6 +10,7 @@ class Metadata
     private string $description;
     private array $depends;
     private array $hashes;
+    private string $hashSum;
 
     public function __construct(array $metadata)
     {
@@ -19,6 +20,7 @@ class Metadata
         $this->description = $metadata['description'] ?? '';
         $this->depends = $metadata['depends'];
         $this->hashes = $metadata['hashes'];
+        $this->hashSum = $metadata['hashSum'];
     }
 
     public function getName(): string
@@ -49,5 +51,10 @@ class Metadata
     public function getHashes(): array
     {
         return $this->hashes;
+    }
+
+    public function getHashSum(): string
+    {
+        return $this->hashSum;
     }
 }

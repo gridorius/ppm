@@ -119,14 +119,28 @@ class Solution
         $contexts = $configurationCollection->getContextCollection();
         $hash = $contexts->getHash();
         $projectsCache = $this->cache->getArray('projects');
+        $packagesCache = $this->cache->getArray('packages');
         if ($projectsCache->get($name) == $hash) {
             BuildManager::AddFrameworkPhar($outDirectory);
-            echo "Project cached" . PHP_EOL;
-            return $outDirectory;
+            echo "Project loaded from cache" . PHP_EOL;
         } else {
-            BuildUtil::buildFromConfigurationCollection($configurationCollection, $outDirectory);
+            BuildUtil::buildFromConfigurationCollectionWithoutDependencies($configurationCollection, $outDirectory);
             $projectsCache->set($name, $hash);
         }
+
+        $packageManager = new PackagesManager();
+        $storage = $packageManager->getStorage();
+        $packages = $storage->getDependencyTreeBuilder()->buildPackagesTree($configurationCollection->getPackages());
+        foreach ($packages->getFound() as $name => $version) {
+            $package = $storage->get($name, $version);
+            if ($packagesCache->get($name) != $package->getMetadata()->getHashSum()) {
+                $package->extractTo(Directory::from($outDirectory));
+                $packagesCache->set($name, $package->getMetadata()->getHashSum());
+            } else {
+                echo "Package {$name}:{$version} loaded from cache" . PHP_EOL;
+            }
+        }
+
         return $outDirectory;
     }
 

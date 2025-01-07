@@ -20,7 +20,8 @@ class MetadataUtil
             'author' => $projectInfo->getAuthor(),
             'description' => $projectInfo->getDescription(),
             'depends' => $configurationCollection->getPackages(),
-            'hashes' => []
+            'hashes' => [],
+            'hashSum' => ''
         ];
     }
 

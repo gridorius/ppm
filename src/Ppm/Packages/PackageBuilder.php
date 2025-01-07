@@ -47,6 +47,7 @@ class PackageBuilder
             $relativePath = substr($path, $prefixLength);
             $packageMetadata['hashes'][$relativePath] = hash_file('sha256', $path);
         }
+        $packageMetadata['hashSum'] = hash('sha256', implode('', $packageMetadata['hashes']));
         return $packageMetadata;
     }
 
