@@ -51,7 +51,7 @@ class Solution
 
         $packages = [];
         foreach ($projects as $name => $relativePath)
-            foreach (ConfigurationCollection::from($this->getProjectPath($name)) as $packageName => $version)
+            foreach (ConfigurationCollection::from($this->getProjectPath($name))->getPackages() as $packageName => $version)
                 $packages[$packageName] = $version;
 
 
