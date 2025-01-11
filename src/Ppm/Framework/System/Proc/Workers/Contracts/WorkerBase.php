@@ -1,27 +1,31 @@
 <?php
 
-namespace Ppm\Framework\System\Proc\Workers;
+namespace Ppm\Framework\System\Proc\Workers\Contracts;
 
 use Ppm\Framework\CurrentAssembly;
 use Ppm\Framework\Stream\Async\StreamReadActionBind;
+use Ppm\Framework\Stream\Contracts\IResourceBase;
 use Ppm\Framework\Stream\Contracts\IStream;
 use Ppm\Framework\Stream\DescriptorStream;
 use Ppm\Framework\Stream\Modes;
 use Ppm\Framework\Stream\ResourceStream;
+use Ppm\Framework\Stream\StreamMessageProtocol;
 use Ppm\Framework\System\Proc\CommandLauncher;
 use Ppm\Framework\System\Proc\Descriptors\PipeDescriptor;
-use Ppm\Framework\System\Proc\Workers\Contracts\IWorker;
+use Ppm\Framework\System\Proc\LaunchedProcess;
 
-abstract class WorkerBase implements IWorker
+abstract class WorkerBase implements IWorker, IResourceBase
 {
     protected array $handlers;
     protected array $partyHandlers;
     protected IStream $input;
     protected IStream $output;
     protected StreamReadActionBind $bind;
-    protected WorkerMessageProtocol $protocol;
+    protected StreamMessageProtocol $protocol;
 
-    public function __construct(IStream $input, IStream $output)
+    protected ?LaunchedProcess $workerProcess;
+
+    public function __construct(IStream $input, IStream $output, LaunchedProcess $workerProcess = null)
     {
         $this->handlers = [];
         $this->partyHandlers = [];
@@ -30,7 +34,8 @@ abstract class WorkerBase implements IWorker
         $this->bind = StreamReadActionBind::create($this->input, function (IStream $stream) {
             $this->onReadyData($stream);
         });
-        $this->protocol = new WorkerMessageProtocol();
+        $this->protocol = new StreamMessageProtocol();
+        $this->workerProcess = $workerProcess;
     }
 
     /**
@@ -43,7 +48,7 @@ abstract class WorkerBase implements IWorker
                 ->setDescriptor(3, new PipeDescriptor('w'))
         );
 
-        return new static($process->getPipe(3), $process->getPipe(0));
+        return new static($process->getPipe(3), $process->getPipe(0), $process);
     }
 
     /**
@@ -77,7 +82,7 @@ abstract class WorkerBase implements IWorker
 
     public function send(string $message, array $headers = []): void
     {
-        $this->output->write(WorkerMessageProtocol::prepareMessage($message, $headers));
+        $this->output->write(StreamMessageProtocol::prepareMessage($message, $headers));
     }
 
     protected function onReadyData(IStream $stream): void
@@ -101,6 +106,15 @@ abstract class WorkerBase implements IWorker
     {
         foreach ($this->handlers as $handler)
             call_user_func($handler, $this->protocol->getMessage(), $this->protocol->getHeaders());
+    }
+
+    public function close(): void
+    {
+        if (!is_null($this->workerProcess)) {
+            $this->workerProcess->close();
+        } else {
+            exit();
+        }
     }
 
     /**

@@ -2,7 +2,7 @@
 
 namespace Ppm\Framework\System\Proc\Workers;
 
-class ObjectTransitWorkerCollection extends WorkerCollection
+class ObjectTransferWorkerCollection extends WorkerCollection
 {
     public function sendData($data, array $headers = []): void
     {

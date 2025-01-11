@@ -4,7 +4,7 @@ namespace Ppm\Framework\System\Proc\Descriptors;
 
 use Ppm\Framework\System\Proc\Descriptors;
 
-class STDDescriptor extends DescriptorBase
+class StandartDescriptor extends DescriptorBase
 {
     private int $type;
 
@@ -13,15 +13,17 @@ class STDDescriptor extends DescriptorBase
         $this->type = $type;
     }
 
-    public function getDescriptor(): mixed
+    public function configureDescriptor(array &$descriptors): void
     {
         switch ($this->type) {
             case Descriptors::STDOUT:
-                return STDOUT;
+                $descriptors[] = STDOUT;
+                break;
             case Descriptors::STDERR:
-                return STDERR;
+                $descriptors[] = STDERR;
+                break;
             default:
-                return STDIN;
+                $descriptors[] = STDIN;
         }
     }
 }

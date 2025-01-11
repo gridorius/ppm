@@ -23,6 +23,11 @@ class ConfigurationCollection
         $this->contexts = null;
     }
 
+    public static function from(string $pathToProjectFile): static
+    {
+        return (new Configuration($pathToProjectFile))->buildConfigurationCollection();
+    }
+
     public function mergeCollection(ConfigurationCollection $collection): void
     {
         $this->configurations = array_merge($this->configurations, $collection->getConfigurationsArray());

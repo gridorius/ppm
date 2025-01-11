@@ -11,8 +11,8 @@ class FileDescriptor extends DescriptorBase
         $this->path = $path;
     }
 
-    public function getDescriptor(): array
+    public function configureDescriptor(array &$descriptors): void
     {
-        return ['file', $this->path, 'a'];
+        $descriptors[] = ['file', $this->path, 'a'];
     }
 }

@@ -43,8 +43,7 @@ class BuildManager
      */
     public static function build(string $pathToProjectFile, string $outDirectory): void
     {
-        $mainConfiguration = new Configuration($pathToProjectFile);
-        $configurationCollection = $mainConfiguration->buildConfigurationCollection();
+        $configurationCollection = ConfigurationCollection::from($pathToProjectFile);
         static::buildFromConfigurationCollection($configurationCollection, $outDirectory);
     }
 

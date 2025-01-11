@@ -4,7 +4,7 @@ namespace Ppm\Core;
 
 use Exception;
 use Ppm\Builder\BuildManager;
-use Ppm\Builder\Configuration\Configuration;
+use Ppm\Builder\Configuration\ConfigurationCollection;
 use Ppm\Builder\Constants;
 use Ppm\Builder\ProjectFile;
 use Ppm\Framework\Filesystem\Directory;
@@ -18,7 +18,7 @@ class Solution
     private string $path;
     private string $directory;
     private array $data;
-
+    private PackagesManager $packagesManager;
     private FileStorage $cache;
 
     public function __construct(string $path)
@@ -26,6 +26,7 @@ class Solution
         $this->path = $path;
         $this->directory = dirname($this->path);
         $this->data = PathUtils::parseJson($this->path);
+        $this->packagesManager = new PackagesManager();
         Directory::createDirectory($this->getSolutionDataPath());
         $this->cache = new FileStorage($this->getSolutionDataPath('cache.json'));
     }
@@ -49,11 +50,10 @@ class Solution
         $projects = $this->getData()['projects'];
 
         $packages = [];
-        foreach ($projects as $name => $relativePath) {
-            $configuration = new Configuration($this->getProjectPath($name));
-            foreach ($configuration->buildConfigurationCollection()->getPackages() as $packageName => $version)
+        foreach ($projects as $name => $relativePath)
+            foreach (ConfigurationCollection::from($this->getProjectPath($name)) as $packageName => $version)
                 $packages[$packageName] = $version;
-        }
+
 
         $this->getPackagesDirectory()->clear();
         $packages = array_unique($packages);
@@ -115,31 +115,18 @@ class Solution
             $outDirectory = $this->getDirectory() . DIRECTORY_SEPARATOR . '/bin/' . $name;
         $this->checkProject($name);
         Directory::createDirectory($outDirectory);
-        $configurationCollection = BuildUtil::getProjectConfiguration($this->getProjectPath($name));
+        $configurationCollection = ConfigurationCollection::from($this->getProjectPath($name));
         $contexts = $configurationCollection->getContextCollection();
         $hash = $contexts->getHash();
         $projectsCache = $this->cache->getArray('projects');
-        $packagesCache = $this->cache->getArray('packages');
         if ($projectsCache->get($name) == $hash) {
-            BuildManager::AddFrameworkPhar($outDirectory);
             echo "Project loaded from cache" . PHP_EOL;
         } else {
-            BuildUtil::buildFromConfigurationCollectionWithoutDependencies($configurationCollection, $outDirectory);
+            BuildManager::buildFromConfigurationCollection($configurationCollection, $outDirectory);
             $projectsCache->set($name, $hash);
         }
-
-        $packageManager = new PackagesManager();
-        $storage = $packageManager->getStorage();
-        $packages = $storage->getDependencyTreeBuilder()->buildPackagesTree($configurationCollection->getPackages());
-        foreach ($packages->getFound() as $name => $version) {
-            $package = $storage->get($name, $version);
-            if ($packagesCache->get($name) != $package->getMetadata()->getHashSum()) {
-                $package->extractTo(Directory::from($outDirectory));
-                $packagesCache->set($name, $package->getMetadata()->getHashSum());
-            } else {
-                echo "Package {$name}:{$version} loaded from cache" . PHP_EOL;
-            }
-        }
+        BuildManager::AddFrameworkPhar($outDirectory);
+        $this->extractDependencies($configurationCollection, $outDirectory);
 
         return $outDirectory;
     }
@@ -167,5 +154,27 @@ class Solution
             return null;
 
         return $solutionPath;
+    }
+
+    private function restore(ConfigurationCollection $configurationCollection): void
+    {
+        $this->packagesManager->getRestoreService()->restore($configurationCollection->getPackages());
+    }
+
+    private function extractDependencies(ConfigurationCollection $configurationCollection, string $outDirectory): void
+    {
+        $storage = $this->packagesManager->getStorage();
+        $packagesCache = $this->cache->getArray('packages');
+        $this->restore($configurationCollection);
+        $packages = $storage->getDependencyTreeBuilder()->buildPackagesTree($configurationCollection->getPackages());
+        foreach ($packages->getFound() as $name => $version) {
+            $package = $storage->get($name, $version);
+            if ($packagesCache->get($name) != $package->getMetadata()->getHashSum()) {
+                $package->extractTo(Directory::from($outDirectory));
+                $packagesCache->set($name, $package->getMetadata()->getHashSum());
+            } else {
+                echo "Package {$name}:{$version} loaded from cache" . PHP_EOL;
+            }
+        }
     }
 }

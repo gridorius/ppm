@@ -1,17 +1,17 @@
 <?php
 
-namespace Ppm\Framework\System\Proc\Workers;
+namespace Ppm\Framework\Stream;
 
 use Ppm\Framework\Stream\Contracts\IStream;
 
-class WorkerMessageProtocol
+class StreamMessageProtocol
 {
     const STATE_LENGTH = 0;
     const STATE_HEADERS = 1;
     const STATE_MESSAGE = 2;
     const STATE_COMPLETED = 3;
-    const LENGTH_HEADERS_SIZE = 64;
-    const LENGTH_MESSAGE_SIZE = 64;
+    const LENGTH_HEADERS_SIZE = 6;
+    const LENGTH_MESSAGE_SIZE = 16;
     protected string $headersString = '';
     protected string $messageString = '';
     protected array $headers = [];

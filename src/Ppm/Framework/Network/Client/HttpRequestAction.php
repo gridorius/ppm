@@ -51,7 +51,7 @@ class HttpRequestAction implements IBindable
     {
         $this->downloadProgressHandler = $downloadProgressHandler;
         $this->receiver = new ResponseDataParser($downloadProgressHandler);
-        $parallel = new AsyncStreamWatcher([$this->bind($this->client)]);
+        $parallel = AsyncStreamWatcher::single($this->bind($this->client));
         while (!$this->receiver->isCompleted()) {
             $parallel->watch();
         }

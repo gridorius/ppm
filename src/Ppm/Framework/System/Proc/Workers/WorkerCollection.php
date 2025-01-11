@@ -49,6 +49,12 @@ class WorkerCollection implements IWorker, ArrayAccess
         return $bindings;
     }
 
+    public function close(): void
+    {
+        foreach ($this->workers as $worker)
+            $worker->close();
+    }
+
     public function offsetExists(mixed $offset): bool
     {
         return isset($this->workers[$offset]);

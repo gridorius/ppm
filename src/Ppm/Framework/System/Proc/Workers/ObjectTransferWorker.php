@@ -2,7 +2,9 @@
 
 namespace Ppm\Framework\System\Proc\Workers;
 
-class ObjectTransitWorker extends WorkerBase
+use Ppm\Framework\System\Proc\Workers\Contracts\WorkerBase;
+
+class ObjectTransferWorker extends WorkerBase
 {
     public function sendData($data, array $headers = []): void
     {

@@ -11,8 +11,8 @@ class PipeDescriptor extends DescriptorBase
         $this->mode = $mode;
     }
 
-    public function getDescriptor(): array
+    public function configureDescriptor(array &$descriptors): void
     {
-        return ['pipe', $this->mode];
+        $descriptors[] = ['pipe', $this->mode];
     }
 }

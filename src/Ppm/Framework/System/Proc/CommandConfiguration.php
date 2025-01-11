@@ -4,12 +4,13 @@ namespace Ppm\Framework\System\Proc;
 
 use Ppm\Framework\System\Proc\Descriptors\DescriptorBase;
 use Ppm\Framework\System\Proc\Descriptors\PipeDescriptor;
-use Ppm\Framework\System\Proc\Descriptors\STDDescriptor;
+use Ppm\Framework\System\Proc\Descriptors\StandartDescriptor;
 
 class CommandConfiguration
 {
-    const TARGET_PIPE = 'pipe';
-    const TARGET_FILE = 'file';
+    /**
+     * @var DescriptorBase[]
+     */
     protected array $descriptors;
     protected array $command;
 
@@ -19,8 +20,8 @@ class CommandConfiguration
         $this->descriptors = [];
         $this
             ->setDescriptor(Descriptors::STDIN, new PipeDescriptor('r'))
-            ->setDescriptor(Descriptors::STDOUT, new STDDescriptor(Descriptors::STDOUT))
-            ->setDescriptor(Descriptors::STDERR, new STDDescriptor(Descriptors::STDERR));
+            ->setDescriptor(Descriptors::STDOUT, new StandartDescriptor(Descriptors::STDOUT))
+            ->setDescriptor(Descriptors::STDERR, new StandartDescriptor(Descriptors::STDERR));
     }
 
     public function addArguments(string ...$arguments): static
@@ -35,25 +36,16 @@ class CommandConfiguration
         return $this;
     }
 
-    public function clone(): static
-    {
-        $command = new static(...$this->command);
-        foreach ($this->descriptors as $key => $value)
-            $command->setDescriptor($key, $value);
-        return $command;
-    }
-
     public function setDescriptor(int $descriptor, DescriptorBase $type): self
     {
         $this->descriptors[$descriptor] = $type;
         return $this;
     }
 
-    public function getDescriptors(): array
+    public function configureDescriptors(array &$descriptors): void
     {
-        return array_map(function (DescriptorBase $descriptor) {
-            return $descriptor->getDescriptor();
-        }, $this->descriptors);
+        foreach ($this->descriptors as $descriptor)
+            $descriptor->configureDescriptor($descriptors);
     }
 
     public function getCommand(): array

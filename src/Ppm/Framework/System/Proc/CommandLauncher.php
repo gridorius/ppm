@@ -9,7 +9,9 @@ class CommandLauncher
     public static function launch(CommandConfiguration $configuration): LaunchedProcess
     {
         $pipes = [];
-        $processResource = proc_open($configuration->getCommand(), $configuration->getDescriptors(), $pipes);
+        $descriptors = [];
+        $configuration->configureDescriptors($descriptors);
+        $processResource = proc_open($configuration->getCommand(), $descriptors, $pipes);
 
         if (!is_resource($processResource))
             throw new Exception("Process opening failed");

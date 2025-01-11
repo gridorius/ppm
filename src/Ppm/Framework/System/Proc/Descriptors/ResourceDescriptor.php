@@ -13,8 +13,8 @@ class ResourceDescriptor extends DescriptorBase
         $this->resource = $resource;
     }
 
-    public function getDescriptor(): resource
+    public function configureDescriptor(array &$descriptors): void
     {
-        return $this->resource;
+        $descriptors[] = $this->resource;
     }
 }
