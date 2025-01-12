@@ -29,7 +29,7 @@ class Resources
         return static::$resources[$name];
     }
 
-    public static function find(string $pattern): array
+    public static function filter(string $pattern): array
     {
         $result = [];
         foreach (static::$resources as $name => $resource)
@@ -39,7 +39,7 @@ class Resources
         return $result;
     }
 
-    public static function findPaths(string $pattern, int $nameOffset = 0): array
+    public static function filterGetPaths(string $pattern, int $nameOffset = 0): array
     {
         $result = [];
         foreach (static::$resources as $name => $resource)
