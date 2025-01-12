@@ -27,6 +27,8 @@ abstract class WorkerBase implements IWorker, IResourceBase
 
     public function __construct(IStream $input, IStream $output, LaunchedProcess $workerProcess = null)
     {
+        $input->unblock();
+        $output->unblock();
         $this->handlers = [];
         $this->partyHandlers = [];
         $this->input = $input;
@@ -82,7 +84,11 @@ abstract class WorkerBase implements IWorker, IResourceBase
 
     public function send(string $message, array $headers = []): void
     {
-        $this->output->write(StreamMessageProtocol::prepareMessage($message, $headers));
+        $preparedMessage = StreamMessageProtocol::prepareMessage($message, $headers);
+        $totalLength = strlen($preparedMessage);
+        $written = 0;
+        while ($written < $totalLength)
+            $written += $this->output->write(substr($preparedMessage, $written));
     }
 
     protected function onReadyData(IStream $stream): void

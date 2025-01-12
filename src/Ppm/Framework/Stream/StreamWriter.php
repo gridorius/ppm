@@ -7,10 +7,12 @@ use Ppm\Framework\Stream\Contracts\IStream;
 class StreamWriter
 {
     private string $content;
+    private int $position;
 
-    public function __construct(string $content)
+    public function __construct(string $content = '')
     {
         $this->content = $content;
+        $this->position = 0;
     }
 
     public function addContent(string $content): static
@@ -21,18 +23,17 @@ class StreamWriter
 
     public function getLength(): int
     {
-        return strlen($this->content);
+        return strlen($this->content) - $this->position;
     }
 
     public function isEmpty(): bool
     {
-        return $this->content === '';
+        return $this->getLength() === 0;
     }
 
     public function writeTo(IStream $stream): void
     {
         if ($this->getLength() == 0) return;
-        $written = $stream->write($this->content);
-        $this->content = substr($this->content, $written);
+        $this->position += $stream->write(substr($this->content, $this->position));
     }
 }

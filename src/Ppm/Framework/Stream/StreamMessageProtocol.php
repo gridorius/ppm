@@ -12,16 +12,16 @@ class StreamMessageProtocol
     const STATE_COMPLETED = 3;
     const LENGTH_HEADERS_SIZE = 6;
     const LENGTH_MESSAGE_SIZE = 16;
-    protected string $headersString = '';
-    protected string $messageString = '';
-    protected array $headers = [];
-    protected int $remainderHeaderLength = 0;
-    protected int $remainderLength = 0;
-    protected int $state = self::STATE_LENGTH;
+    private string $headersString = '';
+    private string $messageString = '';
+    private array $headers = [];
+    private int $remainderHeaderLength = 0;
+    private int $remainderLength = 0;
+    private int $state = self::STATE_LENGTH;
 
     public static function prepareMessage(string $message, array $headers): string
     {
-        $headersString = http_build_query($headers);
+        $headersString = static::encodeHeaders($headers);
         $headerLength = str_pad(strlen($headersString), static::LENGTH_HEADERS_SIZE, ' ', STR_PAD_LEFT);
         $messageLength = str_pad(strlen($message), static::LENGTH_MESSAGE_SIZE, ' ', STR_PAD_LEFT);
         return $headerLength . $messageLength . $headersString . $message;
@@ -47,7 +47,7 @@ class StreamMessageProtocol
                 $this->remainderHeaderLength -= $readLength;
                 $this->headersString .= $headersString;
                 if ($this->remainderHeaderLength == 0) {
-                    parse_str($this->headersString, $this->headers);
+                    $this->headers = static::decodeHeaders($this->headersString);
                     $this->state = static::STATE_MESSAGE;
                 }
                 break;
@@ -86,5 +86,17 @@ class StreamMessageProtocol
         $this->headersString = '';
         $this->messageString = '';
         $this->headers = [];
+    }
+
+    protected static function encodeHeaders(array $headers): string
+    {
+        return http_build_query($headers);
+    }
+
+    protected static function decodeHeaders(string $headers): array
+    {
+        $headersArray = [];
+        parse_str($headers, $headersArray);
+        return $headersArray;
     }
 }
