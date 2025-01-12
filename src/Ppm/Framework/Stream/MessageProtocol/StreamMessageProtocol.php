@@ -1,7 +1,9 @@
 <?php
 
-namespace Ppm\Framework\Stream;
+namespace Ppm\Framework\Stream\MessageProtocol;
 
+use Closure;
+use Ppm\Framework\Stream\Async\StreamReadActionBind;
 use Ppm\Framework\Stream\Contracts\IStream;
 
 class StreamMessageProtocol
@@ -10,6 +12,7 @@ class StreamMessageProtocol
     const STATE_HEADERS = 1;
     const STATE_MESSAGE = 2;
     const STATE_COMPLETED = 3;
+    const STATE_ABORTED = 4;
     const LENGTH_HEADERS_SIZE = 6;
     const LENGTH_MESSAGE_SIZE = 16;
     private string $headersString = '';
@@ -19,7 +22,17 @@ class StreamMessageProtocol
     private int $remainderLength = 0;
     private int $state = self::STATE_LENGTH;
 
-    public static function prepareMessage(string $message, array $headers): string
+    private Closure $messageCallback;
+    private ?Closure $partyCallback;
+
+    public function __construct(callable $messageCallback, callable $partyCallback = null)
+    {
+        $this->messageCallback = Closure::fromCallable($messageCallback);
+        $this->partyCallback = is_null($partyCallback) ? null : Closure::fromCallable($partyCallback);
+    }
+
+
+    public static function prepareMessage(string $message, array $headers = []): string
     {
         $headersString = static::encodeHeaders($headers);
         $headerLength = str_pad(strlen($headersString), static::LENGTH_HEADERS_SIZE, ' ', STR_PAD_LEFT);
@@ -27,21 +40,33 @@ class StreamMessageProtocol
         return $headerLength . $messageLength . $headersString . $message;
     }
 
-    public function onReadyData(IStream $stream, callable $onMessageParty = null): void
+    public function createBind(IStream $stream): StreamReadActionBind
+    {
+        return StreamReadActionBind::create($stream, [
+            $this,
+            'onReadyData'
+        ]);
+    }
+
+    public function onReadyData(IStream $stream): void
     {
         switch ($this->state) {
             case static::STATE_LENGTH:
                 $lengthData = $stream->read(static::LENGTH_HEADERS_SIZE + static::LENGTH_MESSAGE_SIZE);
                 if (empty($lengthData)) {
-                    $this->state = static::STATE_COMPLETED;
+                    $this->onAbort();
                     break;
                 }
                 $this->remainderHeaderLength = (int)substr($lengthData, 0, static::LENGTH_HEADERS_SIZE);
                 $this->remainderLength = (int)substr($lengthData, static::LENGTH_HEADERS_SIZE, static::LENGTH_MESSAGE_SIZE) + $this->remainderHeaderLength;
-                $this->state = self::STATE_HEADERS;
+                $this->state = $this->remainderHeaderLength > 0 ? static::STATE_HEADERS : static::STATE_MESSAGE;
                 break;
             case static::STATE_HEADERS:
                 $headersString = $stream->read($this->remainderHeaderLength);
+                if (empty($headersString)) {
+                    $this->onAbort();
+                    break;
+                }
                 $readLength = strlen($headersString);
                 $this->remainderLength -= $readLength;
                 $this->remainderHeaderLength -= $readLength;
@@ -53,19 +78,35 @@ class StreamMessageProtocol
                 break;
             case static::STATE_MESSAGE:
                 $data = $stream->read($this->remainderLength);
+                if (empty($data)) {
+                    $this->onAbort();
+                    break;
+                }
                 $this->messageString .= $data;
                 $this->remainderLength -= strlen($data);
-                if (!is_null($onMessageParty))
-                    call_user_func($onMessageParty, $data, $this->headers, $this->remainderLength);
-                if ($this->remainderLength == 0)
+                if (!is_null($this->partyCallback))
+                    call_user_func($this->partyCallback, $this, $data);
+                if ($this->remainderLength == 0) {
                     $this->state = static::STATE_COMPLETED;
+                    call_user_func($this->messageCallback, $this);
+                }
                 break;
         }
+    }
+
+    public function getRemainderLength(): int
+    {
+        return $this->remainderLength;
     }
 
     public function isCompleted(): bool
     {
         return $this->state === static::STATE_COMPLETED;
+    }
+
+    public function isAborted(): bool
+    {
+        return $this->state === static::STATE_ABORTED;
     }
 
     public function getMessage(): string
@@ -98,5 +139,14 @@ class StreamMessageProtocol
         $headersArray = [];
         parse_str($headers, $headersArray);
         return $headersArray;
+    }
+
+    private function onAbort(): void
+    {
+        $this->state = static::STATE_ABORTED;
+        $this->headers['aborted'] = true;
+        if (!is_null($this->partyCallback))
+            call_user_func($this->partyCallback, $this, '');
+        call_user_func($this->messageCallback, $this);
     }
 }

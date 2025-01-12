@@ -7,9 +7,10 @@ use Ppm\Framework\Stream\Async\StreamReadActionBind;
 use Ppm\Framework\Stream\Contracts\IResourceBase;
 use Ppm\Framework\Stream\Contracts\IStream;
 use Ppm\Framework\Stream\DescriptorStream;
+use Ppm\Framework\Stream\MessageProtocol\StreamMessageProtocol;
+use Ppm\Framework\Stream\MessageProtocol\StreamMessageProtocolWrapper;
 use Ppm\Framework\Stream\Modes;
 use Ppm\Framework\Stream\ResourceStream;
-use Ppm\Framework\Stream\StreamMessageProtocol;
 use Ppm\Framework\System\Proc\CommandLauncher;
 use Ppm\Framework\System\Proc\Descriptors\PipeDescriptor;
 use Ppm\Framework\System\Proc\LaunchedProcess;
@@ -20,6 +21,7 @@ abstract class WorkerBase implements IWorker, IResourceBase
     protected array $partyHandlers;
     protected IStream $input;
     protected IStream $output;
+    protected StreamMessageProtocolWrapper $outputWrapper;
     protected StreamReadActionBind $bind;
     protected StreamMessageProtocol $protocol;
 
@@ -33,10 +35,17 @@ abstract class WorkerBase implements IWorker, IResourceBase
         $this->partyHandlers = [];
         $this->input = $input;
         $this->output = $output;
-        $this->bind = StreamReadActionBind::create($this->input, function (IStream $stream) {
-            $this->onReadyData($stream);
-        });
-        $this->protocol = new StreamMessageProtocol();
+        $this->outputWrapper = StreamMessageProtocolWrapper::wrap($this->output);
+        $this->protocol = new StreamMessageProtocol(
+            function () {
+                $this->callMessageHandlers();
+                $this->protocol->reset();
+            },
+            function (StreamMessageProtocol $protocol, string $party) {
+                $this->onReadyParty($protocol, $party);
+            }
+        );
+        $this->bind = $this->protocol->createBind($this->input);
         $this->workerProcess = $workerProcess;
     }
 
@@ -84,34 +93,19 @@ abstract class WorkerBase implements IWorker, IResourceBase
 
     public function send(string $message, array $headers = []): void
     {
-        $preparedMessage = StreamMessageProtocol::prepareMessage($message, $headers);
-        $totalLength = strlen($preparedMessage);
-        $written = 0;
-        while ($written < $totalLength)
-            $written += $this->output->write(substr($preparedMessage, $written));
+        $this->outputWrapper->send($message, $headers);
     }
 
-    protected function onReadyData(IStream $stream): void
-    {
-        $this->protocol->onReadyData($stream, function (string $message, array $headers, int $remainderLength) {
-            $this->onReadyParty($message, $headers, $remainderLength);
-        });
-        if ($this->protocol->isCompleted()) {
-            $this->callMessageHandlers();
-            $this->protocol->reset();
-        }
-    }
-
-    protected function onReadyParty(string $message, array $headers, int $remainderLength): void
+    protected function onReadyParty(StreamMessageProtocol $protocol, string $party): void
     {
         foreach ($this->partyHandlers as $handler)
-            call_user_func($handler, $message, $headers, $remainderLength);
+            call_user_func($handler, $protocol, $party);
     }
 
     protected function callMessageHandlers(): void
     {
         foreach ($this->handlers as $handler)
-            call_user_func($handler, $this->protocol->getMessage(), $this->protocol->getHeaders());
+            call_user_func($handler, $this->protocol);
     }
 
     public function close(): void

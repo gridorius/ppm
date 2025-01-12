@@ -25,9 +25,9 @@ class ObjectTransferWorker extends WorkerBase
         if ($this->protocol->getHeaders()['type'] == 'serialized') {
             $message = unserialize($this->protocol->getMessage());
             foreach ($this->handlers as $handler)
-                call_user_func($handler, $message, $this->protocol->getHeaders());
+                call_user_func($handler, $this->protocol, $message);
         } else
             foreach ($this->handlers as $handler)
-                call_user_func($handler, $this->protocol->getMessage(), $this->protocol->getHeaders());
+                call_user_func($handler, $this->protocol);
     }
 }

@@ -2,30 +2,32 @@
 
 namespace Ppm\Framework\Network\AsyncEvents;
 
+use Ppm\Framework\Event\EventDispatcher;
 use Ppm\Framework\Network\Socket\Socket;
 use Ppm\Framework\Network\Socket\StreamSocketServer;
 use Ppm\Framework\Stream\Async\AsyncStreamWatcher;
 use Ppm\Framework\Stream\Async\StreamReadActionBind;
+use Ppm\Framework\Stream\Contracts\IStream;
 use Ppm\Framework\Stream\Contracts\IStreamRead;
+use Ppm\Framework\Stream\MessageProtocol\StreamMessageProtocol;
+use Ppm\Framework\Stream\MessageProtocol\StreamMessageProtocolWrapper;
 
 class EventServer extends StreamSocketServer
 {
     private array $listeners;
-    private AsyncStreamWatcher $reader;
 
-    public function __construct(string $host, int $port)
+    public function __construct(string $host, int $port, int $backlog = 100)
     {
-        parent::__construct($host, $port, 100, false);
+        parent::__construct($host, $port, $backlog);
         $this->listeners = [];
-        $this->reader = new AsyncStreamWatcher();
     }
 
     public function listen(): void
     {
+        $watcher = new AsyncStreamWatcher();
         while (true) {
-            $this->acceptConnection(0.00001, [$this, 'onConnect']);
-            $this
-                ->reader
+            $this->iteration();
+            $watcher
                 ->setBindings($this->listeners)
                 ->watch(0, 300);
         }
@@ -33,8 +35,9 @@ class EventServer extends StreamSocketServer
 
     public function emit(string $event): void
     {
+        EventDispatcher::emit(unserialize($event));
         foreach ($this->listeners as $listener)
-            $listener->emit($event);
+            StreamMessageProtocolWrapper::wrap($listener->getStream())->send($event);
     }
 
     public function deleteListener(string $peer): void
@@ -42,15 +45,26 @@ class EventServer extends StreamSocketServer
         unset($this->listeners[$peer]);
     }
 
+    public function getBindings(): array
+    {
+        return $this->listeners;
+    }
+
+    public function iteration(): void
+    {
+        $this->acceptConnection(0.00001, [$this, 'onConnect']);
+    }
+
     public function onConnect(string $peerName, Socket $socket): void
     {
-        $this->listeners[$peerName] = StreamReadActionBind::create($socket, function (IStreamRead $stream) use ($peerName) {
-            $eventData = $stream->readLine();
-            if (empty($eventData)) {
-                $this->deleteListener($peerName);
-                $stream->close();
-            } else
-                $this->emit($eventData);
-        });
+        $protocol = new StreamMessageProtocol(
+            function (StreamMessageProtocol $protocol) use ($peerName) {
+                if ($protocol->isAborted()) {
+                    $this->deleteListener($peerName);
+                } else
+                    $this->emit($protocol->getMessage());
+            }
+        );
+        $this->listeners[$peerName] = $protocol->createBind($socket);
     }
 }
