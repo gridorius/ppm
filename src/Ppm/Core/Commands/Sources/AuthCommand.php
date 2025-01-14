@@ -7,7 +7,7 @@ use Ppm\Packages\PackagesManager;
 
 class AuthCommand extends CommandBase
 {
-    public function execute(array $parameters, array $options): void
+    public function execute(array $parameters, array $options, array $argv): void
     {
         echo 'Password:';
         if (!WIN) {

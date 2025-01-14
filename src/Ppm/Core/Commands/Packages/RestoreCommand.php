@@ -15,7 +15,7 @@ class RestoreCommand extends CommandBase
         return "Restore project dependency";
     }
 
-    public function execute(array $parameters, array $options): void
+    public function execute(array $parameters, array $options, array $argv): void
     {
         $project = $parameters['project'];
         $solution = Solution::getSolutionOrThrow();

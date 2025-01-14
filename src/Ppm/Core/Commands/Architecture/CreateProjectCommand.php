@@ -12,7 +12,7 @@ class CreateProjectCommand extends CommandBase
         return "Create project directory in this solution";
     }
 
-    public function execute(array $parameters, array $options): void
+    public function execute(array $parameters, array $options, array $argv): void
     {
         $solution = Solution::getSolutionOrThrow();
         $name = $parameters['name'];

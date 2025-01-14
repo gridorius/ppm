@@ -12,7 +12,7 @@ class InitializeCommand extends CommandBase
         return "Create solution in current directory";
     }
 
-    public function execute(array $parameters, array $options): void
+    public function execute(array $parameters, array $options, array $argv): void
     {
         $name = $parameters['name'];
         $directory = getcwd() . DIRECTORY_SEPARATOR . $name;

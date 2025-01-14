@@ -12,7 +12,7 @@ class DeleteSourceCommand extends CommandBase
         return "Delete source";
     }
 
-    public function execute(array $parameters, array $options): void
+    public function execute(array $parameters, array $options, array $argv): void
     {
         $packageController = new PackagesManager();
         $packageController->deleteSource($parameters['source']);

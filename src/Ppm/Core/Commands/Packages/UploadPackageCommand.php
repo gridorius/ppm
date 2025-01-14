@@ -13,7 +13,7 @@ class UploadPackageCommand extends CommandBase
         return "Upload package to source";
     }
 
-    public function execute(array $parameters, array $options): void
+    public function execute(array $parameters, array $options, array $argv): void
     {
         $sourcePath = $parameters['source'];
         $name = $parameters['name'];

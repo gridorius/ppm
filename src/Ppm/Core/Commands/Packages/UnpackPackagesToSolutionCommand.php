@@ -12,7 +12,7 @@ class UnpackPackagesToSolutionCommand extends CommandBase
         return "Unpack dependencies to solution directory";
     }
 
-    public function execute(array $parameters, array $options): void
+    public function execute(array $parameters, array $options, array $argv): void
     {
         Solution::getSolutionOrThrow()->unpackPackages();
     }

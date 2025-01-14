@@ -12,7 +12,7 @@ class SourceListCommand extends CommandBase
         return "Show source list";
     }
 
-    public function execute(array $parameters, array $options): void
+    public function execute(array $parameters, array $options, array $argv): void
     {
         $packageController = new PackagesManager();
         $sources = $packageController->getSources();

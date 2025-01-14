@@ -14,7 +14,7 @@ class BuildCommand extends CommandBase
         ]
     ];
 
-    public function execute(array $parameters, array $options): void
+    public function execute(array $parameters, array $options, array $argv): void
     {
         $project = $parameters['project'];
         $solution = Solution::getSolutionOrThrow();

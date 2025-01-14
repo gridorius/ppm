@@ -15,8 +15,8 @@ class CommandRouteCommand extends CommandRouteBase
         $this->handler = $handler;
     }
 
-    protected function execute(array $parameters, array $options): void
+    protected function execute(array $parameters, array $options, array $argv): void
     {
-        call_user_func([$this->handler, 'execute'], $parameters, $options);
+        call_user_func([$this->handler, 'execute'], $parameters, $options, $argv);
     }
 }

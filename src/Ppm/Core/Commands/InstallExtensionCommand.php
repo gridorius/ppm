@@ -7,7 +7,7 @@ use Ppm\Packages\PackagesManager;
 
 class InstallExtensionCommand extends CommandBase
 {
-    public function execute(array $parameters, array $options): void
+    public function execute(array $parameters, array $options, array $argv): void
     {
         $name = $parameters["package"];
         $version = $parameters["version"];

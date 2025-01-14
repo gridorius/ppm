@@ -7,7 +7,7 @@ use Ppm\Packages\PackagesManager;
 
 class UpdateCatalogCommand extends CommandBase
 {
-    public function execute(array $parameters, array $options): void
+    public function execute(array $parameters, array $options, array $argv): void
     {
         $manager = new PackagesManager();
         $manager->getRemoteManager()->updateCatalogs();

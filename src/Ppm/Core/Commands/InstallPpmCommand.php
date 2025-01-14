@@ -13,7 +13,7 @@ class InstallPpmCommand extends CommandBase
         return 'Create link on this project in executable directory';
     }
 
-    public function execute(array $parameters, array $options): void
+    public function execute(array $parameters, array $options, array $argv): void
     {
         $pathToPPM = Path::assemblyCombine('ppm.php');
         if (WIN) {

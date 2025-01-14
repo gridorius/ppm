@@ -6,9 +6,6 @@ use Ppm\Framework\Event\EventDispatcher;
 use Ppm\Framework\Network\Socket\Socket;
 use Ppm\Framework\Network\Socket\StreamSocketServer;
 use Ppm\Framework\Stream\Async\AsyncStreamWatcher;
-use Ppm\Framework\Stream\Async\StreamReadActionBind;
-use Ppm\Framework\Stream\Contracts\IStream;
-use Ppm\Framework\Stream\Contracts\IStreamRead;
 use Ppm\Framework\Stream\MessageProtocol\StreamMessageProtocol;
 use Ppm\Framework\Stream\MessageProtocol\StreamMessageProtocolWrapper;
 

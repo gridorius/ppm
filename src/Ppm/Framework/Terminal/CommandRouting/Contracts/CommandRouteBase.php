@@ -58,7 +58,7 @@ abstract class CommandRouteBase
         if ($this->pattern->isAfter())
             $options = array_merge($options, $this->optionParser->parse($arguments));
 
-        $this->execute($parameters, $options);
+        $this->execute($parameters, $options, $arguments);
     }
 
     private function prepareRequired(array $matches): array
@@ -79,5 +79,5 @@ abstract class CommandRouteBase
             : [];
     }
 
-    abstract protected function execute(array $parameters, array $options): void;
+    abstract protected function execute(array $parameters, array $options, array $argv): void;
 }

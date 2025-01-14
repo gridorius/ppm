@@ -15,7 +15,7 @@ class ExecuteScriptCommand extends CommandBase
         return "Build project and run script";
     }
 
-    public function execute(array $parameters, array $options): void
+    public function execute(array $parameters, array $options, array $argv): void
     {
         $scriptName = $parameters['script'];
         $solution = Solution::getSolutionOrThrow();
@@ -24,7 +24,7 @@ class ExecuteScriptCommand extends CommandBase
             throw new Exception("Script {$script} not found");
         $directory = $solution->buildProject($script['project']);
         chdir($directory);
-        $command = new CommandConfiguration(...$script['command']);
+        $command = new CommandConfiguration(...$script['command'], ...$argv);
         CommandLauncher::launch($command);
     }
 }

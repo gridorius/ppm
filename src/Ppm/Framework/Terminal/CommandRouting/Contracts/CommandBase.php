@@ -16,5 +16,5 @@ abstract class CommandBase
         return '';
     }
 
-    abstract public function execute(array $parameters, array $options): void;
+    abstract public function execute(array $parameters, array $options, array $argv): void;
 }
