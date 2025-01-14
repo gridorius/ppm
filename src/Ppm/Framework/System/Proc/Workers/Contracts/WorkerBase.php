@@ -52,10 +52,10 @@ abstract class WorkerBase implements IWorker, IResourceBase
     /**
      * Запускает воркер
      */
-    public static function create(): static
+    public static function create(...$arguments): static
     {
         $process = CommandLauncher::launch(
-            CurrentAssembly::getAssembly()->createCommand([static::class, 'bindWorker'])
+            CurrentAssembly::getAssembly()->createCommand([static::class, 'bindWorker'], ...array_map('serialize', $arguments))
                 ->setDescriptor(3, new PipeDescriptor('w'))
         );
 
@@ -65,13 +65,14 @@ abstract class WorkerBase implements IWorker, IResourceBase
     /**
      * Создает зеркало воркера в порожденном процессе
      */
-    public static function bindWorker(): void
+    public static function bindWorker($argv): void
     {
         $worker = new static(
             new ResourceStream(STDIN),
             new DescriptorStream(3, Modes::MODE_WRITE)
         );
-        $worker->init();
+        array_shift($argv);
+        $worker->init(...array_map('unserialize', $argv));
     }
 
     public function getBind(): StreamReadActionBind
@@ -120,5 +121,5 @@ abstract class WorkerBase implements IWorker, IResourceBase
     /**
      * Инициализация воркера в порожденном процессе
      */
-    abstract public function init(): void;
+    abstract public function init(...$arguments): void;
 }

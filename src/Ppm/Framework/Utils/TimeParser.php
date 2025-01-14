@@ -47,6 +47,23 @@ class TimeParser
 
         return $time;
     }
+
+    public static function fromSeconds(int $time): string
+    {
+        $reversed = array_reverse(static::TIME_ASSOCIATIONS, true);
+        $remainder = $time;
+        $chains = [];
+        foreach ($reversed as $key => $value) {
+            $amount = floor($remainder / $value);
+            if ($amount >= 1) {
+                $chains[] = floor($amount) . $key;
+                $remainder -= $value * $amount;
+            }
+            if ($remainder == 0)
+                break;
+        }
+        return implode('', $chains);
+    }
     
     public static function createTimestamp(string $timeString): int
     {

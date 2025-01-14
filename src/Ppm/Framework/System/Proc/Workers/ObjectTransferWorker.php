@@ -15,7 +15,7 @@ class ObjectTransferWorker extends WorkerBase
         parent::send(serialize($data), $headers);
     }
 
-    public function init(): void
+    public function init(...$arguments): void
     {
 
     }

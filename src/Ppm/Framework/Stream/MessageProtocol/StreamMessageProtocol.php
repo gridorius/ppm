@@ -131,14 +131,12 @@ class StreamMessageProtocol
 
     protected static function encodeHeaders(array $headers): string
     {
-        return http_build_query($headers);
+        return serialize($headers);
     }
 
     protected static function decodeHeaders(string $headers): array
     {
-        $headersArray = [];
-        parse_str($headers, $headersArray);
-        return $headersArray;
+        return unserialize($headers);
     }
 
     private function onAbort(): void
