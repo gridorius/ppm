@@ -3,9 +3,9 @@
 namespace Ppm\Framework\System\Proc\Workers;
 
 use ArrayAccess;
-use Ppm\Framework\System\Proc\Workers\Contracts\IWorker;
+use Ppm\Framework\Stream\MessageProtocol\IMessageTransportProtocol;
 
-class WorkerCollection implements IWorker, ArrayAccess
+class WorkerCollection implements ArrayAccess
 {
     protected $workers = [];
 
@@ -14,7 +14,7 @@ class WorkerCollection implements IWorker, ArrayAccess
         $this->workers = $workers;
     }
 
-    public function add(IWorker $worker): static
+    public function add(IMessageTransportProtocol $worker): static
     {
         $this->workers[] = $worker;
         return $this;

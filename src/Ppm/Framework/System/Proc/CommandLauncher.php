@@ -6,6 +6,12 @@ use Exception;
 
 class CommandLauncher
 {
+    /**
+     * @var LaunchedProcess[]
+     */
+    private static array $processes = [];
+    private static bool $shutdownRegistered = false;
+
     public static function launch(CommandConfiguration $configuration): LaunchedProcess
     {
         $pipes = [];
@@ -16,6 +22,24 @@ class CommandLauncher
         if (!is_resource($processResource))
             throw new Exception("Process opening failed");
 
-        return new LaunchedProcess($processResource, $pipes, $configuration);
+        $process = new LaunchedProcess($processResource, $pipes, $configuration);
+        static::$processes[] = $process;
+        if (!static::$shutdownRegistered)
+            static::registerShutdown();
+
+        return $process;
+    }
+
+    public static function ps(): array
+    {
+        return static::$processes;
+    }
+
+    private static function registerShutdown(): void
+    {
+        register_shutdown_function(function () {
+            foreach (static::ps() as $process)
+                $process->close();
+        });
     }
 }

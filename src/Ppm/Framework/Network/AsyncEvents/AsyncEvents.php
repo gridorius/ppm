@@ -6,8 +6,8 @@ use Ppm\Framework\Event\EventDispatcher;
 use Ppm\Framework\Event\IEvent;
 use Ppm\Framework\Network\Socket\SocketHostPortClient;
 use Ppm\Framework\Stream\Async\StreamReadActionBind;
-use Ppm\Framework\Stream\MessageProtocol\StreamMessageProtocol;
-use Ppm\Framework\Stream\MessageProtocol\StreamMessageProtocolWrapper;
+use Ppm\Framework\Stream\MessageProtocol\MessageReceiver;
+use Ppm\Framework\Stream\MessageProtocol\MessageSender;
 use Ppm\Framework\Stream\ResourceStream;
 
 class AsyncEvents
@@ -20,15 +20,15 @@ class AsyncEvents
     {
         static::$eventStream = new SocketHostPortClient($host, $port);
         static::$eventStream->unblock();
-        $protocol = new StreamMessageProtocol(function (StreamMessageProtocol $protocol) {
-            if ($protocol->isAborted()) {
+        $receiver = new MessageReceiver(function (MessageReceiver $receiver) {
+            if ($receiver->isAborted()) {
                 throw new \Exception('Event stream is aborted');
             } else {
-                $event = unserialize($protocol->getMessage());
+                $event = unserialize($receiver->getMessage());
                 EventDispatcher::emit($event);
             }
         });
-        static::$bind = $protocol->createBind(static::$eventStream);
+        static::$bind = $receiver->createBind(static::$eventStream);
     }
 
     public static function getBind(): StreamReadActionBind
@@ -41,7 +41,7 @@ class AsyncEvents
     public static function emit(IEvent $event): void
     {
         if (static::isConnected())
-            StreamMessageProtocolWrapper::wrap(static::$eventStream)->send(serialize($event));
+            MessageSender::wrap(static::$eventStream)->send(serialize($event));
     }
 
     public static function isConnected(): bool

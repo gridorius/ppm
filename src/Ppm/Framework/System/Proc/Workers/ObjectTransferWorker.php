@@ -15,19 +15,19 @@ class ObjectTransferWorker extends WorkerBase
         parent::send(serialize($data), $headers);
     }
 
-    public function init(...$arguments): void
+    public function init(array $arguments): void
     {
 
     }
 
     protected function callMessageHandlers(): void
     {
-        if ($this->protocol->getHeaders()['type'] == 'serialized') {
-            $message = unserialize($this->protocol->getMessage());
+        if ($this->receiver->getHeaders()['type'] == 'serialized') {
+            $message = unserialize($this->receiver->getMessage());
             foreach ($this->handlers as $handler)
-                call_user_func($handler, $this->protocol, $message);
+                call_user_func($handler, $this->receiver, $message);
         } else
             foreach ($this->handlers as $handler)
-                call_user_func($handler, $this->protocol);
+                call_user_func($handler, $this->receiver);
     }
 }

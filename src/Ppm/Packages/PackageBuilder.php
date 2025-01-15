@@ -28,7 +28,7 @@ class PackageBuilder
     {
         $mainConfiguration = new Configuration($pathToProjectFile);
         $configurationCollection = $mainConfiguration->buildConfigurationCollection();
-        $tmpDirectory = $this->tmp->create();
+        $tmpDirectory = $this->tmp->createTmpDirectory();
         $this->buildManager->buildFromConfigurationCollection($configurationCollection, $tmpDirectory->getPath());
         $metadata = $this->createMetadata($mainConfiguration, $tmpDirectory);
         MetadataUtil::createMetadataFile($tmpDirectory->getPath(), $metadata);

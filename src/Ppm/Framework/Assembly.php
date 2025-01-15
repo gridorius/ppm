@@ -5,6 +5,7 @@ namespace Ppm\Framework;
 use Exception;
 use Phar;
 use Ppm\Framework\Filesystem\Directory;
+use Ppm\Framework\Filesystem\Path;
 use Ppm\Framework\Resources\Resources;
 use Ppm\Framework\Storage\MemoryStorage;
 use Ppm\Framework\Storage\StorageArray;
@@ -97,15 +98,14 @@ class Assembly
             Resources::addResource($name, $path);
     }
 
-    private function includeDependencies(array $dependencies, string $directory): void
+    public function includeProjectLibrary(string $name): static
     {
-        foreach ($dependencies as $name)
-            if (!$this->assemblies->has($name))
-                try {
-                    $this->includePhar($directory . DIRECTORY_SEPARATOR . $name . '.phar');
-                } catch (Exception $exception) {
-                    echo $exception->getMessage();
-                }
+        $path = Path::assemblyCombine($name . '.phar');
+        if (!file_exists($path))
+            throw new Exception('File "' . $path . '" does not exist.');
+
+        require $path;
+        return $this;
     }
 
     public function includePhar(string $path): void
@@ -198,5 +198,16 @@ class Assembly
     public function createCommand(callable $entrypoint, ...$arguments): PhpRuntimeCommandConfiguration
     {
         return static::createCommandByProject($this->entrypointProject, $entrypoint, ...$arguments);
+    }
+
+    private function includeDependencies(array $dependencies, string $directory): void
+    {
+        foreach ($dependencies as $name)
+            if (!$this->assemblies->has($name))
+                try {
+                    $this->includePhar($directory . DIRECTORY_SEPARATOR . $name . '.phar');
+                } catch (Exception $exception) {
+                    echo $exception->getMessage();
+                }
     }
 }

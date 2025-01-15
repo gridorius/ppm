@@ -3,13 +3,13 @@
 namespace Ppm\Framework\System\Proc\Workers;
 
 use Ppm\Framework\Stream\Async\AsyncStreamWatcher;
-use Ppm\Framework\Stream\MessageProtocol\StreamMessageProtocol;
+use Ppm\Framework\Stream\MessageProtocol\MessageReceiver;
 
 class CommandWorker extends ObjectTransferWorker
 {
-    public function init(...$arguments): void
+    public function init(array $arguments): void
     {
-        $this->onMessage(function (StreamMessageProtocol $protocol, array $command) {
+        $this->onMessage(function (MessageReceiver $protocol, array $command) {
             call_user_func_array($command, $protocol->getHeaders()['args']);
         });
 

@@ -6,38 +6,28 @@ use Closure;
 use Ppm\Framework\Stream\Async\StreamReadActionBind;
 use Ppm\Framework\Stream\Contracts\IStream;
 
-class StreamMessageProtocol
+class MessageReceiver
 {
     const STATE_LENGTH = 0;
     const STATE_HEADERS = 1;
     const STATE_MESSAGE = 2;
     const STATE_COMPLETED = 3;
     const STATE_ABORTED = 4;
-    const LENGTH_HEADERS_SIZE = 6;
-    const LENGTH_MESSAGE_SIZE = 16;
     private string $headersString = '';
     private string $messageString = '';
     private array $headers = [];
     private int $remainderHeaderLength = 0;
     private int $remainderLength = 0;
     private int $state = self::STATE_LENGTH;
-
     private Closure $messageCallback;
     private ?Closure $partyCallback;
+    private string $converterClass;
 
-    public function __construct(callable $messageCallback, callable $partyCallback = null)
+    public function __construct(callable $messageCallback, callable $partyCallback = null, string $converterClass = MessageConverter::class)
     {
         $this->messageCallback = Closure::fromCallable($messageCallback);
         $this->partyCallback = is_null($partyCallback) ? null : Closure::fromCallable($partyCallback);
-    }
-
-
-    public static function prepareMessage(string $message, array $headers = []): string
-    {
-        $headersString = static::encodeHeaders($headers);
-        $headerLength = str_pad(strlen($headersString), static::LENGTH_HEADERS_SIZE, ' ', STR_PAD_LEFT);
-        $messageLength = str_pad(strlen($message), static::LENGTH_MESSAGE_SIZE, ' ', STR_PAD_LEFT);
-        return $headerLength . $messageLength . $headersString . $message;
+        $this->converterClass = $converterClass;
     }
 
     public function createBind(IStream $stream): StreamReadActionBind
@@ -52,13 +42,15 @@ class StreamMessageProtocol
     {
         switch ($this->state) {
             case static::STATE_LENGTH:
-                $lengthData = $stream->read(static::LENGTH_HEADERS_SIZE + static::LENGTH_MESSAGE_SIZE);
+                $lengthData = $stream->read($this->converterClass::LENGTH_HEADERS_SIZE + $this->converterClass::LENGTH_MESSAGE_SIZE);
                 if (empty($lengthData)) {
                     $this->onAbort();
                     break;
                 }
-                $this->remainderHeaderLength = (int)substr($lengthData, 0, static::LENGTH_HEADERS_SIZE);
-                $this->remainderLength = (int)substr($lengthData, static::LENGTH_HEADERS_SIZE, static::LENGTH_MESSAGE_SIZE) + $this->remainderHeaderLength;
+                $this->remainderHeaderLength = (int)substr($lengthData, 0, $this->converterClass::LENGTH_HEADERS_SIZE);
+                $this->remainderLength = (int)substr($lengthData,
+                        $this->converterClass::LENGTH_HEADERS_SIZE,
+                        $this->converterClass::LENGTH_MESSAGE_SIZE) + $this->remainderHeaderLength;
                 $this->state = $this->remainderHeaderLength > 0 ? static::STATE_HEADERS : static::STATE_MESSAGE;
                 break;
             case static::STATE_HEADERS:
@@ -72,7 +64,7 @@ class StreamMessageProtocol
                 $this->remainderHeaderLength -= $readLength;
                 $this->headersString .= $headersString;
                 if ($this->remainderHeaderLength == 0) {
-                    $this->headers = static::decodeHeaders($this->headersString);
+                    $this->headers = $this->converterClass::decodeHeaders($this->headersString);
                     $this->state = static::STATE_MESSAGE;
                 }
                 break;
@@ -127,16 +119,6 @@ class StreamMessageProtocol
         $this->headersString = '';
         $this->messageString = '';
         $this->headers = [];
-    }
-
-    protected static function encodeHeaders(array $headers): string
-    {
-        return serialize($headers);
-    }
-
-    protected static function decodeHeaders(string $headers): array
-    {
-        return unserialize($headers);
     }
 
     private function onAbort(): void

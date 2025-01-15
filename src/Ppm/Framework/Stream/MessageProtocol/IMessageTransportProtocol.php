@@ -1,14 +1,17 @@
 <?php
 
-namespace Ppm\Framework\System\Proc\Workers\Contracts;
+namespace Ppm\Framework\Stream\MessageProtocol;
+
 
 use Ppm\Framework\Stream\Async\StreamReadActionBind;
 
-interface IWorker
+interface IMessageTransportProtocol
 {
     public function onMessage(callable $callable): static;
 
     public function onMessageParty(callable $callable): static;
 
     public function send(string $message, array $headers = []): void;
+
+    public function getBind(): StreamReadActionBind;
 }

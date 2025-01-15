@@ -4,23 +4,25 @@ namespace Ppm\Framework\Stream\MessageProtocol;
 
 use Ppm\Framework\Stream\Contracts\IStream;
 
-class StreamMessageProtocolWrapper
+class MessageSender
 {
     private IStream $stream;
+    private string $messageConverter;
 
-    public function __construct(IStream $stream)
+    public function __construct(IStream $stream, string $messageConverter = MessageConverter::class)
     {
         $this->stream = $stream;
+        $this->messageConverter = $messageConverter;
     }
 
-    public static function wrap(IStream $stream): static
+    public static function wrap(IStream $stream, string $messageConverter = MessageConverter::class): static
     {
-        return new static($stream);
+        return new static($stream, $messageConverter);
     }
 
     public function send(string $message, array $headers = []): void
     {
-        $preparedMessage = StreamMessageProtocol::prepareMessage($message, $headers);
+        $preparedMessage = $this->messageConverter::convert($message, $headers);
         $totalLength = strlen($message);
         $written = 0;
         while ($written < $totalLength)

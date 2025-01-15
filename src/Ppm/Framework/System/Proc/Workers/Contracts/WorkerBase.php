@@ -3,49 +3,25 @@
 namespace Ppm\Framework\System\Proc\Workers\Contracts;
 
 use Ppm\Framework\CurrentAssembly;
-use Ppm\Framework\Stream\Async\StreamReadActionBind;
 use Ppm\Framework\Stream\Contracts\IResourceBase;
 use Ppm\Framework\Stream\Contracts\IStream;
 use Ppm\Framework\Stream\DescriptorStream;
-use Ppm\Framework\Stream\MessageProtocol\StreamMessageProtocol;
-use Ppm\Framework\Stream\MessageProtocol\StreamMessageProtocolWrapper;
+use Ppm\Framework\Stream\MessageProtocol\MessageTransportProtocol;
 use Ppm\Framework\Stream\Modes;
 use Ppm\Framework\Stream\ResourceStream;
 use Ppm\Framework\System\Proc\CommandLauncher;
 use Ppm\Framework\System\Proc\Descriptors\PipeDescriptor;
 use Ppm\Framework\System\Proc\LaunchedProcess;
 
-abstract class WorkerBase implements IWorker, IResourceBase
+abstract class WorkerBase extends MessageTransportProtocol implements IResourceBase
 {
-    protected array $handlers;
-    protected array $partyHandlers;
-    protected IStream $input;
-    protected IStream $output;
-    protected StreamMessageProtocolWrapper $outputWrapper;
-    protected StreamReadActionBind $bind;
-    protected StreamMessageProtocol $protocol;
-
     protected ?LaunchedProcess $workerProcess;
 
     public function __construct(IStream $input, IStream $output, LaunchedProcess $workerProcess = null)
     {
         $input->unblock();
         $output->unblock();
-        $this->handlers = [];
-        $this->partyHandlers = [];
-        $this->input = $input;
-        $this->output = $output;
-        $this->outputWrapper = StreamMessageProtocolWrapper::wrap($this->output);
-        $this->protocol = new StreamMessageProtocol(
-            function () {
-                $this->callMessageHandlers();
-                $this->protocol->reset();
-            },
-            function (StreamMessageProtocol $protocol, string $party) {
-                $this->onReadyParty($protocol, $party);
-            }
-        );
-        $this->bind = $this->protocol->createBind($this->input);
+        parent::__construct($input, $output);
         $this->workerProcess = $workerProcess;
     }
 
@@ -72,41 +48,7 @@ abstract class WorkerBase implements IWorker, IResourceBase
             new DescriptorStream(3, Modes::MODE_WRITE)
         );
         array_shift($argv);
-        $worker->init(...array_map('unserialize', $argv));
-    }
-
-    public function getBind(): StreamReadActionBind
-    {
-        return $this->bind;
-    }
-
-    public function onMessage(callable $callable): static
-    {
-        $this->handlers[] = $callable;
-        return $this;
-    }
-
-    public function onMessageParty(callable $callable): static
-    {
-        $this->partyHandlers[] = $callable;
-        return $this;
-    }
-
-    public function send(string $message, array $headers = []): void
-    {
-        $this->outputWrapper->send($message, $headers);
-    }
-
-    protected function onReadyParty(StreamMessageProtocol $protocol, string $party): void
-    {
-        foreach ($this->partyHandlers as $handler)
-            call_user_func($handler, $protocol, $party);
-    }
-
-    protected function callMessageHandlers(): void
-    {
-        foreach ($this->handlers as $handler)
-            call_user_func($handler, $this->protocol);
+        $worker->init(array_map('unserialize', $argv));
     }
 
     public function close(): void
@@ -121,5 +63,5 @@ abstract class WorkerBase implements IWorker, IResourceBase
     /**
      * Инициализация воркера в порожденном процессе
      */
-    abstract public function init(...$arguments): void;
+    abstract public function init(array $arguments): void;
 }

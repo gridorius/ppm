@@ -6,8 +6,8 @@ use Ppm\Framework\Event\EventDispatcher;
 use Ppm\Framework\Network\Socket\Socket;
 use Ppm\Framework\Network\Socket\StreamSocketServer;
 use Ppm\Framework\Stream\Async\AsyncStreamWatcher;
-use Ppm\Framework\Stream\MessageProtocol\StreamMessageProtocol;
-use Ppm\Framework\Stream\MessageProtocol\StreamMessageProtocolWrapper;
+use Ppm\Framework\Stream\MessageProtocol\MessageReceiver;
+use Ppm\Framework\Stream\MessageProtocol\MessageSender;
 
 class EventServer extends StreamSocketServer
 {
@@ -25,7 +25,7 @@ class EventServer extends StreamSocketServer
         while (true) {
             $this->iteration();
             $watcher
-                ->setBindings($this->listeners)
+                ->setBindings($this->getBindings())
                 ->watch(0, 300);
         }
     }
@@ -34,7 +34,7 @@ class EventServer extends StreamSocketServer
     {
         EventDispatcher::emit(unserialize($event));
         foreach ($this->listeners as $listener)
-            StreamMessageProtocolWrapper::wrap($listener->getStream())->send($event);
+            MessageSender::wrap($listener->getStream())->send($event);
     }
 
     public function deleteListener(string $peer): void
@@ -54,14 +54,14 @@ class EventServer extends StreamSocketServer
 
     public function onConnect(string $peerName, Socket $socket): void
     {
-        $protocol = new StreamMessageProtocol(
-            function (StreamMessageProtocol $protocol) use ($peerName) {
-                if ($protocol->isAborted()) {
+        $receiver = new MessageReceiver(
+            function (MessageReceiver $receiver) use ($peerName) {
+                if ($receiver->isAborted()) {
                     $this->deleteListener($peerName);
                 } else
-                    $this->emit($protocol->getMessage());
+                    $this->emit($receiver->getMessage());
             }
         );
-        $this->listeners[$peerName] = $protocol->createBind($socket);
+        $this->listeners[$peerName] = $receiver->createBind($socket);
     }
 }

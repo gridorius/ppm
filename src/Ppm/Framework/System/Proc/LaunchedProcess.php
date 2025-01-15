@@ -14,10 +14,6 @@ class LaunchedProcess extends ProcResource
         parent::__construct($process);
         $this->commandConfiguration = $commandConfiguration;
         $this->pipes = array_map([ResourceStream::class, 'from'], $pipes);
-
-        register_shutdown_function(function () {
-            $this->close();
-        });
     }
 
     public function getPipe(int $index): ?ResourceStream
