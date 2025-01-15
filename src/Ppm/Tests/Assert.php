@@ -127,7 +127,7 @@ class Assert
                 : $fail++;
         }
 
-        return "<s style='blue'>Asserts</s>: {$asserts}\t <s style='green'>Success</s>: {$success}\t <s style='red'>Failure</s>: {$fail}\n";
+        return "<s blue>Asserts</s>: {$asserts}\t <s green>Success</s>: {$success}\t <s red>Failure</s>: {$fail}\n";
     }
 
     public static function isFailed(): bool

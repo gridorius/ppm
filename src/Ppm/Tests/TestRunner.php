@@ -94,9 +94,9 @@ class TestRunner
     {
         $failedResults = Assert::getSourceFailResults($source);
 
-        $resultString = count($failedResults) > 0 ? "<s style='red'>Failure</s>" : "<s style='green'>Success</s>";
+        $resultString = count($failedResults) > 0 ? "<s red>Failure</s>" : "<s green>Success</s>";
         echo ShellStyleParser::style("{$showLine} - {$resultString}\n");
         foreach ($failedResults as $result)
-            echo ShellStyleParser::style("<s style='red'>{$result['message']}</s>\non line: {$result['line']}") . PHP_EOL;
+            echo ShellStyleParser::style("<s red>{$result['message']}</s>\non line: {$result['line']}") . PHP_EOL;
     }
 }

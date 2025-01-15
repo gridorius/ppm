@@ -25,7 +25,7 @@ class CommandsRouter
 
     public function setDescriptionHeader(string $name, string $postfix = ''): void
     {
-        $this->descriptionHeader = ShellStyleParser::style("<s style='b,green'>{$name}</s> <s style='blue'>{$postfix}</s>");
+        $this->descriptionHeader = ShellStyleParser::style("<s b green>{$name}</s> <s blue>{$postfix}</s>");
     }
 
     public function showDescription(): void

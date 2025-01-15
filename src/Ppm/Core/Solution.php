@@ -54,7 +54,6 @@ class Solution
             foreach (ConfigurationCollection::from($this->getProjectPath($name))->getPackages() as $packageName => $version)
                 $packages[$packageName] = $version;
 
-
         $this->getPackagesDirectory()->clear();
         $packages = array_unique($packages);
         $packagesDirectory = $this->getPackagesDirectory();

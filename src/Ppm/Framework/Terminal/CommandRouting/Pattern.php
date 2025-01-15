@@ -76,7 +76,7 @@ class Pattern
         $command = trim($this->command);
         $args = trim($this->args);
         return ShellStyleParser::style(
-            "    <s style='b,green'>{$command}</s> <s style='blue'>{$args}</s>"
+            "    <s b green>{$command}</s> <s blue>{$args}</s>"
         );
     }
 
