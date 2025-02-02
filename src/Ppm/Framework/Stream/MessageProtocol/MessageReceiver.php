@@ -111,6 +111,11 @@ class MessageReceiver
         return $this->headers;
     }
 
+    public function getHeader(string $name): mixed
+    {
+        return $this->headers[$name] ?? null;
+    }
+
     public function reset(): void
     {
         $this->state = static::STATE_LENGTH;

@@ -23,9 +23,14 @@ class MessageSender
     public function send(string $message, array $headers = []): void
     {
         $preparedMessage = $this->messageConverter::convert($message, $headers);
-        $totalLength = strlen($message);
+        $totalLength = strlen($preparedMessage);
         $written = 0;
         while ($written < $totalLength)
             $written += $this->stream->write(substr($preparedMessage, $written));
+    }
+
+    public function sendHeaders(array $headers): void
+    {
+        $this->send('', $headers);
     }
 }

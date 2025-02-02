@@ -5,6 +5,8 @@ namespace Ppm\Framework\Network\Client;
 use Closure;
 use Ppm\Framework\Stream\Async\AsyncStreamWatcher;
 use Ppm\Framework\Stream\Async\IBindable;
+use Ppm\Framework\Stream\Async\MainCycle;
+use Ppm\Framework\Stream\Async\Promise;
 use Ppm\Framework\Stream\Async\StreamReadActionBind;
 use Ppm\Framework\Stream\Contracts\IStream;
 
@@ -15,6 +17,7 @@ class HttpRequestAction implements IBindable
     private ?Closure $downloadProgressHandler;
     private HttpRequest $request;
     private ResponseDataParser $receiver;
+    private StreamReadActionBind $bind;
 
     public function __construct(HttpRequest $request, callable $uploadProgressHandler = null)
     {
@@ -45,9 +48,10 @@ class HttpRequestAction implements IBindable
     {
         $this->request->setUrl($location);
         $this->send();
+        $this->bind->setStream($this->client);
     }
 
-    public function waitResponse(callable $downloadProgressHandler = null, bool $followLocation = true): HttpResponse
+    public function wait(callable $downloadProgressHandler = null, bool $followLocation = true): HttpResponse
     {
         $this->downloadProgressHandler = $downloadProgressHandler;
         $this->receiver = new ResponseDataParser($downloadProgressHandler);
@@ -56,6 +60,24 @@ class HttpRequestAction implements IBindable
             $parallel->watch();
         }
         return $this->receiver->getResponse();
+    }
+
+    public function waitAsync(callable $downloadProgressHandler = null): Promise
+    {
+        $this->downloadProgressHandler = $downloadProgressHandler;
+        $this->receiver = new ResponseDataParser($downloadProgressHandler);
+
+        return new Promise(function ($resolve) {
+            MainCycle::getWatcher()
+                ->addBinding($this->bind = StreamReadActionBind::create($this->client,
+                    function (IStream $stream, StreamReadActionBind $bind) use ($resolve) {
+                        $this->onReadyContent($stream);
+                        if ($this->receiver->isCompleted()) {
+                            $resolve($this->receiver->getResponse());
+                            $bind->disable();
+                        }
+                    }));
+        });
     }
 
     public function creteBind(callable $downloadProgressHandler = null): StreamReadActionBind

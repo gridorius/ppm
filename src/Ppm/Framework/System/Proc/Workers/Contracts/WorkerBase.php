@@ -55,6 +55,7 @@ abstract class WorkerBase extends MessageTransportProtocol implements IResourceB
     {
         if (!is_null($this->workerProcess)) {
             $this->workerProcess->close();
+            $this->getBind()->disable();
         } else {
             exit();
         }

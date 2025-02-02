@@ -9,7 +9,7 @@ class ObjectTransferWorker extends WorkerBase
     public function sendData($data, array $headers = []): void
     {
         $headers = [
-            'type' => 'serialized',
+            '__type' => 'serialized',
             ...$headers
         ];
         parent::send(serialize($data), $headers);
@@ -22,7 +22,7 @@ class ObjectTransferWorker extends WorkerBase
 
     protected function callMessageHandlers(): void
     {
-        if ($this->receiver->getHeaders()['type'] == 'serialized') {
+        if ($this->receiver->getHeaders()['__type'] == 'serialized') {
             $message = unserialize($this->receiver->getMessage());
             foreach ($this->handlers as $handler)
                 call_user_func($handler, $this->receiver, $message);

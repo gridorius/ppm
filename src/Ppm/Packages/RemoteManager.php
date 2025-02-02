@@ -37,7 +37,7 @@ class RemoteManager
                 ->setHeaders($source->makeAuthHeaders())
                 ->getAction()
                 ->send()
-                ->waitResponse();
+                ->wait();
 
             $response
                 ->awaitCode(200, function (HttpResponse $response) use ($source) {
@@ -84,7 +84,7 @@ class RemoteManager
             ->send(function ($total, $uploaded) {
                 $percent = number_format(($uploaded / $total) * 100, 0);
                 echo "uploading - {$percent}%\r";
-            })->waitResponse();
+            })->wait();
         echo "\n";
 
         $response
@@ -103,7 +103,7 @@ class RemoteManager
             ->setHeaders($source->makeAuthHeaders())
             ->getAction()
             ->send()
-            ->waitResponse(function ($total, $downloaded) {
+            ->wait(function ($total, $downloaded) {
                 $percent = number_format(($downloaded / $total) * 100, 0);
                 echo "Downloading - {$percent}%\r";
             });

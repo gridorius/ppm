@@ -48,6 +48,11 @@ class MessageTransportProtocol implements IMessageTransportProtocol
         $this->sender->send($message, $headers);
     }
 
+    public function sendHeaders(array $headers): void
+    {
+        $this->sender->sendHeaders($headers);
+    }
+
     protected function onReadyParty(MessageReceiver $receiver, string $party): void
     {
         foreach ($this->partyHandlers as $handler)

@@ -109,7 +109,7 @@ class Sources implements Iterator, Countable
             ]))
             ->getAction()
             ->send()
-            ->waitResponse();
+            ->wait();
 
         $response
             ->awaitCode(200, function (HttpResponse $response) use ($source) {

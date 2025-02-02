@@ -8,7 +8,6 @@ class AsyncStreamWatcher
      * @var StreamReadActionBind[]
      */
     protected array $bindings;
-
     private bool $running;
 
     public function __construct(array $bindings = [])
@@ -36,6 +35,9 @@ class AsyncStreamWatcher
 
     public function watch(int $seconds = 1, int $microseconds = 0): void
     {
+        $this->bindings = array_filter($this->bindings, function ($binding) {
+            return $binding->isActive();
+        });
         SelectUtils::callBindings($this->bindings, $seconds, $microseconds);
     }
 
@@ -48,6 +50,11 @@ class AsyncStreamWatcher
     public function stop(): void
     {
         $this->running = false;
+    }
+
+    public function isEmpty(): bool
+    {
+        return empty($this->bindings);
     }
 
     public function clear(): static

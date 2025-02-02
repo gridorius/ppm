@@ -2,6 +2,7 @@
 
 namespace Ppm\Framework\Network;
 
+use Ppm\Framework\Stream\Async\StreamReadActionBind;
 use Ppm\Framework\Stream\Contracts\IStreamRead;
 
 abstract class HttpParserBase

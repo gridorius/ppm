@@ -4,7 +4,7 @@ namespace Ppm\Framework\Stream;
 
 class MemoryStream extends ResourceStream
 {
-    public function __construct(string $mode)
+    public function __construct(string $mode = 'r+')
     {
         parent::__construct(fopen('php://memory', $mode));
     }

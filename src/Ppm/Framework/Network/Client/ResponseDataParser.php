@@ -61,6 +61,11 @@ class ResponseDataParser extends HttpParserBase implements IBindable
             : static::STAGE_BODY;
     }
 
+    public function onReadyContent(IStreamRead $stream): void
+    {
+        parent::onReadyContent($stream);
+    }
+
     protected function handleBody(IStreamRead $stream): void
     {
         if ($stream->eof()) {
