@@ -3,8 +3,10 @@
 namespace Ppm\Framework\Stream;
 
 use Exception;
+use Ppm\Framework\Stream\Async\SelectUtils;
 use Ppm\Framework\Stream\Contracts\IStream;
 use Ppm\Framework\Stream\Contracts\IStreamWrite;
+use Ppm\Framework\Stream\Contracts\PollType;
 use Ppm\Framework\Stream\Contracts\StreamBase;
 
 class ResourceStream extends StreamBase
@@ -117,6 +119,20 @@ class ResourceStream extends StreamBase
     {
         if (fseek($this->resource, $offset, $whence) == -1)
             throw new Exception("Unable to seek");
+    }
+
+    public function poll(int $microseconds = 0, PollType $pollType = PollType::Read): bool
+    {
+        $read = $write = $except = null;
+        switch ($pollType) {
+            case PollType::Read:
+                $read = [$this->getResource()];
+                break;
+            case PollType::Write:
+                $write = [$this->getResource()];
+                break;
+        }
+        return stream_select($read, $write, $except, 0, $microseconds) > 0;
     }
 
     public function close(): void

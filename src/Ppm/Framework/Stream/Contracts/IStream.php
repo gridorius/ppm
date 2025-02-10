@@ -14,5 +14,9 @@ interface IStream extends IStreamRead, IStreamWrite, IResourceBase
 
     public function unblock(): void;
 
+    public function block(): void;
+
     public function copyToStream(IStream $stream, int $length = null, int $offset = 0): int;
+
+    public function poll(int $microseconds = 0, PollType $pollType = PollType::Read): bool;
 }

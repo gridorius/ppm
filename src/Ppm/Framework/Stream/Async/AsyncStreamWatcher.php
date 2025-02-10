@@ -12,8 +12,9 @@ class AsyncStreamWatcher
 
     public function __construct(array $bindings = [])
     {
-        $this->bindings = $bindings;
+        $this->bindings = [];
         $this->running = true;
+        $this->addBindings($bindings);
     }
 
     public static function single(StreamReadActionBind $bind): static
@@ -23,13 +24,23 @@ class AsyncStreamWatcher
 
     public function addBinding(StreamReadActionBind $binding): static
     {
-        $this->bindings[] = $binding;
+        $id = spl_object_id($binding);
+        if (!key_exists($id, $this->bindings))
+            $this->bindings[$id] = $binding;
+        return $this;
+    }
+
+    public function addBindings(array $bindings): static
+    {
+        foreach ($bindings as $binding)
+            $this->addBinding($binding);
         return $this;
     }
 
     public function setBindings(array $bindings): static
     {
-        $this->bindings = $bindings;
+        $this->bindings = [];
+        $this->addBindings($bindings);
         return $this;
     }
 

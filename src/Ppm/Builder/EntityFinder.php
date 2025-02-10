@@ -40,6 +40,7 @@ class EntityFinder
                     case T_CLASS:
                     case T_TRAIT:
                     case T_INTERFACE:
+                    case T_ENUM:
                         if (!$doubleColon)
                             $state = 'entity';
                         break;

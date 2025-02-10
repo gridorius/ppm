@@ -25,6 +25,11 @@ abstract class WorkerBase extends MessageTransportProtocol implements IResourceB
         $this->workerProcess = $workerProcess;
     }
 
+    public function getProcess(): LaunchedProcess
+    {
+        return $this->workerProcess;
+    }
+
     /**
      * Запускает воркер
      */

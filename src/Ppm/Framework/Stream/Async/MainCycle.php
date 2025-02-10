@@ -10,6 +10,7 @@ class MainCycle
      */
     protected static array $queue = [];
     private static bool $active = true;
+    private static int $sleepingTime = 1000;
 
     public static function getWatcher(): AsyncStreamWatcher
     {
@@ -35,7 +36,13 @@ class MainCycle
                 }
             }
             static::getWatcher()->watch($seconds, $microseconds);
+            usleep(static::$sleepingTime);
         }
+    }
+
+    public static function setSleepingTime(int $microseconds): void
+    {
+        static::$sleepingTime = $microseconds;
     }
 
     public static function shutdown(): void
