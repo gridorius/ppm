@@ -25,17 +25,16 @@ class MainCycle
         static::$queue[] = $action;
     }
 
-    public static function run(int $seconds, int $microseconds): void
+    public static function run(int $microseconds): void
     {
         while (static::$active) {
             foreach (static::$queue as $key => $task) {
-                if ($task->isRunning()) {
-                    $task->run();
-                    if (!$task->isEveryTime())
-                        unset(static::$queue[$key]);
-                }
+                if ($task->isRunning())
+                    $task->call();
+                if (!$task->isEveryTime() || !$task->isRunning())
+                    unset(static::$queue[$key]);
             }
-            static::getWatcher()->watch($seconds, $microseconds);
+            static::getWatcher()->watch($microseconds);
             usleep(static::$sleepingTime);
         }
     }

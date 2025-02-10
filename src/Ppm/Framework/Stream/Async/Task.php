@@ -34,6 +34,11 @@ class Task
 
     public function run(): void
     {
+        MainCycle::addTask($this);
+    }
+
+    public function call(): void
+    {
         call_user_func($this->action, $this);
     }
 }

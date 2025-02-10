@@ -44,18 +44,18 @@ class AsyncStreamWatcher
         return $this;
     }
 
-    public function watch(int $seconds = 1, int $microseconds = 0): void
+    public function watch( int $microseconds = 0): void
     {
         $this->bindings = array_filter($this->bindings, function ($binding) {
             return $binding->isActive();
         });
-        SelectUtils::callBindings($this->bindings, $seconds, $microseconds);
+        SelectUtils::callBindings($this->bindings, $microseconds);
     }
 
-    public function start(int $seconds = 1, int $microseconds = 0): void
+    public function start(int $microseconds = 0): void
     {
         while ($this->running)
-            $this->watch($seconds, $microseconds);
+            $this->watch($microseconds);
     }
 
     public function stop(): void
