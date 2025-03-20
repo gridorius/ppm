@@ -8,9 +8,9 @@ class Segment
 {
     private SysvSharedMemory $memory;
 
-    public function __construct(SysvSharedMemory $memory)
+    public function __construct(string $key, $permissions = 0655, int $size = null)
     {
-        $this->memory = $memory;
+        $this->memory = shm_attach(crc32($key), $size, $permissions);
     }
 
     public function put(string $key, $value): bool
