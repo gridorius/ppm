@@ -9,6 +9,11 @@ use RecursiveIteratorIterator;
 
 class PathUtils
 {
+    /**
+     * Возвращает массив путей файлов внутри директории и вложенных директорий
+     * @param string $directory путь до директории
+     * @return array массив путей файлов
+     */
     public static function scanDirectory(string $directory): array
     {
         $dirIterator = new RecursiveDirectoryIterator(
@@ -25,6 +30,12 @@ class PathUtils
         return $files;
     }
 
+    /**
+     * Формирует полный путь из относительного
+     * @param string $current текущая директория
+     * @param string $additional относительный путь
+     * @return string
+     */
     public static function resolveRelativePath(string $current, string $additional): string
     {
         if (str_starts_with($additional, '/') || preg_match("/^[a-zA-Z]:/", $additional))
