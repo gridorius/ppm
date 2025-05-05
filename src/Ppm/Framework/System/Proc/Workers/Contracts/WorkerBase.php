@@ -17,7 +17,7 @@ abstract class WorkerBase extends MessageTransportProtocol implements IResourceB
 {
     protected ?LaunchedProcess $workerProcess;
 
-    public function __construct(IStream $input, IStream $output, LaunchedProcess $workerProcess = null)
+    public function __construct(IStream $input, IStream $output, ?LaunchedProcess $workerProcess = null)
     {
         $input->unblock();
         $output->unblock();

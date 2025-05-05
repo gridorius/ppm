@@ -12,7 +12,7 @@ class CommandWorker extends ObjectTransferWorker
 {
     private array $promiseHandlers = [];
 
-    public function __construct(IStream $input, IStream $output, LaunchedProcess $workerProcess = null)
+    public function __construct(IStream $input, IStream $output, ?LaunchedProcess $workerProcess = null)
     {
         parent::__construct($input, $output, $workerProcess);
         $this->onMessage(function (MessageReceiver $protocol, $result) {

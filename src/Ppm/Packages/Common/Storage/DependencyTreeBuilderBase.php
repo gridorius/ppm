@@ -6,7 +6,7 @@ abstract class DependencyTreeBuilderBase
 {
     protected PackageStorageBase $storage;
 
-    public function buildPackagesTree(array $packages, DependencyTree &$tree = null): DependencyTree
+    public function buildPackagesTree(array $packages, ?DependencyTree &$tree = null): DependencyTree
     {
         if (is_null($tree))
             $tree = new DependencyTree();

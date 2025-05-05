@@ -30,8 +30,7 @@ class PathUtils
         if (str_starts_with($additional, '/') || preg_match("/^[a-zA-Z]:/", $additional))
             return $additional;
 
-        $prefix = str_starts_with('/', $current) ? '/' : (preg_match("/^[a-zA-Z]:/", $additional) ? substr($current, 3) : '/');
-
+        $prefix = str_starts_with('/', $current) ? '/' : (preg_match("/^[a-zA-Z]:/", $current) ? '' : '/');
         $regex = '/[\\\\\/]/';
         $parts = array_merge(preg_split($regex, $current), preg_split($regex, $additional));
         $result = [];

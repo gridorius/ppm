@@ -15,7 +15,7 @@ class Source implements JsonSerializable
      * @param string $path
      * @param ?string $token
      */
-    public function __construct(string $path, string $id = null, ?string $token = null)
+    public function __construct(string $path, ?string $id = null, ?string $token = null)
     {
         $this->path = $path;
         $this->token = $token;

@@ -15,7 +15,7 @@ class ResponseDataParser extends HttpParserBase implements IBindable
     private HttpResponse $response;
     protected ?Closure $onProgress;
 
-    public function __construct(callable $onProgress = null)
+    public function __construct(?callable $onProgress = null)
     {
         parent::__construct();
         $this->response = new HttpResponse();

@@ -23,7 +23,7 @@ class MessageReceiver
     private ?Closure $partyCallback;
     private string $converterClass;
 
-    public function __construct(callable $messageCallback, callable $partyCallback = null, string $converterClass = MessageConverter::class)
+    public function __construct(callable $messageCallback, ?callable $partyCallback = null, string $converterClass = MessageConverter::class)
     {
         $this->messageCallback = Closure::fromCallable($messageCallback);
         $this->partyCallback = is_null($partyCallback) ? null : Closure::fromCallable($partyCallback);

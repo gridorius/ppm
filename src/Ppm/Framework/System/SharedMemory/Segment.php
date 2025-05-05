@@ -8,7 +8,7 @@ class Segment
 {
     private SysvSharedMemory $memory;
 
-    public function __construct(string $key, $permissions = 0655, int $size = null)
+    public function __construct(string $key, $permissions = 0655, ?int $size = null)
     {
         $this->memory = shm_attach(crc32($key), $size, $permissions);
     }

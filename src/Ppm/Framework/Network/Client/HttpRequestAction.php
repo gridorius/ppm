@@ -17,12 +17,14 @@ class HttpRequestAction implements IBindable
     private ?Closure $downloadProgressHandler;
     private HttpRequest $request;
     private ResponseDataParser $receiver;
-    private StreamReadActionBind $bind;
+    private StreamReadActionBind $binding;
+    private bool $followLocation;
 
-    public function __construct(HttpRequest $request, callable $uploadProgressHandler = null)
+    public function __construct(HttpRequest $request, ?callable $uploadProgressHandler = null)
     {
         $this->request = $request;
         $this->uploadProgressHandler = is_null($uploadProgressHandler) ? null : Closure::fromCallable($uploadProgressHandler);
+        $this->followLocation = true;
     }
 
     public static function from(HttpRequest $request): static
@@ -30,12 +32,7 @@ class HttpRequestAction implements IBindable
         return new static($request);
     }
 
-    public function getClient(): ?HttpSocketClient
-    {
-        return $this->client;
-    }
-
-    public function send(callable $uploadProgressHandler = null): static
+    public function send(?callable $uploadProgressHandler = null): static
     {
         $this->client = $client = new HttpSocketClient($this->request);
         if (!is_null($uploadProgressHandler))
@@ -48,28 +45,29 @@ class HttpRequestAction implements IBindable
     {
         $this->request->setUrl($location);
         $this->send();
-        $this->bind->setStream($this->client);
+        $this->binding->setStream($this->client);
     }
 
-    public function wait(callable $downloadProgressHandler = null, bool $followLocation = true): HttpResponse
+    public function wait(?callable $downloadProgressHandler = null, bool $followLocation = true): HttpResponse
     {
         $this->downloadProgressHandler = $downloadProgressHandler;
-        $this->receiver = new ResponseDataParser($downloadProgressHandler);
-        $parallel = AsyncStreamWatcher::single($this->bind($this->client));
-        while (!$this->receiver->isCompleted()) {
-            $parallel->watch();
-        }
-        return $this->receiver->getResponse();
+        $bind = $this->creteBind($downloadProgressHandler);
+        $async = new AsyncStreamWatcher([$bind]);
+        $this->followLocation = $followLocation;
+
+        while (!$this->isCompleted())
+            $async->watch();
+        return $this->getResponse();
     }
 
-    public function waitAsync(callable $downloadProgressHandler = null): Promise
+    public function waitAsync(?callable $downloadProgressHandler = null): Promise
     {
         $this->downloadProgressHandler = $downloadProgressHandler;
         $this->receiver = new ResponseDataParser($downloadProgressHandler);
 
         return new Promise(function ($resolve) {
             MainCycle::getWatcher()
-                ->addBinding($this->bind = StreamReadActionBind::create($this->client,
+                ->addBinding($this->binding = StreamReadActionBind::create($this->client,
                     function (IStream $stream, StreamReadActionBind $bind) use ($resolve) {
                         $this->onReadyContent($stream);
                         if ($this->receiver->isCompleted()) {
@@ -80,11 +78,11 @@ class HttpRequestAction implements IBindable
         });
     }
 
-    public function creteBind(callable $downloadProgressHandler = null): StreamReadActionBind
+    public function creteBind(?callable $downloadProgressHandler = null): StreamReadActionBind
     {
         $this->downloadProgressHandler = $downloadProgressHandler;
         $this->receiver = new ResponseDataParser($downloadProgressHandler);
-        return $this->bind($this->client);
+        return $this->binding = $this->bind($this->client);
     }
 
     public function getResponse(): HttpResponse
@@ -103,7 +101,7 @@ class HttpRequestAction implements IBindable
     public function onReadyContent(IStream $stream): void
     {
         $this->receiver->onReadyContent($stream);
-        if ($this->receiver->isCompleted() && !empty($location = $this->receiver->getResponse()->getHeader('Location'))) {
+        if ($this->followLocation && $this->receiver->isCompleted() && !empty($location = $this->receiver->getResponse()->getHeader('Location'))) {
             $this->follow($location);
             $this->receiver = new ResponseDataParser($this->downloadProgressHandler);
         }

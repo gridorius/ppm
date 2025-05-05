@@ -16,14 +16,14 @@ class HttpParallelSender
         $this->actions = $actions;
     }
 
-    public function send(callable $uploadProgressHandler = null): static
+    public function send(?callable $uploadProgressHandler = null): static
     {
         foreach ($this->actions as $action)
             $action->send($uploadProgressHandler);
         return $this;
     }
 
-    public function waitResponses(callable $downloadProgressHandler = null, bool $followLocation = true): array
+    public function waitResponses(?callable $downloadProgressHandler = null, bool $followLocation = true): array
     {
         $bindings = [];
         foreach ($this->actions as $action)

@@ -108,7 +108,7 @@ class Solution
             throw new Exception("Project {$projectName} not found");
     }
 
-    public function buildProject(string $name, string $outDirectory = null): string
+    public function buildProject(string $name, ?string $outDirectory = null): string
     {
         if (is_null($outDirectory))
             $outDirectory = $this->getDirectory() . DIRECTORY_SEPARATOR . '/bin/' . $name;
