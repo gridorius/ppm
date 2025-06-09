@@ -38,6 +38,9 @@ class Type
         return $this->reflection->getMethods(ReflectionMethod::IS_PUBLIC);
     }
 
+    /**
+     * @return ReflectionProperty[]
+     */
     public function getPublicNonStaticProperties(): array
     {
         return array_filter($this->reflection->getProperties(ReflectionProperty::IS_PUBLIC),

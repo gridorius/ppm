@@ -13,10 +13,14 @@ class EventDispatcher
         static::$handlers[$eventName][] = $handler;
     }
 
-    public static function emit(IEvent $event): void
+    public static function emit(IEvent $event): IEvent
     {
         if (!empty(static::$handlers[$event->getName()]))
-            foreach (static::$handlers[$event->getName()] as $handler)
+            foreach (static::$handlers[$event->getName()] as $handler) {
                 call_user_func($handler, $event);
+                if ($event->isCancelled())
+                    return $event;
+            }
+        return $event;
     }
 }

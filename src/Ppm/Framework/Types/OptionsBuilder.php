@@ -33,9 +33,11 @@ class OptionsBuilder
         foreach ($nonStaticProperties as $property) {
             $name = $property->getName();
             $type = $property->getType();
+            $listAttribute = $property->getAttributes(ListOf::class)[0] ?? null;
+            $listClass = !is_null($listAttribute) ? $listAttribute->newInstance()->getClassName() : null;
             $typeName = is_null($type) ? '' : $type->getName();
             if (!in_array($name, $usedProperties)) {
-                $value = static::getPropertyValue($typeName, $name, $properties, $property->getDefaultValue());
+                $value = static::getPropertyValue($typeName, $name, $properties, $property->getDefaultValue(), $listClass);
                 if (!is_null($value))
                     $instance->{$property->getName()} = $value;
             }
@@ -43,7 +45,7 @@ class OptionsBuilder
         return $instance;
     }
 
-    protected static function getPropertyValue(string $type, string $name, array $properties, $defaultValue = null)
+    protected static function getPropertyValue(string $type, string $name, array $properties, $defaultValue = null, ?string $listClass = null)
     {
         $value = $properties[$name] ?? $properties[strtolower($name)];
         switch ($type) {
@@ -56,7 +58,16 @@ class OptionsBuilder
             case 'float':
                 return empty($value) ? $defaultValue : (float)$value;
             case 'array':
-                return empty($value) || !is_array($value) ? $defaultValue : $value;
+                if (empty($value) || !is_array($value))
+                    return $defaultValue;
+                if (!is_null($listClass)) {
+                    $result = [];
+                    foreach ($value as $item)
+                        $result[] = static::build($listClass, $item);
+                    return $result;
+                } else {
+                    return $value;
+                }
             default:
                 if (isset($value))
                     return static::build($type, $value);

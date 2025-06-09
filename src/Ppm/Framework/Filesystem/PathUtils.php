@@ -72,7 +72,7 @@ class PathUtils
 
         $content = file_get_contents($path);
         if ($useEnv)
-            $content = preg_replace_callback("/\\$\{(?<var>[^\}]+?)\}/", function ($matches) {
+            $content = preg_replace_callback("/\\$\{(?<var>[^}]+?)}/", function ($matches) {
                 return getenv($matches['var']);
             }, $content);
 

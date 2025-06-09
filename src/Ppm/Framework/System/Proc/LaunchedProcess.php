@@ -21,6 +21,11 @@ class LaunchedProcess extends ProcResource
         return $this->pipes[$index];
     }
 
+    public function getPipes(): array
+    {
+        return $this->pipes;
+    }
+
     public function getCommandConfiguration(): CommandConfiguration
     {
         return $this->commandConfiguration;
