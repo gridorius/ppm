@@ -9,11 +9,8 @@ use Ppm\Core\Commands\InstallExtensionCommand;
 use Ppm\Core\Commands\InstallPpmCommand;
 use Ppm\Core\Commands\Packages\PackagesCommandsConfiguration;
 use Ppm\Core\Commands\Sources\SourcesCommandsConfiguration;
-use Ppm\Framework\CurrentAssembly;
+use Ppm\Framework\Application;
 use Ppm\Framework\Filesystem\Path;
-use Ppm\Framework\Network\Client\HttpRequestHelper;
-use Ppm\Framework\Stream\Async\MainCycle;
-use Ppm\Framework\Stream\Async\Task;
 use Ppm\Framework\Terminal\CommandRouting\CommandsRouter;
 use Ppm\Packages\PackagesManager;
 
@@ -45,13 +42,12 @@ class Program
 
     private static function registerDirectoryCommands(CommandsRouter $router, string $directory, string $prefix): void
     {
-        $assembly = CurrentAssembly::getAssembly();
-        $assemblyCommands = $assembly->getDirectoryCommands($directory);
+        $assemblyCommands = Application::getDirectoryCommands($directory);
         foreach ($assemblyCommands as $pharPath => $commands) {
             foreach ($commands as $command => $parameters)
                 $router->register($prefix . ' ' . $command,
-                    function (array $params, array $options) use ($pharPath, $parameters, $assembly) {
-                        $assembly->includeAndLoad($pharPath);
+                    function (array $params, array $options) use ($pharPath, $parameters) {
+                        Application::includeAndLoad($pharPath);
                         $handler = explode('::', $parameters['handler']);
                         call_user_func($handler, $parameters, $options);
                     })

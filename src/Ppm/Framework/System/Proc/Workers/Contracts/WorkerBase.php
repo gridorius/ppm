@@ -2,7 +2,7 @@
 
 namespace Ppm\Framework\System\Proc\Workers\Contracts;
 
-use Ppm\Framework\CurrentAssembly;
+use Ppm\Framework\Application;
 use Ppm\Framework\Stream\Contracts\IResourceBase;
 use Ppm\Framework\Stream\Contracts\IStream;
 use Ppm\Framework\Stream\DescriptorStream;
@@ -36,7 +36,7 @@ abstract class WorkerBase extends MessageTransportProtocol implements IResourceB
     public static function create(...$arguments): static
     {
         $process = CommandLauncher::launch(
-            CurrentAssembly::getAssembly()->createCommand([static::class, 'bindWorker'], ...array_map('serialize', $arguments))
+            Application::createCommand([static::class, 'bindWorker'], ...array_map('serialize', $arguments))
                 ->setDescriptor(3, new PipeDescriptor('w'))
         );
 
