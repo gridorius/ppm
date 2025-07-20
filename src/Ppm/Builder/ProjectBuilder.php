@@ -26,8 +26,6 @@ class ProjectBuilder
     {
         $directory = (new Directory($outDirectory))->create();
         $configuration = $context->getConfiguration();
-        $actions = $configuration->getActions();
-        $actions->runBeforeBuild($configuration->getDirectory(), $directory->getPath());
         $phar = $directory->createPhar($configuration->getProjectInfo()->getName());
         $phar->startBuffering();
         $phar->buildFromIterator(new ArrayIterator($context->getInnerFiles()));
@@ -38,8 +36,6 @@ class ProjectBuilder
 
         if (!empty($configuration->hasEntrypoint()))
             $this->makeExecutableFile($outDirectory, $configuration);
-
-        $actions->runAfterBuild($configuration->getDirectory(), $outDirectory);
     }
 
     /**

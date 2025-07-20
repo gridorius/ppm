@@ -6,10 +6,17 @@ use Ppm\Framework\Utils\StringUtils;
 
 abstract class ActionBase implements IAction
 {
-    const BUILD_DIRECTORY = "/\\$\(buildDirectory\)/";
-    const OUT_DIRECTORY = "/\\$\(outDirectory\)/";
+    const BUILD_DIRECTORY = "\\$\(buildDirectory\)";
+    const OUT_DIRECTORY = "\\$\(outDirectory\)";
     protected string $outDirectory;
     protected string $buildDirectory;
+
+    protected array $arguments;
+
+    public function __construct(array $arguments)
+    {
+        $this->arguments = $arguments;
+    }
 
     public function setDirectories(string $buildDirectory, string $outDirectory): void
     {

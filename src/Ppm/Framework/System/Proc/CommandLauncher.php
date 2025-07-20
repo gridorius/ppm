@@ -19,10 +19,31 @@ class CommandLauncher
         $configuration->configureDescriptors($descriptors);
         $processResource = proc_open($configuration->getCommand(), $descriptors, $pipes);
 
-        if (!is_resource($processResource))
-            throw new Exception("Process opening failed");
+        if (!is_resource($processResource)) {
+            $commandString = implode(' ', $configuration->getCommand());
+            throw new Exception("Process opening failed({$commandString})");
+        }
 
-        $process = new LaunchedProcess($processResource, $pipes, $configuration);
+        $process = new LaunchedProcess($processResource, $pipes);
+        static::$processes[] = $process;
+        if (!static::$shutdownRegistered)
+            static::registerShutdown();
+
+        return $process;
+    }
+
+    public static function launchStringCommand(CommandConfigurationString $configuration): LaunchedProcess
+    {
+        $pipes = [];
+        $descriptors = [];
+        $configuration->configureDescriptors($descriptors);
+        $processResource = proc_open($configuration->getCommand(), $descriptors, $pipes);
+
+        if (!is_resource($processResource))
+            throw new Exception("Process opening failed({$configuration->getCommand()})");
+
+
+        $process = new LaunchedProcess($processResource, $pipes);
         static::$processes[] = $process;
         if (!static::$shutdownRegistered)
             static::registerShutdown();

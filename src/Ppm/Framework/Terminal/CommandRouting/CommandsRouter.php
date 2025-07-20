@@ -40,7 +40,7 @@ class CommandsRouter
         $this->notFoundHandler = $commandRouteBase;
     }
 
-    public function register(string $patternString, Closure $handler): CommandRouteBase
+    public function register(string $patternString, callable $handler): CommandRouteBase
     {
         $pattern = new Pattern($patternString);
         $handler = new CommandRouteClosure($pattern, $handler);

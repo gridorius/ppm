@@ -10,16 +10,9 @@ use Ppm\Framework\Utils\StringUtils;
 
 class DeleteAction extends ActionBase
 {
-    private string $template;
-
-    public function __construct(string $template)
-    {
-        $this->template = $template;
-    }
-
     public function run(): void
     {
-        $template = $this->prepareString($this->template);
+        $template = $this->prepareString($this->arguments['template']);
         $position = strpos($template, '*');
         if ($position !== false) {
             $directory = Directory::from(substr($template, 0, $position));
@@ -32,10 +25,5 @@ class DeleteAction extends ActionBase
         } else if (is_file($template)) {
             File::from($template)->delete();
         }
-    }
-
-    private function log(string $path): void
-    {
-        echo "Deleted {$path}\n";
     }
 }

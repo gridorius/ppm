@@ -76,4 +76,9 @@ class File extends PathFromBase
     {
         unlink($this->path);
     }
+
+    public static function deleteFile(string $path): void
+    {
+        unlink($path);
+    }
 }

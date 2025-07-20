@@ -9,10 +9,10 @@ class CommandRouteClosure extends CommandRouteBase
 {
     private Closure $handler;
 
-    public function __construct(Pattern $pattern, Closure $handler)
+    public function __construct(Pattern $pattern, callable $handler)
     {
         parent::__construct($pattern);
-        $this->handler = $handler;
+        $this->handler = Closure::fromCallable($handler);
     }
 
     protected function execute(array $parameters, array $options, array $argv): void

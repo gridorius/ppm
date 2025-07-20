@@ -6,22 +6,14 @@ use Ppm\Framework\System\Proc\Descriptors\DescriptorBase;
 use Ppm\Framework\System\Proc\Descriptors\PipeDescriptor;
 use Ppm\Framework\System\Proc\Descriptors\StandartDescriptor;
 
-class CommandConfiguration
+class CommandConfiguration extends CommandConfigurationBase
 {
-    /**
-     * @var DescriptorBase[]
-     */
-    protected array $descriptors;
     protected array $command;
 
     public function __construct(string ...$command)
     {
         $this->command = $command;
-        $this->descriptors = [];
-        $this
-            ->setDescriptor(Descriptors::STDIN, new PipeDescriptor('r'))
-            ->setDescriptor(Descriptors::STDOUT, new StandartDescriptor(Descriptors::STDOUT))
-            ->setDescriptor(Descriptors::STDERR, new StandartDescriptor(Descriptors::STDERR));
+        parent::__construct();
     }
 
     public function addArguments(string ...$arguments): static
@@ -34,18 +26,6 @@ class CommandConfiguration
     {
         $this->command = $command;
         return $this;
-    }
-
-    public function setDescriptor(int $descriptor, DescriptorBase $type): self
-    {
-        $this->descriptors[$descriptor] = $type;
-        return $this;
-    }
-
-    public function configureDescriptors(array &$descriptors): void
-    {
-        foreach ($this->descriptors as $descriptor)
-            $descriptor->configureDescriptor($descriptors);
     }
 
     public function getCommand(): array

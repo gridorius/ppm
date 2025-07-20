@@ -5,6 +5,7 @@ namespace Ppm\Builder;
 use Exception;
 use Ppm\Builder\Configuration\Configuration;
 use Ppm\Builder\Configuration\ConfigurationCollection;
+use Ppm\Framework\Filesystem\Directory;
 use Ppm\Framework\Filesystem\Path;
 use Ppm\Framework\Terminal\ShellStyleParser;
 use Ppm\Framework\Types\Timer;
@@ -61,11 +62,26 @@ class BuildManager
     protected static function buildProjects(ConfigurationCollection $configurationCollection, string $outDirectory): void
     {
         $projectBuilder = new ProjectBuilder();
-        foreach ($configurationCollection->getContextCollection()->toArray() as $context) {
+        $contexts = $configurationCollection->getContextCollection()->toArray();
+        $directory = (new Directory($outDirectory))->create();
+
+        foreach ($contexts as $context)
+            $context
+                ->getConfiguration()
+                ->getActions()
+                ->runBeforeBuild($context->getConfiguration()->getDirectory(), $directory->getPath());
+
+        foreach ($contexts as $context) {
             $timer = new Timer();
             $projectBuilder->build($context, $outDirectory);
             static::showBuildLog($timer->getFormatPassed(), $context);
         }
+
+        foreach ($contexts as $context)
+            $context
+                ->getConfiguration()
+                ->getActions()
+                ->runAfterBuild($context->getConfiguration()->getDirectory(), $directory->getPath());
     }
 
     private static function showBuildLog(string $passed, BuildContext $context): void

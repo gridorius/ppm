@@ -7,12 +7,10 @@ use Ppm\Framework\Stream\ResourceStream;
 class LaunchedProcess extends ProcResource
 {
     private array $pipes;
-    private CommandConfiguration $commandConfiguration;
 
-    public function __construct($process, array $pipes, CommandConfiguration $commandConfiguration)
+    public function __construct($process, array $pipes)
     {
         parent::__construct($process);
-        $this->commandConfiguration = $commandConfiguration;
         $this->pipes = array_map([ResourceStream::class, 'from'], $pipes);
     }
 
@@ -24,11 +22,6 @@ class LaunchedProcess extends ProcResource
     public function getPipes(): array
     {
         return $this->pipes;
-    }
-
-    public function getCommandConfiguration(): CommandConfiguration
-    {
-        return $this->commandConfiguration;
     }
 
     public function isRunning(): ?bool

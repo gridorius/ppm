@@ -10,9 +10,9 @@ class ActionFactory
     {
         switch ($arguments['type']) {
             case 'delete':
-                return new DeleteAction($arguments['template']);
+                return new DeleteAction($arguments);
             case 'shell':
-                return new ShellAction($arguments['command']);
+                return new ShellAction($arguments);
             default:
                 throw new Exception("Unexpected action type {$arguments['type']}");
         }
