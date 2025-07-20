@@ -119,7 +119,7 @@ class Solution
         $hash = $contexts->getHash();
         $projectsCache = $this->cache->getArray('projects');
         if ($projectsCache->get($name) == $hash) {
-            echo "Project loaded from cache" . PHP_EOL;
+            echo "Project not changed" . PHP_EOL;
         } else {
             BuildManager::buildFromConfigurationCollection($configurationCollection, $outDirectory);
             $projectsCache->set($name, $hash);
