@@ -2,6 +2,7 @@
 
 namespace Ppm\Framework;
 
+use Ppm\Framework\Filesystem\Path;
 use Ppm\Framework\Resources\Resources;
 
 class Assembly
@@ -11,7 +12,6 @@ class Assembly
     private string $realPath;
     private string $directory;
     private array $manifest;
-
     private bool $loaded;
 
     public function __construct(string $name, string $directory)
@@ -22,6 +22,11 @@ class Assembly
         $this->realPath = $directory . DIRECTORY_SEPARATOR . $name . '.phar';
         $this->directory = $directory;
         $this->manifest = include $this->path . '/manifest.php';
+    }
+
+    public function pathCombine(string ...$parts): string
+    {
+        return Path::combine($this->directory, ...$parts);
     }
 
     public function getRealPath(): string
