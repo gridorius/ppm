@@ -1,5 +1,10 @@
 {
   "name": "Ppm.Framework",
   "version": "0.8.0",
-  "stub": "stub.php"
+  "stub": "stub.php",
+  "includes": [
+    {
+      "include": "*/helpers.php"
+    }
+  ]
 }

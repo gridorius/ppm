@@ -24,7 +24,7 @@ class PathUtils
         );
         $iterator = new RecursiveIteratorIterator($dirIterator);
         $files = [];
-        $offset = strlen($directory);
+        $offset = strlen($directory) + 1;
         foreach ($iterator as $path)
             $files[substr($path, $offset)] = $path;
         return $files;

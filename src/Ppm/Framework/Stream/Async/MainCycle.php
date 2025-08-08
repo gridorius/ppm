@@ -2,11 +2,13 @@
 
 namespace Ppm\Framework\Stream\Async;
 
+use Generator;
+
 class MainCycle
 {
     protected static AsyncStreamWatcher $watcher;
     /**
-     * @var Task[]
+     * @var Generator[]
      */
     protected static array $queue = [];
     private static bool $active = true;
@@ -20,18 +22,26 @@ class MainCycle
         return static::$watcher;
     }
 
-    public static function addTask(Task $action): void
+    public static function addCoroutine($action): void
     {
-        static::$queue[] = $action;
+        if (is_callable($action)) {
+            $generator = call_user_func($action);
+            if (!$generator instanceof Generator)
+                throw new \Exception("Invalid coroutine");
+        } else if ($action instanceof Generator) {
+            $generator = $action;
+        } else {
+            throw new \Exception("Invalid coroutine");
+        }
+        static::$queue[] = $generator;
     }
 
     public static function run(int $microseconds): void
     {
         while (static::$active) {
             foreach (static::$queue as $key => $task) {
-                if ($task->isRunning())
-                    $task->call();
-                if (!$task->isEveryTime() || !$task->isRunning())
+                $task->next();
+                if (!$task->valid())
                     unset(static::$queue[$key]);
             }
             static::getWatcher()->watch($microseconds);
@@ -49,3 +59,7 @@ class MainCycle
         static::$active = false;
     }
 }
+
+MainCycle::addCoroutine(function () {
+    yield 1;
+});

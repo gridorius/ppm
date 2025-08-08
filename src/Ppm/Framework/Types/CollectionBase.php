@@ -45,17 +45,17 @@ class CollectionBase implements JsonSerializable, IteratorAggregate
 
     public function merge(array $data): static
     {
-        return new static(array_merge($this->items, $data));
+        return $this->createInstance(array_merge($this->items, $data));
     }
 
     public function mergeRecursive(array $data): static
     {
-        return new static(array_merge_recursive($this->items, $data));
+        return $this->createInstance(array_merge_recursive($this->items, $data));
     }
 
     public function map(callable $callback): static
     {
-        return new static(array_map($callback, $this->items, array_keys($this->items)));
+        return $this->createInstance(array_map($callback, $this->items, array_keys($this->items)));
     }
 
     public function any(callable $callback): bool
@@ -78,7 +78,7 @@ class CollectionBase implements JsonSerializable, IteratorAggregate
 
     public function column($columnKey, $indexKey = null): static
     {
-        return new static(array_column($this->items, $columnKey, $indexKey));
+        return $this->createInstance(array_column($this->items, $columnKey, $indexKey));
     }
 
     public function join($separator): string
@@ -88,12 +88,12 @@ class CollectionBase implements JsonSerializable, IteratorAggregate
 
     public function filter(callable $callback): self
     {
-        return new static(array_filter($this->items, $callback));
+        return $this->createInstance(array_filter($this->items, $callback));
     }
 
     public function reduce(callable $callback, $initial = null): self
     {
-        return new static(array_reduce($this->items, $callback, $initial));
+        return $this->createInstance(array_reduce($this->items, $callback, $initial));
     }
 
     public function find(callable $callback)
@@ -108,7 +108,7 @@ class CollectionBase implements JsonSerializable, IteratorAggregate
     public function intersectKey(...$keys): self
     {
         $result = array_intersect_key($this->items, ...$keys);
-        return new static($result);
+        return $this->createInstance($result);
     }
 
     public function toArray(): array
@@ -118,7 +118,7 @@ class CollectionBase implements JsonSerializable, IteratorAggregate
 
     public function chunk($length, $preserveKeys = false): self
     {
-        return (new static(array_chunk($this->items, $length, $preserveKeys)))->map([static::class, 'from']);
+        return $this->createInstance(array_chunk($this->items, $length, $preserveKeys))->map([static::class, 'from']);
     }
 
     public function toJson($flags = 0): string
@@ -141,5 +141,10 @@ class CollectionBase implements JsonSerializable, IteratorAggregate
     public function jsonSerialize(): array
     {
         return $this->items;
+    }
+
+    protected function createInstance(array $data): static
+    {
+        return new static($data);
     }
 }
