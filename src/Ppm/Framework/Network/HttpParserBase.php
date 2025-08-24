@@ -57,11 +57,11 @@ abstract class HttpParserBase
     {
         [$header, $headerValue] = explode(':', $header, 2);
         $options = [];
-        if (str_contains($headerValue, ";") || str_contains($headerValue, "=")) {
+        if (str_contains($headerValue, ";") && str_contains($headerValue, "=")) {
             $optionsData = explode(';', $headerValue);
             foreach ($optionsData as $option) {
                 if (str_contains($option, "=")) {
-                    [$key, $value] = explode('=', $option);
+                    [$key, $value] = explode('=', $option, 2);
                     $options[trim($key)] = trim($value);
                 } else {
                     $options[trim($option)] = true;
