@@ -22,9 +22,9 @@ class OptionsBuilder
         $nonStaticProperties = Type::of($abstract)->getPublicNonStaticProperties();
         $constructor = Type::of($abstract)->getConstructor();
         $usedProperties = [];
+        $properties = array_change_key_case($properties);
         if (!is_null($constructor)) {
             $arguments = [];
-            $properties = array_change_key_case($properties);
             foreach ($constructor->getParameters() as $param) {
                 $name = $param->getName();
                 $type = $param->getType();
@@ -141,10 +141,13 @@ class OptionsBuilder
                 $result = [];
                 if (!is_null($enumerableClass))
                     foreach ($value as $item) {
-                        if (is_null($enumerableKey))
-                            $result[] = static::build($enumerableClass, $item, $topField);
-                        else
-                            $result[$item[$enumerableKey]] = static::build($enumerableClass, $item, $topField);
+                        if (!is_null($item)) {
+                            $item = (array)$item;
+                            if (is_null($enumerableKey))
+                                $result[] = static::build($enumerableClass, $item, $topField);
+                            else
+                                $result[$item[$enumerableKey]] = static::build($enumerableClass, $item, $topField);
+                        }
                     }
                 else
                     $result = $value;
