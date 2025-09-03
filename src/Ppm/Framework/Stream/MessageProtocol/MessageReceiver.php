@@ -3,6 +3,7 @@
 namespace Ppm\Framework\Stream\MessageProtocol;
 
 use Closure;
+use Generator;
 use Ppm\Framework\Stream\Async\StreamReadActionBind;
 use Ppm\Framework\Stream\Contracts\IStream;
 
@@ -36,6 +37,15 @@ class MessageReceiver
             $this,
             'onReadyData'
         ]);
+    }
+
+    public function buildCoroutine(IStream $stream): Generator
+    {
+        yield $stream;
+        while (!$this->isCompleted()) {
+            $this->onReadyData($stream);
+            yield $stream;
+        }
     }
 
     public function onReadyData(IStream $stream): void

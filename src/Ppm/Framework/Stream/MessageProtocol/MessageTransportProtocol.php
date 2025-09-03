@@ -12,6 +12,7 @@ class MessageTransportProtocol implements IMessageTransportProtocol
     protected MessageSender $sender;
     protected MessageReceiver $receiver;
     protected StreamReadActionBind $bind;
+    protected IStream $input;
 
     public function __construct(IStream $input, IStream $output, string $messageConverter = MessageConverter::class)
     {
@@ -28,7 +29,7 @@ class MessageTransportProtocol implements IMessageTransportProtocol
             },
             $messageConverter
         );
-        $this->bind = $this->receiver->createBind($input);
+        $this->input = $input;
     }
 
     public function onMessage(callable $callable): static

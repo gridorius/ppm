@@ -66,15 +66,12 @@ class HttpRequestAction implements IBindable
         $this->receiver = new ResponseDataParser($downloadProgressHandler);
 
         return new Promise(function ($resolve) {
-            MainCycle::getWatcher()
-                ->addBinding($this->binding = StreamReadActionBind::create($this->client,
-                    function (IStream $stream, StreamReadActionBind $bind) use ($resolve) {
-                        $this->onReadyContent($stream);
-                        if ($this->receiver->isCompleted()) {
-                            $resolve($this->receiver->getResponse());
-                            $bind->disable();
-                        }
-                    }));
+            MainCycle::watch((function () use ($resolve) {
+                yield $this->client;
+                while (!$this->receiver->isCompleted())
+                    $this->receiver->onReadyContent($this->client);
+                $resolve($this->receiver->getResponse());
+            })());
         });
     }
 

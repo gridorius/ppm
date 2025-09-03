@@ -3,6 +3,7 @@
 namespace Ppm\Framework\Stream\Async;
 
 use Exception;
+use Generator;
 
 class SelectUtils
 {
@@ -19,21 +20,20 @@ class SelectUtils
     }
 
     /**
-     * @param StreamReadActionBind[] $streamBindings
-     * @param int $seconds
+     * @param Generator[] $generators
      * @param int $microseconds
      * @return void
      * @throws Exception
      */
-    public static function callBindings(array $streamBindings, int $microseconds = 0): void
+    public static function callGenerators(array $generators, int $microseconds = 0): void
     {
-        if (empty($streamBindings))
+        if (empty($generators))
             return;
         $read = [];
-        foreach ($streamBindings as $key => $binding)
-            $read[$key] = $binding->getStream();
+        foreach ($generators as $key => $generator)
+            $read[$key] = $generator->current();
 
         foreach (static::awaitContent($read, $microseconds) as $key => $stream)
-            $streamBindings[$key]->call();
+            $generators[$key]->next();
     }
 }

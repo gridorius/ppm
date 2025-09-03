@@ -22,17 +22,13 @@ class MainCycle
         return static::$watcher;
     }
 
-    public static function addCoroutine($action): void
+    public static function watch(Generator $generator): void
     {
-        if (is_callable($action)) {
-            $generator = call_user_func($action);
-            if (!$generator instanceof Generator)
-                throw new \Exception("Invalid coroutine");
-        } else if ($action instanceof Generator) {
-            $generator = $action;
-        } else {
-            throw new \Exception("Invalid coroutine");
-        }
+        static::getWatcher()->addCoroutine($generator);
+    }
+
+    public static function addCoroutine(Generator $generator): void
+    {
         static::$queue[] = $generator;
     }
 
@@ -59,7 +55,3 @@ class MainCycle
         static::$active = false;
     }
 }
-
-MainCycle::addCoroutine(function () {
-    yield 1;
-});

@@ -2,7 +2,9 @@
 
 namespace Ppm\Framework\System\Proc\Workers;
 
+use Ppm\Framework\Network\ClientDisconnectedException;
 use Ppm\Framework\Stream\Async\AsyncStreamWatcher;
+use Ppm\Framework\Stream\Async\MainCycle;
 use Ppm\Framework\Stream\Async\Promise;
 use Ppm\Framework\Stream\Contracts\IStream;
 use Ppm\Framework\Stream\MessageProtocol\MessageReceiver;
@@ -38,7 +40,11 @@ class CommandWorker extends ObjectTransferWorker
             }
         });
 
-        AsyncStreamWatcher::single($this->getBind())->start(0, 300);
+        MainCycle::watch((function () {
+            yield $this->input;
+            while (!$this->receiver->isAborted())
+                $this->receiver->onReadyData($this->input);
+        })());
     }
 
     public function execute($handler, ...$arguments): Promise

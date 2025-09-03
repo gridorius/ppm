@@ -17,7 +17,6 @@ class ResponseDataParser extends HttpParserBase implements IBindable
 
     public function __construct(?callable $onProgress = null)
     {
-        parent::__construct();
         $this->response = new HttpResponse();
         $this->onProgress = is_null($onProgress) ? null : Closure::fromCallable($onProgress);
     }
@@ -54,72 +53,50 @@ class ResponseDataParser extends HttpParserBase implements IBindable
             ->setHeaderOption($name, $options);
     }
 
-    protected function onHeadersEnded(): void
+    protected function onParsedHeaders(): void
     {
-        $this->state = $this->response->getHeader('Transfer-Encoding') === 'chunked'
+        $this->stage = $this->response->getHeader('Transfer-Encoding') === 'chunked'
             ? static::STATE_CHUNKED
             : static::STAGE_BODY;
     }
 
-    public function onReadyContent(IStreamRead $stream): void
+    protected function handleBody(): void
     {
-        parent::onReadyContent($stream);
-    }
-
-    protected function handleBody(IStreamRead $stream): void
-    {
-        if ($stream->eof()) {
-            $this->state = static::STATE_COMPLETED;
-            return;
-        }
-
-        switch ($this->state) {
+        switch ($this->stage) {
             case static::STATE_CHUNKED:
-                $this->readChunk($stream);
+                $this->readChunk();
                 break;
             default:
-                $content = $stream->read();
-                if (empty($content)) {
-                    $this->state = static::STATE_COMPLETED;
-                    return;
-                }
-
-                $this->response->addContent($content);
-                $contentLength = (int)$this->response->getheader('Content-Length');
-                $responseLength = $this->response->getLength();
                 if (!is_null($this->onProgress))
-                    call_user_func($this->onProgress, $contentLength, $responseLength);
-                if ($contentLength <= $responseLength) {
-                    $this->state = static::STATE_COMPLETED;
-                    $stream->read();
-                }
+                    call_user_func($this->onProgress, $this->contentLength, strlen($this->buffer));
+        }
+        if ($this->bodyEnded()) {
+            $this->stage = static::STATE_COMPLETED;
+            $this->response->addContent($this->buffer);
         }
     }
 
     public function isCompleted(): bool
     {
-        return $this->state == static::STATE_COMPLETED;
+        return $this->stage == static::STATE_COMPLETED;
     }
 
-    private function readChunk(IStreamRead $stream): void
+    private function readChunk(): void
     {
-        $line = $stream->readLine();
+        [$line, $buffer] = explode("\r\n", $this->buffer, 2);
         $hex = trim($line);
         $size = hexdec($hex);
 
         if ($size == 0) {
-            $this->state = static::STATE_COMPLETED;
+            $this->stage = static::STATE_COMPLETED;
             return;
         }
 
-        $size += 2;
-        $chunk = $stream->read($size);
-        $loadedLength = strlen($chunk);
-        while ($loadedLength < $size) {
-            $chunk .= $stream->read($size - $loadedLength);
-            $loadedLength = strlen($chunk);
+        $RNSize = $size + 2;
+        if (strlen($buffer) >= $RNSize) {
+            $chunk = substr($buffer, 0, $size);
+            $this->response->addContent($chunk);
+            $this->buffer = substr($this->buffer, strlen($line) + 2 + $RNSize);
         }
-        $chunk = substr($chunk, 0, -2);
-        $this->response->addContent($chunk);
     }
 }

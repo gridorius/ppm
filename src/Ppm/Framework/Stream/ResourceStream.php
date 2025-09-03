@@ -96,9 +96,10 @@ class ResourceStream extends StreamBase
         $this->write($data . "\n");
     }
 
-    public function rewind(): void
+    public function rewind(): static
     {
         rewind($this->resource);
+        return $this;
     }
 
     public function getMetadata(): array

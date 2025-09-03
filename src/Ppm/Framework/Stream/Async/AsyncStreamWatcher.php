@@ -2,54 +2,34 @@
 
 namespace Ppm\Framework\Stream\Async;
 
+use Generator;
+
 class AsyncStreamWatcher
 {
     /**
-     * @var StreamReadActionBind[]
+     * @var Generator[]
      */
-    protected array $bindings;
     private bool $running;
+    private array $bindings;
 
-    public function __construct(array $bindings = [])
+    public function __construct()
     {
         $this->bindings = [];
         $this->running = true;
-        $this->addBindings($bindings);
     }
 
-    public static function single(StreamReadActionBind $bind): static
+    public function addCoroutine(Generator $generator): void
     {
-        return new static([$bind]);
+        $this->bindings[] = $generator;
     }
 
-    public function addBinding(StreamReadActionBind $binding): static
+    public function watch(int $microseconds = 0): void
     {
-        $id = spl_object_id($binding);
-        if (!key_exists($id, $this->bindings))
-            $this->bindings[$id] = $binding;
-        return $this;
-    }
 
-    public function addBindings(array $bindings): static
-    {
-        foreach ($bindings as $binding)
-            $this->addBinding($binding);
-        return $this;
-    }
-
-    public function setBindings(array $bindings): static
-    {
-        $this->bindings = [];
-        $this->addBindings($bindings);
-        return $this;
-    }
-
-    public function watch( int $microseconds = 0): void
-    {
-        $this->bindings = array_filter($this->bindings, function ($binding) {
-            return $binding->isActive();
+        $this->bindings = array_filter($this->bindings, function (Generator $binding) {
+            return $binding->valid();
         });
-        SelectUtils::callBindings($this->bindings, $microseconds);
+        SelectUtils::callGenerators($this->bindings, $microseconds);
     }
 
     public function start(int $microseconds = 0): void
@@ -61,11 +41,6 @@ class AsyncStreamWatcher
     public function stop(): void
     {
         $this->running = false;
-    }
-
-    public function isEmpty(): bool
-    {
-        return empty($this->bindings);
     }
 
     public function clear(): static

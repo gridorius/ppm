@@ -4,7 +4,7 @@ namespace Ppm\Framework\Stream\Contracts;
 
 interface IStream extends IStreamRead, IStreamWrite, IResourceBase
 {
-    public function rewind(): void;
+    public function rewind(): static;
 
     public function getRemainderLength(): int;
 

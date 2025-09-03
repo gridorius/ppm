@@ -153,9 +153,12 @@ class OptionsBuilder
                     $result = $value;
                 return $result;
             default:
-                if (!is_array($value))
-                    throw new OptionParseException($type, $valueType);
-                return static::build($type, $value, $topField);
+                if (is_array($value))
+                    return static::build($type, $value, $topField);
+                if ($type == get_class($value))
+                    return $value;
+                throw new OptionParseException($type, $valueType);
+
         }
     }
 }
