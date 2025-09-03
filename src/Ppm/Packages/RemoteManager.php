@@ -33,17 +33,18 @@ class RemoteManager
     {
         Directory::clearDirectory($this->catalogDirectory);
         foreach ($this->sources as $key => $source) {
-            $response = HttpRequestHelper::get($source->makeRequestPath("catalog"))
+            HttpRequestHelper::get($source->makeRequestPath("catalog"))
                 ->setHeaders($source->makeAuthHeaders())
                 ->getAction()
                 ->send()
-                ->wait();
-
-            $response
-                ->awaitCode(200, function (HttpResponse $response) use ($source) {
-                    file_put_contents($this->getSourceCatalogPath($source), $response->text());
-                })
-                ->awaitCodes([400, 401, 403, 404], $this->getErrorResponseCallback());
+                ->waitAsync()
+                ->then(function (HttpResponse $response) use ($source) {
+                    $response
+                        ->awaitCode(200, function (HttpResponse $response) use ($source) {
+                            file_put_contents($this->getSourceCatalogPath($source), $response->text());
+                        })
+                        ->awaitCodes([400, 401, 403, 404], $this->getErrorResponseCallback());
+                });
         }
     }
 
@@ -84,14 +85,16 @@ class RemoteManager
             ->send(function ($total, $uploaded) {
                 $percent = number_format(($uploaded / $total) * 100, 0);
                 echo "uploading - {$percent}%\r";
-            })->wait();
-        echo "\n";
-
-        $response
-            ->awaitCode(200, function () {
-                echo "Successful upload package\n";
             })
-            ->awaitCodes([400, 401, 403], $this->getErrorResponseCallback());
+            ->waitAsync()
+            ->then(function (HttpResponse $response) {
+                echo "\n";
+                $response
+                    ->awaitCode(200, function () {
+                        echo "Successful upload package\n";
+                    })
+                    ->awaitCodes([400, 401, 403], $this->getErrorResponseCallback());
+            });
     }
 
     public function downloadFrom(string $sourceId, array $packages): File

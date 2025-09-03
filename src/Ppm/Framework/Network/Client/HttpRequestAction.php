@@ -3,21 +3,18 @@
 namespace Ppm\Framework\Network\Client;
 
 use Closure;
+use Ppm\Framework\Network\ClientDisconnectedException;
 use Ppm\Framework\Stream\Async\AsyncStreamWatcher;
-use Ppm\Framework\Stream\Async\IBindable;
 use Ppm\Framework\Stream\Async\MainCycle;
 use Ppm\Framework\Stream\Async\Promise;
-use Ppm\Framework\Stream\Async\StreamReadActionBind;
 use Ppm\Framework\Stream\Contracts\IStream;
 
-class HttpRequestAction implements IBindable
+class HttpRequestAction
 {
     private HttpSocketClient $client;
     private ?Closure $uploadProgressHandler;
-    private ?Closure $downloadProgressHandler;
     private HttpRequest $request;
     private ResponseDataParser $receiver;
-    private StreamReadActionBind $binding;
     private bool $followLocation;
 
     public function __construct(HttpRequest $request, ?callable $uploadProgressHandler = null)
@@ -45,41 +42,38 @@ class HttpRequestAction implements IBindable
     {
         $this->request->setUrl($location);
         $this->send();
-        $this->binding->setStream($this->client);
     }
 
     public function wait(?callable $downloadProgressHandler = null, bool $followLocation = true): HttpResponse
     {
-        $this->downloadProgressHandler = $downloadProgressHandler;
-        $bind = $this->creteBind($downloadProgressHandler);
-        $async = new AsyncStreamWatcher([$bind]);
+        $this->receiver = new ResponseDataParser($downloadProgressHandler);
         $this->followLocation = $followLocation;
-
+        $watcher = new AsyncStreamWatcher();
+        $watcher->addCoroutine((function () {
+            yield $this->client;
+            while (!$this->isCompleted())
+                yield $this->onReadyContent($this->client);
+        })());
         while (!$this->isCompleted())
-            $async->watch();
+            $watcher->watch();
         return $this->getResponse();
     }
 
     public function waitAsync(?callable $downloadProgressHandler = null): Promise
     {
-        $this->downloadProgressHandler = $downloadProgressHandler;
         $this->receiver = new ResponseDataParser($downloadProgressHandler);
 
         return new Promise(function ($resolve) {
             MainCycle::watch((function () use ($resolve) {
                 yield $this->client;
-                while (!$this->receiver->isCompleted())
-                    $this->receiver->onReadyContent($this->client);
-                $resolve($this->receiver->getResponse());
+                while (!$this->isCompleted()) {
+                    $this->onReadyContent($this->client);
+                    if ($this->isCompleted())
+                        $resolve($this->receiver->getResponse());
+                    yield $this->client;
+                }
             })());
         });
-    }
-
-    public function creteBind(?callable $downloadProgressHandler = null): StreamReadActionBind
-    {
-        $this->downloadProgressHandler = $downloadProgressHandler;
-        $this->receiver = new ResponseDataParser($downloadProgressHandler);
-        return $this->binding = $this->bind($this->client);
     }
 
     public function getResponse(): HttpResponse
@@ -87,25 +81,22 @@ class HttpRequestAction implements IBindable
         return $this->receiver->getResponse();
     }
 
-    public function bind(IStream $stream): StreamReadActionBind
+    public function onReadyContent(IStream $stream): HttpSocketClient
     {
-        return StreamReadActionBind::create($stream, [
-            $this,
-            'onReadyContent'
-        ]);
-    }
+        try {
+            $this->receiver->onReadyContent($stream);
+        } catch (ClientDisconnectedException) {
 
-    public function onReadyContent(IStream $stream): void
-    {
-        $this->receiver->onReadyContent($stream);
-        if ($this->followLocation && $this->receiver->isCompleted() && !empty($location = $this->receiver->getResponse()->getHeader('Location'))) {
-            $this->follow($location);
-            $this->receiver = new ResponseDataParser($this->downloadProgressHandler);
         }
+        if ($this->followLocation && $this->receiver->isCompleted() && !empty($location = $this->receiver->getResponse()->getHeader('Location'))) {
+            $this->receiver->reset();
+            $this->follow($location);
+        }
+        return $this->client;
     }
 
     public function isCompleted(): bool
     {
-        return $this->receiver->isCompleted();
+        return $this->receiver->isCompleted() && empty($this->receiver->getResponse()->getHeader('Location'));
     }
 }
