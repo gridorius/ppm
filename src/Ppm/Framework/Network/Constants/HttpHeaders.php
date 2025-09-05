@@ -11,5 +11,6 @@ class HttpHeaders
     const CORS_ORIGIN = 'Access-Control-Allow-Origin';
     const CORS_METHODS = 'Access-Control-Allow-Methods';
     const CORS_HEADERS = 'Access-Control-Allow-Headers';
+    const CORS_CREDENTIALS = 'Access-Control-Allow-Credentials';
     const CORS_MAX_AGE = 'Access-Control-Max-Age';
 }
