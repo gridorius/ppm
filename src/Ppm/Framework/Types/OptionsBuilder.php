@@ -2,6 +2,7 @@
 
 namespace Ppm\Framework\Types;
 
+use DateTime;
 use Exception;
 use Ppm\Framework\Exceptions\OptionParseException;
 use Ppm\Framework\Exceptions\OptionsBuildException;
@@ -152,6 +153,12 @@ class OptionsBuilder
                 else
                     $result = $value;
                 return $result;
+            case 'DateTime':
+                if (is_string($value) || is_int($value))
+                    return new DateTime(is_int($value) ? '@' . $value : $value);
+                if ($value instanceof DateTime)
+                    return $value;
+                throw new OptionParseException('DateTime', $valueType);
             default:
                 if (is_array($value))
                     return static::build($type, $value, $topField);

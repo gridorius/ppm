@@ -2,25 +2,27 @@
 
 namespace Ppm\Framework\Event;
 
-use Closure;
+use ReflectionEnum;
+use UnitEnum;
 
 class EventDispatcher
 {
     private static array $handlers = [];
 
-    public static function addEventHandler(string $eventName, callable $handler): void
+    public static function addEventHandler(UnitEnum $case, callable $handler): void
     {
-        static::$handlers[$eventName][] = $handler;
+        static::$handlers[$case::class . '::' . $case->name][] = $handler;
     }
 
-    public static function emit(IEvent $event): IEvent
+    public static function emit(UnitEnum $case, &...$arguments): bool
     {
-        if (!empty(static::$handlers[$event->getName()]))
-            foreach (static::$handlers[$event->getName()] as $handler) {
-                call_user_func($handler, $event);
-                if ($event->isCancelled())
-                    return $event;
+        $eventName = $case::class . '::' . $case->name;
+        if (!empty(static::$handlers[$eventName]))
+            foreach (static::$handlers[$eventName] as $handler) {
+                $result = call_user_func_array($handler, $arguments);
+                if (is_bool($result) && !$result)
+                    return false;
             }
-        return $event;
+        return true;
     }
 }
