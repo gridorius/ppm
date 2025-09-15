@@ -6,12 +6,14 @@ use Exception;
 
 class OptionsBuildException extends Exception
 {
-    private array $fieldErrors = [];
+    private array $fieldErrors;
 
     public function __construct(array $fieldErrors)
     {
         $this->fieldErrors = $fieldErrors;
-        parent::__construct("Options build error", 0, null);
+        $message = "Options build exception:\n" .
+            implode("\n", $this->formatFieldErrors('Field FIELD expected type EXPECTED, passed PASSED', 'Field FIELD required expected type EXPECTED'));
+        parent::__construct($message);
     }
 
     public function getFieldErrors(): array
@@ -28,7 +30,7 @@ class OptionsBuildException extends Exception
                     $result[] = str_replace(['FIELD', 'EXPECTED', 'PASSED'], [$field, $type[1], $type[2]], $invalid);
                     break;
                 case 'null':
-                    $result[] = str_replace(['FIELD', 'EXPECTED'], [$field, $type[1]], $notNull);;
+                    $result[] = str_replace(['FIELD', 'EXPECTED'], [$field, $type[1]], $notNull);
                     break;
             }
         }

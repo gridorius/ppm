@@ -153,12 +153,27 @@ class OptionsBuilder
                 else
                     $result = $value;
                 return $result;
-            case 'DateTime':
+            case DateTime::class:
                 if (is_string($value) || is_int($value))
-                    return new DateTime(is_int($value) ? '@' . $value : $value);
+                    return new $type(is_int($value) ? '@' . $value : $value);
                 if ($value instanceof DateTime)
                     return $value;
                 throw new OptionParseException('DateTime', $valueType);
+            case SerializableDate::class:
+            case SerializableDateTime::class:
+            case SerializableTime::class:
+                if (is_string($value) || is_int($value))
+                    return new $type(is_int($value) ? '@' . $value : $value);
+                if ($value instanceof $type)
+                    return $value;
+                if ($value instanceof DateTime)
+                    switch ($type) {
+                        case SerializableDate::class:
+                        case SerializableDateTime::class:
+                        case SerializableTime::class:
+                            return $type::from($value);
+                    }
+                throw new OptionParseException($type, $valueType);
             default:
                 if (is_array($value))
                     return static::build($type, $value, $topField);
