@@ -59,6 +59,23 @@ class BuildManager
         copy(Path::assemblyCombine(Constants::FRAMEWORK_PHAR_NAME), $outDirectory . DIRECTORY_SEPARATOR . Constants::FRAMEWORK_PHAR_NAME);
     }
 
+    public static function buildProject(BuildContext $context, string $outDirectory): void
+    {
+        $projectBuilder = new ProjectBuilder();
+        $directory = (new Directory($outDirectory))->create();
+        $context
+            ->getConfiguration()
+            ->getActions()
+            ->runBeforeBuild($context->getConfiguration()->getDirectory(), $directory->getPath());
+        $timer = new Timer();
+        $projectBuilder->build($context, $outDirectory);
+        static::showBuildLog($timer->getFormatPassed(), $context);
+        $context
+            ->getConfiguration()
+            ->getActions()
+            ->runAfterBuild($context->getConfiguration()->getDirectory(), $directory->getPath());
+    }
+
     protected static function buildProjects(ConfigurationCollection $configurationCollection, string $outDirectory): void
     {
         $projectBuilder = new ProjectBuilder();

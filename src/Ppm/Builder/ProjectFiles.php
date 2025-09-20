@@ -4,20 +4,39 @@ namespace Ppm\Builder;
 
 use Ppm\Builder\Configuration\Configuration;
 use Ppm\Builder\Configuration\FileFilter;
+use Ppm\Framework\Filesystem\PathUtils;
 
 class ProjectFiles
 {
-    private array $files;
+    private string $directory;
+    private array $files = [];
+    private array $hashes = [];
+    private array $changedFiles = [];
     private Configuration $configuration;
 
-    /**
-     * @param array $files
-     * @param Configuration $configuration
-     */
-    public function __construct(array $files, Configuration $configuration)
+    public function __construct(string $directory, Configuration $configuration)
     {
-        $this->files = $files;
+        $this->directory = $directory;
         $this->configuration = $configuration;
+        $this->scan();
+    }
+
+    public function scan(): static
+    {
+        $this->changedFiles = [];
+        $this->files = $this->separateProjects(PathUtils::scanDirectory($this->directory));
+        foreach ($this->files as $relative => $full) {
+            $hash = hash_file('sha256', $full);
+            if (empty($this->hashes[$relative]) || $this->hashes[$relative] !== $hash)
+                $this->changedFiles[$relative] = $full;
+            $this->hashes[$relative] = $hash;
+        }
+        return $this;
+    }
+
+    public function isChanged(): bool
+    {
+        return !empty($this->changedFiles);
     }
 
     /**
@@ -68,26 +87,22 @@ class ProjectFiles
      */
     public function filterFiles(FileFilter $filter): array
     {
-        $projectFiles = $this->files;
+        $projectFiles = array_flip($this->files);
         $files = [];
 
         if ($filter->hasExclude()) {
             $excludeArray = explode(';', $filter->getExclude());
-            foreach ($excludeArray as $pattern) {
-                foreach ($projectFiles as $key => $path) {
-                    if (fnmatch($pattern, $path, FNM_NOESCAPE)) {
+            foreach ($excludeArray as $pattern)
+                foreach ($projectFiles as $key => $path)
+                    if (fnmatch($pattern, $path, FNM_NOESCAPE))
                         unset($projectFiles[$key]);
-                    }
-                }
-            }
         }
 
         $include = $filter->getInclude();
         $offset = $filter->getOffset();
-        foreach ($projectFiles as $key => $path) {
+        foreach ($projectFiles as $key => $path)
             if (fnmatch($include, $path, FNM_NOESCAPE))
                 $files[$key] = preg_replace("/(.[^\/]+\/)/", '', $path, $offset);
-        }
 
         return $files;
     }
@@ -104,6 +119,28 @@ class ProjectFiles
         foreach ($filters as $filter)
             foreach ($this->filterFiles($filter) as $realPath => $relativePath)
                 $files[$realPath] = $relativePath;
+
+        return $files;
+    }
+
+    private function separateProjects(array $files): array
+    {
+        $subProjectRoots = [];
+        foreach ($files as $relative => $absolute) {
+            if (fnmatch('*proj.json', $relative)) {
+                $dirname = pathinfo($relative, PATHINFO_DIRNAME);
+                if ($dirname != '.')
+                    $subProjectRoots[] = $dirname;
+            }
+        }
+        $unsetFiles = [];
+        foreach ($subProjectRoots as $prefix)
+            foreach ($files as $relative => $absolute)
+                if (str_starts_with($relative, $prefix))
+                    $unsetFiles[] = $relative;
+
+        foreach ($unsetFiles as $relative)
+            unset($files[$relative]);
 
         return $files;
     }

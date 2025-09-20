@@ -108,7 +108,7 @@ class Solution
             throw new Exception("Project {$projectName} not found");
     }
 
-    public function buildProject(string $name, ?string $outDirectory = null): string
+    public function buildProject(string $name, ?string $outDirectory = null): array
     {
         if (is_null($outDirectory))
             $outDirectory = $this->getDirectory() . DIRECTORY_SEPARATOR . '/bin/' . $name;
@@ -127,7 +127,7 @@ class Solution
         BuildManager::AddFrameworkPhar($outDirectory);
         $this->extractDependencies($configurationCollection, $outDirectory);
 
-        return $outDirectory;
+        return [$outDirectory, $contexts->toArray()];
     }
 
     public function buildPackage(string $name): void

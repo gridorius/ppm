@@ -25,7 +25,7 @@ class ConfigurationCollection
 
     public static function from(string $pathToProjectFile): static
     {
-        return (new Configuration($pathToProjectFile))->buildConfigurationCollection();
+        return new Configuration($pathToProjectFile)->buildConfigurationCollection();
     }
 
     public function mergeCollection(ConfigurationCollection $collection): void
@@ -42,13 +42,9 @@ class ConfigurationCollection
     {
         if (is_null($this->contexts)) {
             $contexts = [];
-            $fileStructure = new FileStructure();
             foreach ($this->configurations as $configuration) {
                 $projectDirectory = $configuration->getDirectory();
-                if (!$fileStructure->hasProject($projectDirectory))
-                    $fileStructure->scanDirectory($projectDirectory);
-
-                $projectFiles = new ProjectFiles($fileStructure->getProjectFiles($projectDirectory), $configuration);
+                $projectFiles = new ProjectFiles($projectDirectory, $configuration);
                 $contexts[] = ContextBuilder::build($projectFiles, $configuration);
             }
             $this->contexts = new BuildContextCollection($contexts);

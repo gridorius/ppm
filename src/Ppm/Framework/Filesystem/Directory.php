@@ -135,7 +135,7 @@ class Directory extends PathFromBase
     {
         $path = $this->path . DIRECTORY_SEPARATOR . $name . '.phar';
         if (file_exists($path))
-            unlink($path);
+            Phar::unlinkArchive($path);
         return new Phar($path);
     }
 

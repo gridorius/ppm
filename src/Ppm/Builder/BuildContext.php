@@ -7,6 +7,7 @@ use Ppm\Builder\Configuration\Manifest;
 
 class BuildContext
 {
+    private ProjectFiles $projectFiles;
     private Configuration $configuration;
     private Manifest $manifest;
     private array $innerFiles;
@@ -18,12 +19,18 @@ class BuildContext
      * @param array $innerFiles
      * @param array $outerFiles
      */
-    public function __construct(Configuration $configuration, Manifest $manifest, array $innerFiles, array $outerFiles)
+    public function __construct(ProjectFiles $projectFiles, Configuration $configuration, Manifest $manifest, array $innerFiles, array $outerFiles)
     {
+        $this->projectFiles = $projectFiles;
         $this->configuration = $configuration;
         $this->manifest = $manifest;
         $this->innerFiles = $innerFiles;
         $this->outerFiles = $outerFiles;
+    }
+
+    public function getProjectFiles(): ProjectFiles
+    {
+        return $this->projectFiles;
     }
 
     public function getHash(): string

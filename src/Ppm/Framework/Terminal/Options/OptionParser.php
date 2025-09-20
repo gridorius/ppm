@@ -61,7 +61,7 @@ class OptionParser
         if ($this->containsValue($argument))
             $this->parseKeyValue($option, $arguments, $options);
         else
-            $this->parseOption($argument, $arguments, $options);
+            $this->parseOption($option, $arguments, $options);
     }
 
     private function parseShort(string $argument, array &$arguments, OptionCollection $options): void
@@ -70,7 +70,7 @@ class OptionParser
         if ($this->containsValue($argument))
             $this->parseKeyValue($option, $arguments, $options);
         else if (strlen($option) == 1)
-            $this->parseOption($argument, $arguments, $options);
+            $this->parseOption($option, $arguments, $options);
         else {
             $counters = str_split($option);
             foreach ($counters as $counter)
@@ -96,13 +96,12 @@ class OptionParser
     {
         if (in_array($option, $this->counters)) {
             $options->incrementOption($option);
-            array_shift($arguments);
         } elseif (in_array($option, $this->values)) {
-            if (empty($argument[1]))
+            if (empty($arguments[1]))
                 throw new Exception("Invalid value for {$option}");
             array_shift($arguments);
-            array_shift($arguments);
-            $options->setValue($option, $argument[1]);
+            $value = array_shift($arguments);
+            $options->setValue($option, $value);
         } else {
             $this->throwUnexpectedOption($option);
         }

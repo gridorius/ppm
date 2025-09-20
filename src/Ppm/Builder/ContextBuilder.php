@@ -23,7 +23,7 @@ class ContextBuilder
         static::prepareMovedFiles($projectFiles, $outerFiles);
         static::prepareResources($projectFiles, $manifest, $innerFiles);
         static::prepareIncludes($projectFiles, $manifest, $innerFiles);
-        return new BuildContext($configuration, $manifest, $innerFiles, $outerFiles);
+        return new BuildContext($projectFiles, $configuration, $manifest, $innerFiles, $outerFiles);
     }
 
     private static function prepareTypedFiles(ProjectFiles $filter, Manifest $manifest, array &$innerFiles): void
