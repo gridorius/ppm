@@ -14,6 +14,11 @@ class StringUtils
         return preg_replace($from, $to, $haystack);
     }
 
+    public static function camelToSnake($string): string
+    {
+        return strtolower(preg_replace(['/([a-z\d])([A-Z])/', '/([^_])([A-Z][a-z])/'], '$1_$2', $string));
+    }
+
     public static function convertBytes(int $bytes): string
     {
         $unit = ['B', 'KB', 'MB', 'GB', 'TB'];

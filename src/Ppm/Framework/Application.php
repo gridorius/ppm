@@ -4,9 +4,12 @@ namespace Ppm\Framework;
 
 use Exception;
 use Phar;
+use Ppm\Builder\Constants;
 use Ppm\Framework\Filesystem\Directory;
 use Ppm\Framework\Filesystem\Path;
+use Ppm\Framework\Resources\Resources;
 use Ppm\Framework\System\Proc\PhpRuntimeCommandConfiguration;
+use Ppm\Framework\Utils\StringUtils;
 use Throwable;
 
 class Application
@@ -150,18 +153,18 @@ class Application
         if (!is_file($pathToProjectPhar))
             throw new Exception("File {$pathToProjectPhar} not found");
 
-        $assemblyPath = static::getPath();
-        $lines = [
-            "require '{$assemblyPath}';",
-            "require '{$pathToProjectPhar}';",
-            Application::class . "::entrypoint(",
-            var_export($entrypoint, true),
-            ',',
-            '$argv ?? []',
-            ");"
-        ];
+        $pathInfo = pathinfo($pathToProjectPhar);
+        chdir($pathInfo['dirname']);
+        $runnerContent = StringUtils::replace(
+            Resources::get(Constants::RUNNER_TEMPLATE_PATH)->getContent(),
+            [
+                Constants::REPLACE_PROJECT_NAME => $pathInfo['filename'],
+                Constants::REPLACE_ENTRYPOINT_DATA => var_export($entrypoint, true),
+            ]
+        );
 
-        return new PhpRuntimeCommandConfiguration(implode('', $lines), ...$arguments);
+        $runnerContent = preg_replace(["/\<\?php/", "/\n/", "/\r/"], '', $runnerContent);
+        return new PhpRuntimeCommandConfiguration($runnerContent, ...$arguments);
     }
 
     public static function createCommand($entrypoint, ...$arguments): PhpRuntimeCommandConfiguration

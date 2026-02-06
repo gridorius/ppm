@@ -4,7 +4,7 @@
 use Ppm\Framework\Application;
 
 const PPM_FRAMEWORK_PATH = __DIR__ . DIRECTORY_SEPARATOR . 'Ppm.Framework.phar';
-const ENTRYPOINT = ['ENTRYPOINT_CLASS', 'ENTRYPOINT_METHOD'];
+const ENTRYPOINT = 'ENTRYPOINT_DATA';
 define('ARGV', $argv);
 
 include PPM_FRAMEWORK_PATH;

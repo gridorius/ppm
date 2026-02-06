@@ -100,15 +100,17 @@ class ProjectBuilder
      */
     protected function makeExecutableFile(string $outDirectory, Configuration $configuration): void
     {
-        $entrypointData = explode('::', $configuration->getEntrypoint());
-        $entrypointClass = $entrypointData[0];
-        $entrypointMethod = $entrypointData[1] ?? Constants::DEFAULT_ENTRYPOINT_METHOD;
+        $entrypointData = $configuration->getEntrypoint();
+        if (is_array($entrypointData) && count($entrypointData) == 1)
+            $entrypointData[] = 'main';
+        if (is_string($entrypointData) && !str_contains('::', $entrypointData))
+            $entrypointData .= '::main';
+
         $runnerContent = StringUtils::replace(
             $this->getFileOrResource(Constants::RUNNER_TEMPLATE_PATH),
             [
                 Constants::REPLACE_PROJECT_NAME => $configuration->getProjectInfo()->getName(),
-                Constants::REPLACE_ENTRYPOINT_CLASS => $entrypointClass,
-                Constants::REPLACE_ENTRYPOINT_METHOD => $entrypointMethod,
+                Constants::REPLACE_ENTRYPOINT_DATA => var_export($entrypointData, true),
             ]
         );
 

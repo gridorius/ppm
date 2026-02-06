@@ -17,7 +17,7 @@ class Configuration extends FileFilter
      */
     private array $projects;
     private ?string $stub;
-    private ?string $entrypoint;
+    private $entrypoint;
     private array $commands;
     private ProjectInfo $projectInfo;
     private ProjectDependencies $projectDependencies;
@@ -96,7 +96,7 @@ class Configuration extends FileFilter
         return $this->meta;
     }
 
-    public function getEntrypoint(): ?string
+    public function getEntrypoint()
     {
         return $this->entrypoint;
     }
