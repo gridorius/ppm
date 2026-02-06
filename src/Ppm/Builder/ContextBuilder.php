@@ -17,10 +17,16 @@ class ContextBuilder
     public static function build(ProjectFiles $projectFiles, Configuration $configuration): BuildContext
     {
         $manifest = new Manifest($configuration);
+        return static::apply($manifest, $projectFiles, $configuration);
+    }
+
+    public static function apply(Manifest $manifest, ProjectFiles $projectFiles, Configuration $configuration): BuildContext
+    {
+        $manifest->setHashes($projectFiles->getHashes());
         $innerFiles = [];
         $outerFiles = [];
         static::prepareTypedFiles($projectFiles, $manifest, $innerFiles);
-        static::prepareMovedFiles($projectFiles, $outerFiles);
+        static::prepareMovedFiles($projectFiles, $manifest, $outerFiles);
         static::prepareResources($projectFiles, $manifest, $innerFiles);
         static::prepareIncludes($projectFiles, $manifest, $innerFiles);
         return new BuildContext($projectFiles, $configuration, $manifest, $innerFiles, $outerFiles);
@@ -35,15 +41,18 @@ class ContextBuilder
                 $localPath = 'types/' . preg_replace("/\\\\/", '.', $type) . '.php';
                 $types[$type] = $localPath;
                 $innerFiles[$localPath] = $path;
+                $manifest->setFileRelation($relativePath, 'type', $type, $localPath);
             }
         }
         $manifest->setTypes($types);
     }
 
-    private static function prepareMovedFiles(ProjectFiles $filter, array &$outerFiles): void
+    private static function prepareMovedFiles(ProjectFiles $filter, Manifest $manifest, array &$outerFiles): void
     {
-        foreach ($filter->getFiles() as $realPath => $relativePath)
+        foreach ($filter->getFiles() as $realPath => $relativePath) {
             $outerFiles[$relativePath] = $realPath;
+            $manifest->setFileRelation($relativePath, 'file');
+        }
     }
 
     private static function prepareResources(ProjectFiles $filter, Manifest $manifest, array &$innerFiles): void
@@ -53,6 +62,7 @@ class ContextBuilder
             $innerPath = 'resources/' . $relativePath;
             $resources[$relativePath] = $innerPath;
             $innerFiles[$innerPath] = $path;
+            $manifest->setFileRelation($relativePath, 'resource', $relativePath, $innerPath);
         }
         $manifest->setResources($resources);
     }
@@ -62,8 +72,9 @@ class ContextBuilder
         $includes = [];
         foreach ($filter->getIncludes() as $path => $relativePath) {
             $localPath = 'includes/' . pathinfo($relativePath, PATHINFO_BASENAME);
-            $includes[] = $localPath;
+            $includes[$localPath] = $localPath;
             $innerFiles[$localPath] = $path;
+            $manifest->setFileRelation($relativePath, 'include', $localPath, $localPath);
         }
         $manifest->setIncludes($includes);
     }

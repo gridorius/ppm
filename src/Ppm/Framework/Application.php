@@ -32,6 +32,11 @@ class Application
         return null;
     }
 
+    public static function getAssemblies(): array
+    {
+        return static::$assemblies;
+    }
+
     public static function registerAutoloader(): void
     {
         spl_autoload_register(function ($type) {
@@ -135,12 +140,12 @@ class Application
         return static::$entrypointProject;
     }
 
-    public static function createCommandByProject(string $project, callable $entrypoint, ...$arguments): PhpRuntimeCommandConfiguration
+    public static function createCommandByProject(string $project, $entrypoint, ...$arguments): PhpRuntimeCommandConfiguration
     {
         return static::createCommandByPath(static::$assemblies[$project]['realPath'], $entrypoint, ...$arguments);
     }
 
-    public static function createCommandByPath(string $pathToProjectPhar, callable $entrypoint, ...$arguments): PhpRuntimeCommandConfiguration
+    public static function createCommandByPath(string $pathToProjectPhar, $entrypoint, ...$arguments): PhpRuntimeCommandConfiguration
     {
         if (!is_file($pathToProjectPhar))
             throw new Exception("File {$pathToProjectPhar} not found");
@@ -159,7 +164,7 @@ class Application
         return new PhpRuntimeCommandConfiguration(implode('', $lines), ...$arguments);
     }
 
-    public static function createCommand(callable $entrypoint, ...$arguments): PhpRuntimeCommandConfiguration
+    public static function createCommand($entrypoint, ...$arguments): PhpRuntimeCommandConfiguration
     {
         return static::createCommandByProject(static::$entrypointProject, $entrypoint, ...$arguments);
     }

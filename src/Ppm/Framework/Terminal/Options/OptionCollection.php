@@ -13,7 +13,7 @@ class OptionCollection
 
     public function incrementOption(string $option): void
     {
-        if (!$this->options[$option])
+        if (!key_exists($option, $this->options))
             $this->options[$option] = 0;
 
         $this->options[$option]++;

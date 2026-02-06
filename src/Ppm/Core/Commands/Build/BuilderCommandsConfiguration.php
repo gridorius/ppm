@@ -12,6 +12,6 @@ class BuilderCommandsConfiguration extends CommandsConfigurationBase
         $router->registerCommand("build package - <project> -", new BuildPackageCommand());
         $router->registerCommand("build template <name> ", new CreateTemplateCommand());
         $router->registerCommand("build - <project> -", new BuildCommand());
-        $router->registerCommand("start - <script> -", new ExecuteScriptCommand());
+        $router->registerCommand("run - <script> -", new ExecuteScriptCommand());
     }
 }

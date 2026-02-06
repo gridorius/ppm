@@ -96,6 +96,7 @@ class OptionParser
     {
         if (in_array($option, $this->counters)) {
             $options->incrementOption($option);
+            array_shift($arguments);
         } elseif (in_array($option, $this->values)) {
             if (empty($arguments[1]))
                 throw new Exception("Invalid value for {$option}");

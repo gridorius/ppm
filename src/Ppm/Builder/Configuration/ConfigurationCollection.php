@@ -2,12 +2,9 @@
 
 namespace Ppm\Builder\Configuration;
 
-use Ppm\Builder\BuildContext;
 use Ppm\Builder\BuildContextCollection;
 use Ppm\Builder\ContextBuilder;
-use Ppm\Builder\FileStructure;
 use Ppm\Builder\ProjectFiles;
-use Ppm\Packages\Common\PackageUtils;
 
 class ConfigurationCollection
 {
@@ -45,6 +42,7 @@ class ConfigurationCollection
             foreach ($this->configurations as $configuration) {
                 $projectDirectory = $configuration->getDirectory();
                 $projectFiles = new ProjectFiles($projectDirectory, $configuration);
+                $projectFiles->scan();
                 $contexts[] = ContextBuilder::build($projectFiles, $configuration);
             }
             $this->contexts = new BuildContextCollection($contexts);

@@ -2,6 +2,7 @@
 
 namespace Ppm\Framework;
 
+use Phar;
 use Ppm\Framework\Filesystem\Path;
 use Ppm\Framework\Resources\Resources;
 
@@ -22,6 +23,11 @@ class Assembly
         $this->realPath = $directory . DIRECTORY_SEPARATOR . $name . '.phar';
         $this->directory = $directory;
         $this->manifest = include $this->path . '/manifest.php';
+    }
+
+    public function getMeta()
+    {
+        return $this->manifest['meta'];
     }
 
     public function pathCombine(string ...$parts): string

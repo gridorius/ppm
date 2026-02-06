@@ -139,6 +139,14 @@ class Directory extends PathFromBase
         return new Phar($path);
     }
 
+    public function getPhar(string $name): Phar
+    {
+        $path = $this->path . DIRECTORY_SEPARATOR . $name . '.phar';
+        if (!file_exists($path))
+            throw new Exception("Failed to get the phar: {$name}");
+        return new Phar($path);
+    }
+
     /**
      * Возвращает путь до текущей директории
      * @return string

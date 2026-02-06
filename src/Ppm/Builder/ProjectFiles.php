@@ -11,32 +11,43 @@ class ProjectFiles
     private string $directory;
     private array $files = [];
     private array $hashes = [];
-    private array $changedFiles = [];
     private Configuration $configuration;
 
-    public function __construct(string $directory, Configuration $configuration)
+    public function __construct(string $directory, Configuration $configuration, array $files = [], array $hashes = [])
     {
         $this->directory = $directory;
         $this->configuration = $configuration;
-        $this->scan();
+        $this->files = $files;
+        $this->hashes = $hashes;
+    }
+
+    public function fromChanged(array $changed): static
+    {
+        $changedFiles = [];
+        $hashes = [];
+        foreach ($changed as $relativePath)
+            if (key_exists($relativePath, $this->files)) {
+                $changedFiles[$relativePath] = $this->files[$relativePath];
+                $hashes[$relativePath] = $this->hashes[$relativePath];
+            }
+        return new static($this->directory, $this->configuration, $changedFiles, $hashes);
     }
 
     public function scan(): static
     {
-        $this->changedFiles = [];
+        $this->hashes = [];
         $this->files = $this->separateProjects(PathUtils::scanDirectory($this->directory));
         foreach ($this->files as $relative => $full) {
             $hash = hash_file('sha256', $full);
-            if (empty($this->hashes[$relative]) || $this->hashes[$relative] !== $hash)
-                $this->changedFiles[$relative] = $full;
-            $this->hashes[$relative] = $hash;
+            if (is_string($hash))
+                $this->hashes[$relative] = $hash;
         }
         return $this;
     }
 
-    public function isChanged(): bool
+    public function getHashes(): array
     {
-        return !empty($this->changedFiles);
+        return $this->hashes;
     }
 
     /**

@@ -38,6 +38,38 @@ class ProjectBuilder
             $this->makeExecutableFile($outDirectory, $configuration);
     }
 
+    public function update(BuildContext $context, array $relations, array $removedFiles, string $outDirectory): void
+    {
+        $directory = (new Directory($outDirectory))->create();
+        $configuration = $context->getConfiguration();
+        $phar = $directory->getPhar($configuration->getProjectInfo()->getName());
+        $phar->startBuffering();
+
+        foreach ($removedFiles as $relativePath) {
+            if (key_exists($relativePath, $relations)) {
+                $data = $relations[$relativePath];
+                switch ($data[0]) {
+                    case 'type':
+                    case 'resource':
+                    case 'include':
+                        $phar->delete($data[2]);
+                    case 'file':
+                        unlink($outDirectory . DIRECTORY_SEPARATOR . $relativePath);
+                        break;
+                }
+            }
+        }
+
+        $phar->buildFromIterator(new ArrayIterator($context->getInnerFiles()));
+        $directory->copyFiles($context->getOuterFiles());
+        $this->makePhpManifest($phar, $context->getManifest());
+        $this->makeStub($phar, $configuration);
+        $phar->stopBuffering();
+
+        if (!empty($configuration->hasEntrypoint()))
+            $this->makeExecutableFile($outDirectory, $configuration);
+    }
+
     /**
      * add stub to Phar
      *

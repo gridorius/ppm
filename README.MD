@@ -162,6 +162,9 @@ ppm app ...
         ]
       }
     }
+  },
+  "meta": {
+    "customKey": "customValue"
   }
 }
 ```

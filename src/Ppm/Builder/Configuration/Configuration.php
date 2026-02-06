@@ -19,10 +19,10 @@ class Configuration extends FileFilter
     private ?string $stub;
     private ?string $entrypoint;
     private array $commands;
-
     private ProjectInfo $projectInfo;
     private ProjectDependencies $projectDependencies;
     private FileFilters $fileFilters;
+    private array $meta = [];
 
     public function __construct(string $pathToProjectFile)
     {
@@ -49,7 +49,7 @@ class Configuration extends FileFilter
         $this->makeSubConfigurations($configuration['projects'] ?? []);
         $this->stub = $configuration['stub'] ?? null;
         $this->entrypoint = $configuration['entrypoint'] ?? null;
-
+        $this->meta = $configuration['meta'] ?? [];
         parent::__construct([
             'include' => $configuration['include'] ?? '*.php',
             'exclude' => empty($configuration['exclude']) ? null : $this->prepareExclude($configuration['exclude']),
@@ -89,6 +89,11 @@ class Configuration extends FileFilter
     public function getRunner(): ?string
     {
         return $this->runner;
+    }
+
+    public function getMeta(): array
+    {
+        return $this->meta;
     }
 
     public function getEntrypoint(): ?string

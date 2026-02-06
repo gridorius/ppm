@@ -4,52 +4,132 @@ namespace Ppm\Builder\Configuration;
 
 class Manifest
 {
-    private array $resources;
-    private array $types;
-    private array $includes;
+    private array $resources = [];
+    private array $types = [];
+    private array $includes = [];
+    private array $fileRelations = [];
+    private array $hashes = [];
     private Configuration $configuration;
+    private string $prefix;
 
     public function __construct(Configuration $configuration)
     {
         $this->configuration = $configuration;
+        $this->prefix = "phar://{$configuration->getProjectInfo()->getName()}/";
+    }
+
+    public function compareHashes(array $hashes): array
+    {
+        $changed = [];
+        foreach ($hashes as $relativePath => $hash)
+            if (!key_exists($relativePath, $this->hashes) || $this->hashes[$relativePath] !== $hash)
+                $changed[] = $relativePath;
+
+        return $changed;
+    }
+
+    public function getFileRelations(): array
+    {
+        return $this->fileRelations;
+    }
+
+    public function getRemovedFiles(array $hashes): array
+    {
+        $removed = [];
+        foreach ($this->hashes as $relativePath => $hash)
+            if (!key_exists($relativePath, $hashes))
+                $removed[] = $relativePath;
+        return $removed;
+    }
+
+    public function clearChanged(array $removed): static
+    {
+        foreach ($removed as $relativePath)
+            if (key_exists($relativePath, $this->fileRelations)) {
+                $data = $this->fileRelations[$relativePath];
+                $key = $data[1];
+                switch ($data[0]) {
+                    case 'type':
+                        unset($this->types[$key]);
+                        break;
+                    case 'resource':
+                        unset($this->resources[$key]);
+                        break;
+                    case 'include':
+                        unset($this->includes[$key]);
+                        break;
+                }
+                unset($this->fileRelations[$relativePath]);
+                unset($this->hashes[$relativePath]);
+            }
+
+        return $this;
+    }
+
+    public function setFileRelation(string $relativePath, string $type, ?string $key = null, ?string $innerPath = null): void
+    {
+        $this->fileRelations[$relativePath] = [$type, $key, $innerPath];
+    }
+
+    public function setHashes(array $hashes): void
+    {
+        foreach ($hashes as $key => $value)
+            $this->hashes[$key] = $value;
     }
 
     public function setResources(array $resources): void
     {
-        $this->resources = $resources;
+        foreach ($resources as $key => $value)
+            $this->resources[$key] = $value;
     }
 
     public function setTypes(array $types): void
     {
-        $this->types = $types;
+        foreach ($types as $key => $value)
+            $this->types[$key] = $value;
     }
 
     public function setIncludes(array $includes): void
     {
-        $this->includes = $includes;
+        foreach ($includes as $key => $value)
+            $this->includes[$key] = $value;
     }
 
     public function toArray(): array
     {
         $projectInfo = $this->configuration->getProjectInfo();
-        $prefix = "phar://{$projectInfo->getName()}/";
         return [
             'name' => $projectInfo->getName(),
             'version' => $projectInfo->getVersion(),
             'description' => $projectInfo->getDescription(),
             'author' => $projectInfo->getAuthor(),
-            'resources' => array_map(function ($path) use ($prefix) {
-                return $prefix . $path;
+            'resources' => array_map(function ($path) {
+                return $this->getPathWithPrefix($path);
             }, $this->resources),
-            'types' => array_map(function ($path) use ($prefix) {
-                return $prefix . $path;
+            'types' => array_map(function ($path) {
+                return $this->getPathWithPrefix($path);
             }, $this->types),
-            'includes' => array_map(function ($path) use ($prefix) {
-                return $prefix . $path;
+            'includes' => array_map(function ($path) {
+                return $this->getPathWithPrefix($path);
             }, $this->includes),
             'depends' => $this->configuration->getProjectDependencies()->getDependencies(),
-            'commands' => $this->configuration->getCommands()
+            'commands' => $this->configuration->getCommands(),
+            'hashes' => $this->hashes,
+            'fileRelations' => $this->fileRelations,
+            'meta' => $this->configuration->getMeta()
         ];
+    }
+
+    public function getPathWithPrefix(string $path): string
+    {
+        return $this->prefix . $path;
+    }
+
+    public function getFilesCount(): int
+    {
+        return count(array_filter($this->fileRelations, function ($relation) {
+            return $relation[0] == 'file';
+        }));
     }
 
     public function getResourcesCount(): int

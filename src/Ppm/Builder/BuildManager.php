@@ -76,6 +76,23 @@ class BuildManager
             ->runAfterBuild($context->getConfiguration()->getDirectory(), $directory->getPath());
     }
 
+    public static function updateProject(BuildContext $context, array $relations, array $removedFiles, string $outDirectory): void
+    {
+        $projectBuilder = new ProjectBuilder();
+        $directory = (new Directory($outDirectory))->create();
+        $context
+            ->getConfiguration()
+            ->getActions()
+            ->runBeforeBuild($context->getConfiguration()->getDirectory(), $directory->getPath());
+        $timer = new Timer();
+        $projectBuilder->update($context, $relations, $removedFiles, $outDirectory);
+        static::showBuildLog($timer->getFormatPassed(), $context);
+        $context
+            ->getConfiguration()
+            ->getActions()
+            ->runAfterBuild($context->getConfiguration()->getDirectory(), $directory->getPath());
+    }
+
     protected static function buildProjects(ConfigurationCollection $configurationCollection, string $outDirectory): void
     {
         $projectBuilder = new ProjectBuilder();
@@ -106,10 +123,11 @@ class BuildManager
         $configuration = $context->getConfiguration();
         $manifest = $context->getManifest();
         $projectInfo = $configuration->getProjectInfo();
-        echo ShellStyleParser::style("<s b green>{$projectInfo->getName()}</s>:<s blue>{$projectInfo->getVersion()}</s> built in {$passed}s\n");
-        echo ShellStyleParser::style("\tTypes: <s green>{$manifest->getTypesCount()}</s>"
-            . "\tResources: <s green>{$manifest->getResourcesCount()}</s>"
-            . "\tIncludes: <s green>{$manifest->getIncludesCount()}</s>"
-            . "\tDepends: <s green>{$manifest->getDependsCount()}</s>\n");
+        echo ShellStyleParser::style("<s b green>{$projectInfo->getName()}</s>:<s blue>{$projectInfo->getVersion()}</s> built in {$passed}s ");
+        echo ShellStyleParser::style("(Types: <s green>{$manifest->getTypesCount()}</s>"
+            . "  Resources: <s green>{$manifest->getResourcesCount()}</s>"
+            . "  Files: <s green>{$manifest->getFilesCount()}</s>"
+            . "  Includes: <s green>{$manifest->getIncludesCount()}</s>"
+            . "  Depends: <s green>{$manifest->getDependsCount()}</s>)\n");
     }
 }
