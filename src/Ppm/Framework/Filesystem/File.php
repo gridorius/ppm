@@ -77,6 +77,11 @@ class File extends PathFromBase
         unlink($this->path);
     }
 
+    public function exists(): bool
+    {
+        return file_exists($this->path);
+    }
+
     public static function deleteFile(string $path): void
     {
         unlink($path);
