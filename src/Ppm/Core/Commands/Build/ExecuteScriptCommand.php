@@ -63,13 +63,17 @@ class ExecuteScriptCommand extends CommandBase
                     $changedFiles = $manifest->compareHashes($projectFiles->getHashes());
                     $removedFiles = $manifest->getRemovedFiles($projectFiles->getHashes());
                     if (!empty($changedFiles) || !empty($removedFiles)) {
+                        echo "Changed: " . implode(", ", array_values($changedFiles)) . "\n";
+                        echo "Removed: " . implode(", ", array_values($removedFiles)) . "\n";
                         $projectName = $context->getConfiguration()->getProjectInfo()->getName();
                         if (!in_array($projectName, $ignore))
                             $needRestart = true;
                         $relations = $context->getManifest()->getFileRelations();
-                        $context->getManifest()->clearChanged(array_merge($changedFiles, $removedFiles));
-                        $newContext = ContextBuilder::apply($context->getManifest(), $projectFiles->fromChanged($changedFiles), $context->getConfiguration());
+                        $context->getManifest()->clearChanged($removedFiles);
+                        $newContext = $projectFiles->removeUnchanged($changedFiles)->getBuildContext();
+                        $newContext->getManifest()->mergeParent($context->getManifest());
                         BuildManager::updateProject($newContext, $relations, $removedFiles, $directory);
+                        $context = $newContext;
                     }
                 }
                 if ($needRestart) {

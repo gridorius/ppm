@@ -43,7 +43,7 @@ class ConfigurationCollection
                 $projectDirectory = $configuration->getDirectory();
                 $projectFiles = new ProjectFiles($projectDirectory, $configuration);
                 $projectFiles->scan();
-                $contexts[] = ContextBuilder::build($projectFiles, $configuration);
+                $contexts[] = $projectFiles->getBuildContext();
             }
             $this->contexts = new BuildContextCollection($contexts);
         }

@@ -63,9 +63,14 @@ class File extends PathFromBase
      * Считывает содержимое файла и декодирует json в массив
      * @return array|null
      */
-    public function getJsonContent(): ?array
+    public function getJsonArray(): ?array
     {
         return json_decode(file_get_contents($this->path), true);
+    }
+
+    public function getJsonObject(): ?object
+    {
+        return json_decode(file_get_contents($this->path));
     }
 
     /**

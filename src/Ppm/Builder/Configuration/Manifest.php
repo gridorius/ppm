@@ -66,6 +66,16 @@ class Manifest
         return $this;
     }
 
+    public function mergeParent(Manifest $parent): Manifest
+    {
+        $this->resources = array_merge($parent->getResources(), $this->resources);
+        $this->types = array_merge($parent->getTypes(), $this->types);
+        $this->includes = array_merge($parent->getIncludes(), $this->includes);
+        $this->hashes = array_merge($parent->getHashes(), $this->hashes);
+        $this->fileRelations = array_merge($parent->getFileRelations(), $this->fileRelations);
+        return $this;
+    }
+
     public function setFileRelation(string $relativePath, string $type, ?string $key = null, ?string $innerPath = null): void
     {
         $this->fileRelations[$relativePath] = [$type, $key, $innerPath];
@@ -150,5 +160,25 @@ class Manifest
     public function getDependsCount(): int
     {
         return count($this->configuration->getProjectDependencies()->getDependencies());
+    }
+
+    public function getResources(): array
+    {
+        return $this->resources;
+    }
+
+    public function getTypes(): array
+    {
+        return $this->types;
+    }
+
+    public function getIncludes(): array
+    {
+        return $this->includes;
+    }
+
+    public function getHashes(): array
+    {
+        return $this->hashes;
     }
 }

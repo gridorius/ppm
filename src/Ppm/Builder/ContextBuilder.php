@@ -7,32 +7,7 @@ use Ppm\Builder\Configuration\Manifest;
 
 class ContextBuilder
 {
-    /**
-     * build project context
-     *
-     * @param ProjectFiles $projectFiles
-     * @param Configuration $configuration
-     * @return BuildContext
-     */
-    public static function build(ProjectFiles $projectFiles, Configuration $configuration): BuildContext
-    {
-        $manifest = new Manifest($configuration);
-        return static::apply($manifest, $projectFiles, $configuration);
-    }
-
-    public static function apply(Manifest $manifest, ProjectFiles $projectFiles, Configuration $configuration): BuildContext
-    {
-        $manifest->setHashes($projectFiles->getHashes());
-        $innerFiles = [];
-        $outerFiles = [];
-        static::prepareTypedFiles($projectFiles, $manifest, $innerFiles);
-        static::prepareMovedFiles($projectFiles, $manifest, $outerFiles);
-        static::prepareResources($projectFiles, $manifest, $innerFiles);
-        static::prepareIncludes($projectFiles, $manifest, $innerFiles);
-        return new BuildContext($projectFiles, $configuration, $manifest, $innerFiles, $outerFiles);
-    }
-
-    private static function prepareTypedFiles(ProjectFiles $filter, Manifest $manifest, array &$innerFiles): void
+    public static function prepareTypedFiles(ProjectFiles $filter, Manifest $manifest, array &$innerFiles): void
     {
         $types = [];
         foreach ($filter->getTypeFiles() as $path => $relativePath) {
@@ -47,7 +22,7 @@ class ContextBuilder
         $manifest->setTypes($types);
     }
 
-    private static function prepareMovedFiles(ProjectFiles $filter, Manifest $manifest, array &$outerFiles): void
+    public static function prepareMovedFiles(ProjectFiles $filter, Manifest $manifest, array &$outerFiles): void
     {
         foreach ($filter->getFiles() as $realPath => $relativePath) {
             $outerFiles[$relativePath] = $realPath;
@@ -55,7 +30,7 @@ class ContextBuilder
         }
     }
 
-    private static function prepareResources(ProjectFiles $filter, Manifest $manifest, array &$innerFiles): void
+    public static function prepareResources(ProjectFiles $filter, Manifest $manifest, array &$innerFiles): void
     {
         $resources = [];
         foreach ($filter->getResources() as $path => $relativePath) {
@@ -67,7 +42,7 @@ class ContextBuilder
         $manifest->setResources($resources);
     }
 
-    private static function prepareIncludes(ProjectFiles $filter, Manifest $manifest, array &$innerFiles): void
+    public static function prepareIncludes(ProjectFiles $filter, Manifest $manifest, array &$innerFiles): void
     {
         $includes = [];
         foreach ($filter->getIncludes() as $path => $relativePath) {

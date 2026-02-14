@@ -8,6 +8,7 @@ class FileFilter
 {
     protected string $include;
     protected int $offset;
+    protected ?string $as;
     protected ?string $exclude;
 
     public function __construct(array $filter)
@@ -17,7 +18,13 @@ class FileFilter
 
         $this->include = $filter['include'];
         $this->offset = $filter['offset'] ?? 0;
+        $this->as = $filter['as'] ?? null;
         $this->exclude = $filter['exclude'] ?? null;
+    }
+
+    public function getAs(): ?string
+    {
+        return $this->as;
     }
 
     public function hasExclude(): bool

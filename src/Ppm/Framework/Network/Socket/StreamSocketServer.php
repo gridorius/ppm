@@ -3,8 +3,6 @@
 namespace Ppm\Framework\Network\Socket;
 
 use Exception;
-use Ppm\Framework\Event\EventDispatcher;
-use Ppm\Framework\Network\Socket\Events\ServerEvents;
 use Ppm\Framework\Stream\ResourceStream;
 
 class StreamSocketServer extends ResourceStream
@@ -32,7 +30,6 @@ class StreamSocketServer extends ResourceStream
         if (!empty($errorMessage))
             throw new Exception($errorMessage, $errorCode);
         $this->unblock();
-        EventDispatcher::emit(ServerEvents::Created, $host, $port);
     }
 
     public function acceptConnection(float $timeout, callable $callback): void

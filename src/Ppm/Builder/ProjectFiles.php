@@ -4,44 +4,68 @@ namespace Ppm\Builder;
 
 use Ppm\Builder\Configuration\Configuration;
 use Ppm\Builder\Configuration\FileFilter;
+use Ppm\Builder\Configuration\Manifest;
 use Ppm\Framework\Filesystem\PathUtils;
 
 class ProjectFiles
 {
     private string $directory;
-    private array $files = [];
+    private array $projectFiles = [];
     private array $hashes = [];
+    private array $types = [];
+    private array $files = [];
+    private array $resources = [];
+    private array $includes = [];
     private Configuration $configuration;
 
-    public function __construct(string $directory, Configuration $configuration, array $files = [], array $hashes = [])
+    public function __construct(string $directory, Configuration $configuration, array $projectFiles = [])
     {
         $this->directory = $directory;
         $this->configuration = $configuration;
-        $this->files = $files;
-        $this->hashes = $hashes;
+        $this->setProjectFiles($projectFiles);
     }
 
-    public function fromChanged(array $changed): static
+    public function removeUnchanged(array $changed): static
     {
-        $changedFiles = [];
-        $hashes = [];
-        foreach ($changed as $relativePath)
-            if (key_exists($relativePath, $this->files)) {
-                $changedFiles[$relativePath] = $this->files[$relativePath];
-                $hashes[$relativePath] = $this->hashes[$relativePath];
-            }
-        return new static($this->directory, $this->configuration, $changedFiles, $hashes);
+        foreach ($this->files as $real => $relative)
+            if (!in_array($relative, $changed))
+                unset($this->files[$real]);
+        foreach ($this->types as $real => $relative)
+            if (!in_array($relative, $changed))
+                unset($this->types[$real]);
+        foreach ($this->resources as $real => $relative)
+            if (!in_array($relative, $changed))
+                unset($this->resources[$real]);
+        foreach ($this->includes as $real => $relative)
+            if (!in_array($relative, $changed))
+                unset($this->includes[$real]);
+        return $this;
     }
 
     public function scan(): static
     {
         $this->hashes = [];
-        $this->files = $this->separateProjects(PathUtils::scanDirectory($this->directory));
-        foreach ($this->files as $relative => $full) {
-            $hash = hash_file('sha256', $full);
+        $this->setProjectFiles($this->separateProjects(PathUtils::scanDirectory($this->directory)));
+        return $this;
+    }
+
+    public function setProjectFiles(array $projectFiles): static
+    {
+        $this->projectFiles = $projectFiles;
+        if (empty($projectFiles))
+            return $this;
+        $this->types = $this->filterFiles($this->configuration);
+        $this->files = $this->filterFilesByFiltersArray($this->configuration->getFileFilters()->getFiles());
+        $this->resources = $this->filterFilesByFiltersArray($this->configuration->getFileFilters()->getResources());
+        $this->includes = $this->filterFilesByFiltersArray($this->configuration->getFileFilters()->getIncludes());
+
+        $toHash = array_merge($this->types, $this->files, $this->resources, $this->includes);
+        foreach ($toHash as $fullPath => $relativePath) {
+            $hash = hash_file('sha256', $fullPath);
             if (is_string($hash))
-                $this->hashes[$relative] = $hash;
+                $this->hashes[$relativePath] = $hash;
         }
+
         return $this;
     }
 
@@ -57,7 +81,7 @@ class ProjectFiles
      */
     public function getTypeFiles(): array
     {
-        return $this->filterFiles($this->configuration);
+        return $this->types;
     }
 
     /**
@@ -67,7 +91,7 @@ class ProjectFiles
      */
     public function getFiles(): array
     {
-        return $this->filterFilesByFiltersArray($this->configuration->getFileFilters()->getFiles());
+        return $this->files;
     }
 
     /**
@@ -77,7 +101,7 @@ class ProjectFiles
      */
     public function getResources(): array
     {
-        return $this->filterFilesByFiltersArray($this->configuration->getFileFilters()->getResources());
+        return $this->resources;
     }
 
     /**
@@ -87,7 +111,7 @@ class ProjectFiles
      */
     public function getIncludes(): array
     {
-        return $this->filterFilesByFiltersArray($this->configuration->getFileFilters()->getIncludes());
+        return $this->includes;
     }
 
     /**
@@ -98,7 +122,7 @@ class ProjectFiles
      */
     public function filterFiles(FileFilter $filter): array
     {
-        $projectFiles = array_flip($this->files);
+        $projectFiles = array_flip($this->projectFiles);
         $files = [];
 
         if ($filter->hasExclude()) {
@@ -111,9 +135,16 @@ class ProjectFiles
 
         $include = $filter->getInclude();
         $offset = $filter->getOffset();
+        $as = $filter->getAs();
+        if (!is_null($as))
+            $offset++;
         foreach ($projectFiles as $key => $path)
             if (fnmatch($include, $path, FNM_NOESCAPE))
                 $files[$key] = preg_replace("/(.[^\/]+\/)/", '', $path, $offset);
+
+        if (!is_null($as))
+            foreach ($files as $key => $path)
+                $files[$key] = $as . '/' . $path;
 
         return $files;
     }
@@ -132,6 +163,19 @@ class ProjectFiles
                 $files[$realPath] = $relativePath;
 
         return $files;
+    }
+
+    public function getBuildContext(): BuildContext
+    {
+        $innerFiles = [];
+        $outerFiles = [];
+        $manifest = new Manifest($this->configuration);
+        $manifest->setHashes($this->hashes);
+        ContextBuilder::prepareTypedFiles($this, $manifest, $innerFiles);
+        ContextBuilder::prepareMovedFiles($this, $manifest, $outerFiles);
+        ContextBuilder::prepareResources($this, $manifest, $innerFiles);
+        ContextBuilder::prepareIncludes($this, $manifest, $innerFiles);
+        return new BuildContext($this, $this->configuration, $manifest, $innerFiles, $outerFiles);
     }
 
     private function separateProjects(array $files): array
