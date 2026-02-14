@@ -127,10 +127,11 @@ class ProjectFiles
 
         if ($filter->hasExclude()) {
             $excludeArray = explode(';', $filter->getExclude());
-            foreach ($excludeArray as $pattern)
+            foreach ($excludeArray as $pattern) {
                 foreach ($projectFiles as $key => $path)
                     if (fnmatch($pattern, $path, FNM_NOESCAPE))
                         unset($projectFiles[$key]);
+            }
         }
 
         $include = $filter->getInclude();

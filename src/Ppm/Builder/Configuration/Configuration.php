@@ -149,10 +149,9 @@ class Configuration extends FileFilter
 
     private function prepareExclude(string $exclude): string
     {
-        $exclude = empty($exclude) ? [] : explode(';', $configuration['exclude'] ?? '');
+        $exclude = explode(';', $exclude);
         foreach ($this->getFileFilters()->getResources() as $resource)
             $exclude[] = $resource->getInclude();
-
         return implode(';', $exclude);
     }
 }

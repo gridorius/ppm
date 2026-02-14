@@ -80,7 +80,7 @@ class ExecuteScriptCommand extends CommandBase
                     posix_kill($process->getPid(), SIGKILL);
                     $process = CommandLauncher::launch($command);
                 }
-                usleep(100000);
+                sleep(1);
             }
     }
 }
