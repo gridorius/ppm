@@ -1,6 +1,6 @@
 <?php
 
-namespace Ppm\Builder;
+namespace Ppm\Framework\Utils;
 
 class EntityFinder
 {

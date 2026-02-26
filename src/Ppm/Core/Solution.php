@@ -111,11 +111,33 @@ class Solution
     public function buildProject(string $name, ?string $outDirectory = null): array
     {
         if (is_null($outDirectory))
-            $outDirectory = $this->getDirectory() . DIRECTORY_SEPARATOR . '/bin/' . $name;
+            $outDirectory = $this->getDirectory() . DIRECTORY_SEPARATOR . 'bin/' . $name;
         $this->checkProject($name);
         Directory::createDirectory($outDirectory);
         $configurationCollection = ConfigurationCollection::from($this->getProjectPath($name));
         $contexts = $configurationCollection->getContextCollection();
+        $hash = $contexts->getHash();
+        $projectsCache = $this->cache->getArray('projects');
+        if ($projectsCache->get($name) == $hash) {
+            echo "Project not changed" . PHP_EOL;
+        } else {
+            BuildManager::buildFromConfigurationCollection($configurationCollection, $outDirectory);
+            $projectsCache->set($name, $hash);
+        }
+        BuildManager::AddFrameworkPhar($outDirectory);
+        $this->extractDependencies($configurationCollection, $outDirectory);
+
+        return [$outDirectory, $contexts->toArray()];
+    }
+
+    public function buildDebugProject(string $name, ?string $outDirectory = null): array
+    {
+        if (is_null($outDirectory))
+            $outDirectory = $this->getDirectory() . DIRECTORY_SEPARATOR . 'bin/' . $name;
+        $this->checkProject($name);
+        Directory::createDirectory($outDirectory);
+        $configurationCollection = ConfigurationCollection::from($this->getProjectPath($name));
+        $contexts = $configurationCollection->getDebugContextCollection();
         $hash = $contexts->getHash();
         $projectsCache = $this->cache->getArray('projects');
         if ($projectsCache->get($name) == $hash) {

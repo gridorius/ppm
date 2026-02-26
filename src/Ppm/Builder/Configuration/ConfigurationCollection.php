@@ -51,6 +51,22 @@ class ConfigurationCollection
         return $this->contexts;
     }
 
+    public function getDebugContextCollection(): BuildContextCollection
+    {
+        if (is_null($this->contexts)) {
+            $contexts = [];
+            foreach ($this->configurations as $configuration) {
+                $projectDirectory = $configuration->getDirectory();
+                $projectFiles = new ProjectFiles($projectDirectory, $configuration);
+                $projectFiles->scan();
+                $contexts[] = $projectFiles->getBuildDebugContext();
+            }
+            $this->contexts = new BuildContextCollection($contexts);
+        }
+
+        return $this->contexts;
+    }
+
     public function getPackages(): array
     {
         $packages = [];

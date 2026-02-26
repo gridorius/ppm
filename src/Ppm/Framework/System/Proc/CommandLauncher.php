@@ -12,38 +12,25 @@ class CommandLauncher
     private static array $processes = [];
     private static bool $shutdownRegistered = false;
 
-    public static function launch(CommandConfiguration $configuration): LaunchedProcess
+    public static function launch(CommandConfigurationBase $configuration, bool $depend = true): LaunchedProcess
     {
         $pipes = [];
         $descriptors = [];
         $configuration->configureDescriptors($descriptors);
-        $processResource = proc_open($configuration->getCommand(), $descriptors, $pipes);
+        $processResource = proc_open(
+            $configuration->getCommand(),
+            $descriptors,
+            $pipes,
+            $configuration->getCwd(),
+            $configuration->getEnv()
+        );
 
         if (!is_resource($processResource)) {
             $commandString = implode(' ', $configuration->getCommand());
             throw new Exception("Process opening failed({$commandString})");
         }
 
-        $process = new LaunchedProcess($processResource, $pipes);
-        static::$processes[] = $process;
-        if (!static::$shutdownRegistered)
-            static::registerShutdown();
-
-        return $process;
-    }
-
-    public static function launchStringCommand(CommandConfigurationString $configuration): LaunchedProcess
-    {
-        $pipes = [];
-        $descriptors = [];
-        $configuration->configureDescriptors($descriptors);
-        $processResource = proc_open($configuration->getCommand(), $descriptors, $pipes);
-
-        if (!is_resource($processResource))
-            throw new Exception("Process opening failed({$configuration->getCommand()})");
-
-
-        $process = new LaunchedProcess($processResource, $pipes);
+        $process = new LaunchedProcess($processResource, $pipes, $depend);
         static::$processes[] = $process;
         if (!static::$shutdownRegistered)
             static::registerShutdown();
@@ -60,7 +47,8 @@ class CommandLauncher
     {
         register_shutdown_function(function () {
             foreach (static::ps() as $process)
-                $process->close();
+                if ($process->isDepend())
+                    $process->close();
         });
     }
 }

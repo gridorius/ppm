@@ -11,11 +11,17 @@ class Manifest
     private array $hashes = [];
     private Configuration $configuration;
     private string $prefix;
+    private bool $debug = false;
 
     public function __construct(Configuration $configuration)
     {
         $this->configuration = $configuration;
         $this->prefix = "phar://{$configuration->getProjectInfo()->getName()}/";
+    }
+
+    public function setDebug(): void
+    {
+        $this->debug = true;
     }
 
     public function compareHashes(array $hashes): array
@@ -107,6 +113,15 @@ class Manifest
 
     public function toArray(): array
     {
+        if ($this->debug) {
+            return $this->toDebugArray();
+        } else {
+            return $this->toArrayPhar();
+        }
+    }
+
+    public function toArrayPhar(): array
+    {
         $projectInfo = $this->configuration->getProjectInfo();
         return [
             'name' => $projectInfo->getName(),
@@ -122,6 +137,27 @@ class Manifest
             'includes' => array_map(function ($path) {
                 return $this->getPathWithPrefix($path);
             }, $this->includes),
+            'depends' => $this->configuration->getProjectDependencies()->getDependencies(),
+            'commands' => $this->configuration->getCommands(),
+            'hashes' => $this->hashes,
+            'fileRelations' => $this->fileRelations,
+            'meta' => $this->configuration->getMeta()
+        ];
+    }
+
+    public function toDebugArray(): array
+    {
+        $projectInfo = $this->configuration->getProjectInfo();
+        return [
+            'name' => $projectInfo->getName(),
+            'version' => $projectInfo->getVersion(),
+            'description' => $projectInfo->getDescription(),
+            'author' => $projectInfo->getAuthor(),
+            'resources' => array_map(function ($path) {
+                return $this->getPathWithPrefix($path);
+            }, $this->resources),
+            'types' => $this->types,
+            'includes' => $this->includes,
             'depends' => $this->configuration->getProjectDependencies()->getDependencies(),
             'commands' => $this->configuration->getCommands(),
             'hashes' => $this->hashes,

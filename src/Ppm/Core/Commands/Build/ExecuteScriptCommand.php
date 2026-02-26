@@ -11,6 +11,7 @@ use Ppm\Framework\Application;
 use Ppm\Framework\System\Proc\CommandConfiguration;
 use Ppm\Framework\System\Proc\CommandLauncher;
 use Ppm\Framework\Terminal\CommandRouting\Contracts\CommandBase;
+use Ppm\Framework\Utils\OSUtils;
 
 class ExecuteScriptCommand extends CommandBase
 {
@@ -35,20 +36,32 @@ class ExecuteScriptCommand extends CommandBase
         $script = $solution->getScript($scriptName);
         if (is_null($script))
             throw new Exception("Script {$script} not found");
-        [$directory, $contexts] = $solution->buildProject($script['project']);
+
+        if (empty($script['pipe']))
+            throw new Exception("Script {$scriptName} has no pipe defined");
+        [$directory, $contexts] = $solution->buildDebugProject($script['project']);
         chdir($directory);
-        $command = null;
-        if (!empty($script['entrypoint'])) {
-            $arguments = $script['arguments'] ?? [];
-            $command = Application::createCommandByPath($directory . DIRECTORY_SEPARATOR . $script['project'] . '.phar', $script['entrypoint'], ...$arguments);
+
+        $pipe = $script['pipe'];
+        foreach ($pipe as $name => &$commandDescription) {
+            $command = null;
+            if (!empty($commandDescription['entrypoint'])) {
+                $arguments = $commandDescription['arguments'] ?? [];
+                $command = Application::createCommandByPath($directory . DIRECTORY_SEPARATOR . $script['project'] . '.phar', $commandDescription['entrypoint'], ...$arguments);
+            } else if (!empty($commandDescription['command'])) {
+                $command = new CommandConfiguration(...$commandDescription['command'], ...$argv);
+            } else
+                throw new Exception('Invalid command description: ' . $name);
+
+            if (!empty($commandDescription['cwd']))
+                $command->setCwd($directory . '/' . $commandDescription['cwd']);
+
+            $commandDescription['__command'] = $command;
         }
-        if (!empty($script['command']))
-            $command = new CommandConfiguration(...$script['command'], ...$argv);
 
-        if (is_null($command))
-            throw new Exception("Invalid script {$scriptName}");
+        foreach ($pipe as &$description)
+            $description['__process'] = CommandLauncher::launch($description['__command']);
 
-        $process = CommandLauncher::launch($command);
         $ignore = $options['i'] ?? [];
         /**
          * @var BuildContext[] $contexts
@@ -68,19 +81,28 @@ class ExecuteScriptCommand extends CommandBase
                         $projectName = $context->getConfiguration()->getProjectInfo()->getName();
                         if (!in_array($projectName, $ignore))
                             $needRestart = true;
-                        $relations = $context->getManifest()->getFileRelations();
-                        $context->getManifest()->clearChanged($removedFiles);
-                        $newContext = $projectFiles->removeUnchanged($changedFiles)->getBuildContext();
-                        $newContext->getManifest()->mergeParent($context->getManifest());
-                        BuildManager::updateProject($newContext, $relations, $removedFiles, $directory);
+
+                        $newContext = $projectFiles->getBuildDebugContext();
+                        BuildManager::buildProject($newContext, $directory);
                         $context = $newContext;
+
+//                        $relations = $context->getManifest()->getFileRelations();
+//                        $context->getManifest()->clearChanged($removedFiles);
+//                        $newContext = $projectFiles->removeUnchanged($changedFiles)->getBuildDebugContext();
+//                        $newContext->getManifest()->mergeParent($context->getManifest());
+//                        BuildManager::updateProject($newContext, $relations, $removedFiles, $directory);
+//                        $context = $newContext;
                     }
                 }
                 if ($needRestart) {
-                    posix_kill($process->getPid(), SIGKILL);
-                    $process = CommandLauncher::launch($command);
+                    foreach ($pipe as &$description) {
+                        if ($description['watch']) {
+                            OSUtils::kill($description['__process']->getPid());
+                            $description['__process'] = CommandLauncher::launch($description['__command']);
+                        }
+                    }
                 }
-                sleep(1);
+                usleep(100000);
             }
     }
 }

@@ -179,6 +179,20 @@ class ProjectFiles
         return new BuildContext($this, $this->configuration, $manifest, $innerFiles, $outerFiles);
     }
 
+    public function getBuildDebugContext(): BuildContext
+    {
+        $innerFiles = [];
+        $outerFiles = [];
+        $manifest = new Manifest($this->configuration);
+        $manifest->setDebug();
+        $manifest->setHashes($this->hashes);
+        ContextBuilder::prepareDebugTypes($this, $manifest);
+        ContextBuilder::prepareMovedFiles($this, $manifest, $outerFiles);
+        ContextBuilder::prepareResources($this, $manifest, $innerFiles);
+        ContextBuilder::prepareDebugIncludes($this, $manifest);
+        return new BuildContext($this, $this->configuration, $manifest, $innerFiles, $outerFiles);
+    }
+
     private function separateProjects(array $files): array
     {
         $subProjectRoots = [];

@@ -25,8 +25,10 @@ class PathUtils
         $iterator = new RecursiveIteratorIterator($dirIterator);
         $files = [];
         $offset = strlen($directory) + 1;
-        foreach ($iterator as $path)
+        foreach ($iterator as $path) {
+            $path = str_replace('\\', '/', $path);
             $files[substr($path, $offset)] = $path;
+        }
         return $files;
     }
 

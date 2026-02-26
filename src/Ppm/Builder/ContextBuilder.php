@@ -2,8 +2,8 @@
 
 namespace Ppm\Builder;
 
-use Ppm\Builder\Configuration\Configuration;
 use Ppm\Builder\Configuration\Manifest;
+use Ppm\Framework\Utils\EntityFinder;
 
 class ContextBuilder
 {
@@ -18,6 +18,17 @@ class ContextBuilder
                 $innerFiles[$localPath] = $path;
                 $manifest->setFileRelation($relativePath, 'type', $type, $localPath);
             }
+        }
+        $manifest->setTypes($types);
+    }
+
+    public static function prepareDebugTypes(ProjectFiles $filter, Manifest $manifest): void
+    {
+        $types = [];
+        foreach ($filter->getTypeFiles() as $path => $relativePath) {
+            $foundTypes = EntityFinder::findByTokens($path);
+            foreach ($foundTypes as $type)
+                $types[$type] = $path;
         }
         $manifest->setTypes($types);
     }
@@ -51,6 +62,14 @@ class ContextBuilder
             $innerFiles[$localPath] = $path;
             $manifest->setFileRelation($relativePath, 'include', $localPath, $localPath);
         }
+        $manifest->setIncludes($includes);
+    }
+
+    public static function prepareDebugIncludes(ProjectFiles $filter, Manifest $manifest): void
+    {
+        $includes = [];
+        foreach ($filter->getIncludes() as $path => $relativePath)
+            $includes[$relativePath] = $path;
         $manifest->setIncludes($includes);
     }
 }
