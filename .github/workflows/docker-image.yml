@@ -45,16 +45,11 @@ jobs:
       - name: Build release
         run: |
           php -f builders/release.php
-      - name: Compact files
-        run: |
-          mkdir dist
-          zip -rj ppm ppm
-          mv ppm.zip dist/
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ github.token }}
           tag: ${{ github.ref_name }}
         run: |
-          gh release create "$tag" ./dist/*.zip \
+          gh release create "$tag" ./*.tar \
               -t="${GITHUB_REPOSITORY#*/} ${tag#v}" \
               -F changelog.md

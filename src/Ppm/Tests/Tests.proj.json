@@ -1,0 +1,16 @@
+{
+  "name": "Ppm.Tests",
+  "version": "0.8.0",
+  "type": "commands",
+  "resources": [
+    {
+      "include": "templates/*"
+    }
+  ],
+  "commands": {
+    "tests <project>": {
+      "handler": "Tests\\Commands::runTests",
+      "description": "run tests"
+    }
+  }
+}
