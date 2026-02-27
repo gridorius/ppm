@@ -82,16 +82,12 @@ class ExecuteScriptCommand extends CommandBase
                         if (!in_array($projectName, $ignore))
                             $needRestart = true;
 
-                        $newContext = $projectFiles->getBuildDebugContext();
-                        BuildManager::buildProject($newContext, $directory);
+                        $relations = $context->getManifest()->getFileRelations();
+                        $context->getManifest()->clearChanged($removedFiles);
+                        $newContext = $projectFiles->removeUnchanged($changedFiles)->getBuildDebugContext();
+                        $newContext->getManifest()->mergeParent($context->getManifest());
+                        BuildManager::updateProject($newContext, $relations, $removedFiles, $directory);
                         $context = $newContext;
-
-//                        $relations = $context->getManifest()->getFileRelations();
-//                        $context->getManifest()->clearChanged($removedFiles);
-//                        $newContext = $projectFiles->removeUnchanged($changedFiles)->getBuildDebugContext();
-//                        $newContext->getManifest()->mergeParent($context->getManifest());
-//                        BuildManager::updateProject($newContext, $relations, $removedFiles, $directory);
-//                        $context = $newContext;
                     }
                 }
                 if ($needRestart) {
@@ -102,7 +98,7 @@ class ExecuteScriptCommand extends CommandBase
                         }
                     }
                 }
-                usleep(100000);
+                sleep(1);
             }
     }
 }

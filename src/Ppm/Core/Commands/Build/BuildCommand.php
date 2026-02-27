@@ -44,7 +44,7 @@ class BuildCommand extends CommandBase
                         $context = $newContext;
                     }
                 }
-                usleep(100000);
+                sleep(1);
             }
     }
 
